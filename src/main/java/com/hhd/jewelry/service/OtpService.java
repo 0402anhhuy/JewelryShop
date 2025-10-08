@@ -11,13 +11,13 @@ import java.time.LocalDateTime;
 @Service
 public class OtpService {
     private final OtpTokenRepository repo;
-    private final EmailService email;
+    private final MailService email;
     private final SecureRandom rnd = new SecureRandom();
 
     @Value("${app.otp.ttl-minutes:5}")
     private int ttlMinutes;
 
-    public OtpService(OtpTokenRepository repo, EmailService email) {
+    public OtpService(OtpTokenRepository repo, MailService email) {
         this.repo = repo; this.email = email;
     }
 
