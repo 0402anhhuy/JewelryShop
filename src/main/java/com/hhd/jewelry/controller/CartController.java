@@ -4,6 +4,7 @@ import com.hhd.jewelry.DTO.CheckoutDTO;
 import com.hhd.jewelry.entity.*;
 import com.hhd.jewelry.repository.*;
 import com.hhd.jewelry.service.ProductService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -13,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -171,7 +173,7 @@ public class CartController {
 
     @PostMapping("/checkout/confirm")
     @Transactional
-    public String confirmCheckout(@Valid @ModelAttribute CheckoutDTO form, BindingResult errors, Model model, Authentication auth, @ModelAttribute("carts") List<CartItem> carts){
+    public String confirmCheckout(@Valid @ModelAttribute CheckoutDTO form, BindingResult errors, Model model, Authentication auth, @ModelAttribute("carts") List<CartItem> carts, HttpServletRequest request) throws UnsupportedEncodingException {
         // 1) Validate đúng các field trên form
         if (errors.hasErrors()) {
             // Bind lại vài biến view bạn đang dùng để render lại trang
@@ -236,7 +238,22 @@ public class CartController {
         orderItemRepository.saveAll(items);
         order.setItems(items);
 
-        return "redirect:/";
+
+        // Tính tổng số tiền (lưu ý: VNPAY cần kiểu long)
+        long totalAmount = items.stream()
+                .map(OrderItem::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .longValue();
+
+        // Kiểm tra phương thức thanh toán
+        String paymentMethod = form.getPaymentMethod();
+        if ("VNPAY".equalsIgnoreCase(paymentMethod)) {
+            String orderInfo = "Thanh toan don hang " + order.getId();
+            String paymentUrl = vnPayService.createPaymentUrl(order.getId(), totalAmount, orderInfo, request);
+            return "redirect:" + paymentUrl;
+        } else { // Giả sử là COD
+            return "redirect:/"; // Chuyển đến trang đặt hàng thành công
+        }
     }
 }
 

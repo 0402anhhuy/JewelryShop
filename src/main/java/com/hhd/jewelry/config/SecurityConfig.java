@@ -46,7 +46,8 @@ public class SecurityConfig {
                                 "/",
                                 "/login",            // MỞ RÕ
                                 "/register","/register/**", "/forgot-password",
-                                "/css/**", "/js/**", "/images/**", "/cart/**"
+                                "/css/**", "/js/**", "/images/**", "/cart/**",
+                                "/vnpay_return"
                         ).permitAll()
                         .requestMatchers("/checkout/**", "/orders/**", "/account/**").authenticated()
                         .anyRequest().permitAll()
