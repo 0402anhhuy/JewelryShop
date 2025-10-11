@@ -1,10 +1,8 @@
 package com.hhd.jewelry.config;
 
-
 import com.hhd.jewelry.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -13,6 +11,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 
 
 @Configuration
@@ -40,39 +42,38 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        HttpSessionCsrfTokenRepository csrfRepo = new HttpSessionCsrfTokenRepository();
+        csrfRepo.setSessionAttributeName("_csrf");
+
+        CsrfTokenRequestAttributeHandler handler = new CsrfTokenRequestAttributeHandler();
+        handler.setCsrfRequestAttributeName(CsrfToken.class.getName());
+
         http
                 .authorizeHttpRequests(a -> a
                         .requestMatchers(
-                                "/",
-                                "/login",            // MỞ RÕ
-                                "/register","/register/**", "/forgot-password",
+                                "/", "/login",
+                                "/register", "/register/**", "/forgot-password",
                                 "/css/**", "/js/**", "/images/**", "/cart/**"
                         ).permitAll()
-                        .requestMatchers("/checkout/**", "/orders/**", "/account/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .formLogin(f -> f
-                        .loginPage("/login")          // GET trả về login.html
-                        .loginProcessingUrl("/login") // POST xử lý (khớp form)
-                        .defaultSuccessUrl("/", false) // về trang chủ (đã permit)
-                        .failureUrl("/login?error")
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/", false)
                         .permitAll()
                 )
                 .logout(l -> l
                         .logoutUrl("/logout")
-                        .deleteCookies("JSESSIONID", "remember-me")
                         .logoutSuccessUrl("/login?logout")
                         .permitAll()
+                )
+                // ✅ Cấu hình CSRF
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 );
-        http.rememberMe(r -> r
-                .key("pnj-remember-key")              // đặt key riêng
-                .tokenValiditySeconds(1209600)        // 14 ngày
-                .rememberMeParameter("remember-me")   // khớp name trong form
-        );
 
         return http.build();
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {

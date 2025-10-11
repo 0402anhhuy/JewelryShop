@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="top-header">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <label>
+                    <input type="text" placeholder="What are you looking for?">
+                </label>
+            </div>
+            <div class="header-icons">
+                <a href="/account" aria-label="Profile" title="Profile"><i class="far fa-solid fa-user"></i></a>
+                <a href="/wishlist" aria-label="Wishlist" title="Wishlist"><i class="far fa-solid fa-heart"></i></a>
+                <a href="/products" aria-label="Products" title="Products"><i class="fas fa-box-open"></i></a>
+                <a href="/cart" aria-label="Cart" title="Cart"><i class="fas fa-shopping-bag"></i></a>
+                <a href="/login" aria-label="Login" title="Login"><i class="fas fa-right-to-bracket"></i></a>
+            </div>
+        </div>
+
+        <!-- Main Header với logo và menu -->
+        <div class="main-header">
+            <div class="nav-brand">Jewellery</div>
+            <ul class="nav-menu">
+                <li><a href="#">Nhẫn</a></li>
+                <li><a href="#">Vòng tay</a></li>
+                <li><a href="#">Bông tai</a></li>
+                <li><a href="#">Dây chuyền</a></li>
+                <li><a href="#">Đồng hồ</a></li>
+                <li><a href="#">Phụ kiện</a></li>
+            </ul>
+        </div>
+    </div>
+</header>
+</body>
+</html>

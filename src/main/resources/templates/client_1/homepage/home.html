@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<!-- Header -->
+<header th:replace="client_1/layout/header :: header"></header>
+
+<!-- Flash Sale Section -->
+<section class="flash-sale">
+    <div class="container">
+        <div class="sale-container">
+            <div class="sale-badge">FLASH SALE</div>
+            <div class="sale-content">
+                <div class="sale-info">
+                    <h2 class="sale-title">FLASH SALE</h2>
+                    <h3 class="product-title">Simple Engagement Ring</h3>
+                    <p class="product-description">Enhance the beauty of understated elegance with our simple engagement ring, a timeless symbol of love and commitment.</p>
+
+                    <div class="countdown">
+                        <div class="countdown-item">
+                            <span class="countdown-number" id="days">02</span>
+                            <span class="countdown-label">Days</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span class="countdown-number" id="hours">15</span>
+                            <span class="countdown-label">Hours</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span class="countdown-number" id="minutes">38</span>
+                            <span class="countdown-label">Minutes</span>
+                        </div>
+                        <div class="countdown-item">
+                            <span class="countdown-number" id="seconds">49</span>
+                            <span class="countdown-label">Seconds</span>
+                        </div>
+                    </div>
+
+                    <div class="sale-actions">
+                        <button class="sale-btn prev-next-btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="sale-btn add-to-cart">
+                            ADD TO CART
+                        </button>
+                        <button class="sale-btn prev-next-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sale-image">
+                    <div class="ring-image">
+                        <i class="far fa-gem"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="categories">
+    <div class="container">
+        <div class="category-list">
+            <a href="#" class="category"><i class="far fa-solid fa-ring"></i> Nhẫn</a>
+            <a href="#" class="category"><i class="far fa-circle"></i> Vòng tay</a>
+            <a href="#" class="category"><i class="fas fa-headphones"></i> Bông tai</a>
+            <a href="#" class="category"><i class="fas fa-link"></i> Dây chuyền</a>
+            <a href="#" class="category"><i class="far fa-solid fa-clock"></i> Đồng hồ</a>
+            <a href="#" class="category"><i class="fas fa-medal"></i> Phụ kiện</a>
+
+        </div>
+    </div>
+</section>
+
+<!-- Collections Section -->
+<section class="collections container my-4 text-center">
+    <h2 class="section-title">Our Collections</h2>
+    <div class="collection-wrap position-relative mt-3">
+        <button class="carousel-btn prev-btn collection-prev"><i class="fas fa-chevron-left"></i></button>
+        <div class="collection-track" id="collectionTrack">
+            <!-- each collection has data-collection-id -->
+            <div class="collection-item"
+                 th:each="col : ${collections}"
+                 th:attr="data-collection-id=${col.id}">
+                <img th:src="@{${col.imageUrl}}" th:alt="${col.name}" />
+            </div>
+        </div>
+        <button class="carousel-btn next-btn collection-next"><i class="fas fa-chevron-right"></i></button>
+    </div>
+    <div class="collection-dots mt-3" id="collectionDots"></div>
+</section>
+
+<!-- New Arrivals Section -->
+<section class="new-arrivals">
+    <div class="container">
+        <div class="arrivals-container">
+            <div class="arrivals-content">
+                <div class="arrivals-header">
+                    <h2 class="section-title">New Arrival</h2>
+                    <div class="sort-filter">
+                        <span class="filter-label">Sort by</span>
+                        <label>
+                            <select class="filter-select">
+                                <option>Featured</option>
+                                <option>Newest</option>
+                                <option>Price: Low to High</option>
+                                <option>Price: High to Low</option>
+                                <option>Best Selling</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Product List -->
+                <div class="products-grid">
+                    <div class="product-card" th:each="product : ${products}">
+                        <div class="product-image">
+                            <!-- Badge NEW -->
+                            <span class="product-badge">NEW</span>
+                            <img th:src="@{${product.imageUrls[0]}}" class="arrivals-image" alt="Ảnh sản phẩm">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title"
+                                th:text="${product.name}">Lắc tay trẻ em Vàng 10K Doraemon | PNJ 0000Y004538</h3>
+                            <div class="product-price">
+                                <span class="current-price"
+                                      th:text="${#numbers.formatDecimal(product.price,0,'COMMA',0,'POINT')} + ' đ'">5.546.000 đ
+                                </span>
+                                <span class="original-price"
+                                      th:if="${product.price != null}"
+                                      th:text="${#numbers.formatDecimal(product.price,0,'COMMA',0,'POINT')} + ' đ'"></span>
+                            </div>
+                            <!-- Số lượng đã bán -->
+                            <div class="product-sold" th:text="${product.id + ' đã bán'}">45 đã bán</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination">
+                    <button class="page-btn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <span class="page-dots">...</span>
+                    <button class="page-btn">8</button>
+                    <button class="page-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Banner -->
+            <div class="arrivals-banner">
+                <h3 class="banner-title">Wedding Edition</h3>
+                <p class="banner-subtitle">Special collection for your big day</p>
+                <div class="banner-image">
+                    <i class="fas fa-ring"></i>
+                </div>
+                <button class="banner-btn">Explore Collection</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Trending Now Section -->
+<section class="trending">
+    <div class="container">
+        <h2 class="section-title">Trending Now</h2>
+        <div class="carousel-container">
+            <div class="carousel">
+                <div class="carousel-track" id="trending-carousel">
+                    <!-- Example Carousel Items - JavaScript will add these dynamically -->
+                    <div class="carousel-item">
+                        <div class="product-card">
+                            <div class="product-image">
+                                <img src="product-image-url.jpg" alt="Product Name">
+                            </div>
+                            <p class="product-category">Nhẫn</p>
+                            <h3 class="product-title">Nhẫn Kim cương Vàng trắng 14K</h3>
+                            <p class="product-price">15.750.000 đ</p>
+                            <button class="buy-now-btn">Buy Now</button>
+                        </div>
+                    </div>
+
+                    <div class="carousel-item">
+                        <div class="product-card">
+                            <div class="product-image">
+                                <img src="product-image-url.jpg" alt="Product Name">
+                            </div>
+                            <p class="product-category">Dây chuyền</p>
+                            <h3 class="product-title">Dây chuyền Vàng 18K</h3>
+                            <p class="product-price">8.950.000 đ</p>
+                            <button class="buy-now-btn">Buy Now</button>
+                        </div>
+                    </div>
+
+                    <!-- Add more items as needed -->
+                </div>
+            </div>
+            <button class="carousel-btn prev-btn" id="trending-prev"><i class="fas fa-chevron-left"></i></button>
+            <button class="carousel-btn next-btn" id="trending-next"><i class="fas fa-chevron-right"></i></button>
+            <div class="carousel-indicators" id="trending-indicators">
+                <!-- JavaScript will add indicators dynamically -->
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- Blog Section -->
+<section class="blog">
+    <div class="container">
+        <h2 class="section-title">Jewellery Blog</h2>
+        <div class="blog-grid">
+            <div class="blog-card">
+                <div class="blog-image">
+                    <i class="fas fa-gem"></i>
+                    <span class="blog-badge">New</span>
+                </div>
+                <div class="blog-meta">
+                    <span class="blog-date"><i class="far fa-calendar"></i> March 15, 2023</span>
+                    <span><i class="far fa-comment"></i> 12</span>
+                </div>
+                <h3 class="blog-title">How to Choose the Perfect Engagement Ring</h3>
+                <p class="blog-excerpt">Finding the perfect engagement ring can be overwhelming. Our guide will help you understand the 4Cs, styles, and settings to find the ring that perfectly symbolizes your love.</p>
+                <a href="#" class="blog-link">Read More</a>
+            </div>
+
+            <div class="blog-card">
+                <div class="blog-image">
+                    <i class="fas fa-ring"></i>
+                    <span class="blog-badge">Popular</span>
+                </div>
+                <div class="blog-meta">
+                    <span class="blog-date"><i class="far fa-calendar"></i> April 2, 2023</span>
+                    <span><i class="far fa-comment"></i> 24</span>
+                </div>
+                <h3 class="blog-title">The History of Gold in Jewellery Making</h3>
+                <p class="blog-excerpt">Gold has been treasured for thousands of years. Discover how this precious metal has been used in jewellery from ancient civilizations to modern designs.</p>
+                <a href="#" class="blog-link">Read More</a>
+            </div>
+
+            <div class="blog-card">
+                <div class="blog-image">
+                    <i class="fas fa-award"></i>
+                    <span class="blog-badge">Guide</span>
+                </div>
+                <div class="blog-meta">
+                    <span class="blog-date"><i class="far fa-calendar"></i> April 18, 2023</span>
+                    <span><i class="far fa-comment"></i> 8</span>
+                </div>
+                <h3 class="blog-title">Caring for Your Precious Jewellery</h3>
+                <p class="blog-excerpt">Learn the best practices for cleaning and storing your jewellery to maintain its beauty and value for years to come. Essential tips for gold, silver, and gemstone pieces.</p>
+                <a href="#" class="blog-link">Read More</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Magazine / Featured Layout (from design attachment) -->
+<section class="magazine-section">
+    <div class="container">
+        <div class="magazine-grid">
+            <article class="magazine-feature" style="background-image: url('https://images.unsplash.com/photo-1518544882777-8f4b7b4f7b2a?auto=format&fit=crop&w=1200&q=60')">
+                <div class="feature-content">
+                    <div class="kicker">Tips</div>
+                    <h3>Trend Alert: Statement Pearl Earrings for Everyone</h3>
+                    <p>Discover the latest trend in the fashion world: pearl earrings. Elevate your attire with the exquisite pieces that exude elegance and glamour.</p>
+                    <div class="magazine-meta">Jane Thompson &bull; May 10, 2023</div>
+                </div>
+            </article>
+
+            <div class="magazine-side">
+                <div class="magazine-small" style="background-image: url('https://images.unsplash.com/photo-1548095115-45697e2b7bdf?auto=format&fit=crop&w=800&q=60')"></div>
+                <div class="magazine-small" style="background-image: url('https://images.unsplash.com/photo-1520975916457-5b0b0b3b8b77?auto=format&fit=crop&w=800&q=60')"></div>
+            </div>
+
+            <aside class="magazine-right">
+                <div class="magazine-article">
+                    <div class="thumb" style="background-image: url('https://images.unsplash.com/photo-1513682121747-1b6c7b1c9a9d?auto=format&fit=crop&w=600&q=60')"></div>
+                    <div>
+                        <div class="magazine-meta">Guide</div>
+                        <h4>How to Choose the Perfect Engagement Ring for Your Beloved One</h4>
+                        <p>Unlock the secrets to finding the perfect symbol of everlasting love.</p>
+                    </div>
+                </div>
+
+                <div class="magazine-article">
+                    <div class="thumb" style="background-image: url('https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=600&q=60')"></div>
+                    <div>
+                        <div class="magazine-meta">Tips</div>
+                        <h4>Caring for Your Jewelry: Maintenance and Cleaning Complete Guide</h4>
+                        <p>Discover the essential of maintenance and cleaning.</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<!-- Extra Blog + FAQ (inserted per user) -->
+<section class="extra-blog-faq container">
+    <!-- Phần FAQ mới thêm -->
+    <section class="faq-section">
+        <h2>Questions</h2>
+        <div class="faq-container">
+            <div class="faq-item">
+                <div class="faq-question">Are your products certified and of high quality?</div>
+                <div class="faq-answer">Yes, all of our products are crafted with the highest quality materials and undergo thorough quality checks. We also provide certificates of authenticity for our diamond and gemstone jewelry.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">How do I determine my ring size for online purchases?</div>
+                <div class="faq-answer">You can determine your ring size using our printable ring sizer, measuring at home with a string and ruler, or visiting a local jeweler. We also provide a size chart on each product page to help you choose the best fit.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">What payment methods do you accept?</div>
+                <div class="faq-answer">We accept major credit cards, debit cards, PayPal, and bank transfers. All payments are processed securely.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Do you offer personalized messages for special times?</div>
+                <div class="faq-answer">Yes, during checkout you can add a personalized message for gift orders and we offer optional gift-wrapping services.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Are your materials ethically sourced?</div>
+                <div class="faq-answer">We source materials from trusted suppliers and adhere to ethical sourcing practices. Please contact support for detailed sourcing information.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Can I choose my preferred metal or gemstone?</div>
+                <div class="faq-answer">Yes, for customizable pieces you can choose metals and gemstones; check the product options or contact our customer service for bespoke requests.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Do you offer customization options for jewelry?</div>
+                <div class="faq-answer">We offer customization for many pieces. Reach out to our design team to discuss your requirements and pricing.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Do you offer international shipping?</div>
+                <div class="faq-answer">Yes, we ship internationally. Shipping costs and delivery times vary by destination.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Are there any promotions available for today?</div>
+                <div class="faq-answer">Check our homepage banner and promotions page for current deals; subscribe to our newsletter to receive offers.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Is my personal and payment information secure?</div>
+                <div class="faq-answer">We use industry-standard encryption and secure payment gateways to protect your data and transactions.</div>
+            </div>
+        </div>
+    </section>
+</section>
+
+<footer th:replace="client_1/layout/footer :: footer"></footer>
+<script th:src="@{/js/style.js}"></script>
+</body>
+</html>

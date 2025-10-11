@@ -1,4 +1,4 @@
-package com.hhd.jewelry.DTO;
+package com.hhd.jewelry.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
-public class CheckoutDTO {
+public class CheckoutDto {
     private String serialNumber;  // nếu != null thì thanh toán sản phẩm lẻ
     private Integer cartId;// nếu != null thì thanh toán giỏ
     @NotBlank(message = "Họ tên bắt buộc")

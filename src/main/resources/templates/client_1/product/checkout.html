@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán - Luxury Jewelry</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gold: #d4af37;
+            --light-gold: #f4d47c;
+            --dark-text: #1a1a1a;
+            --gray-text: #666;
+            --light-bg: #fafafa;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, #ffffff 0%, #fafafa 100%);
+            color: var(--dark-text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        .checkout-header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .checkout-title {
+            font-size: 42px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--dark-text);
+            margin-bottom: 15px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .checkout-title::after {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-gold) 0%, var(--light-gold) 100%);
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        .checkout-subtitle {
+            color: var(--gray-text);
+            font-size: 15px;
+            margin-top: 25px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 60px;
+            gap: 20px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-number {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--gray-text);
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-number {
+            background: linear-gradient(135deg, var(--primary-gold) 0%, var(--light-gold) 100%);
+            border-color: var(--primary-gold);
+            color: var(--dark-text);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .step.completed .step-number {
+            background: var(--primary-gold);
+            border-color: var(--primary-gold);
+            color: white;
+        }
+
+        .step-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-text);
+            letter-spacing: 0.5px;
+        }
+
+        .step.active .step-label {
+            color: var(--dark-text);
+        }
+
+        .step-divider {
+            width: 60px;
+            height: 2px;
+            background: var(--border-color);
+        }
+
+        /* Main Layout */
+        .checkout-content {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 40px;
+        }
+
+        /* Left Column - Forms */
+        .checkout-form {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: var(--dark-text);
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--primary-gold);
+            font-size: 22px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark-text);
+            letter-spacing: 0.3px;
+        }
+
+        .form-label .required {
+            color: #c62828;
+            margin-left: 3px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: white;
+            color: var(--dark-text);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #bbb;
+        }
+
+        textarea.form-input {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Payment Methods */
+        .payment-methods {
+            display: grid;
+            gap: 15px;
+        }
+
+        .payment-option {
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+        }
+
+        .payment-option:hover {
+            border-color: var(--primary-gold);
+            background: rgba(212, 175, 55, 0.02);
+        }
+
+        .payment-option.selected {
+            border-color: var(--primary-gold);
+            background: rgba(212, 175, 55, 0.05);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.15);
+        }
+
+        .payment-radio {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary-gold);
+        }
+
+        .payment-icon {
+            font-size: 28px;
+            color: var(--primary-gold);
+        }
+
+        .payment-info h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--dark-text);
+        }
+
+        .payment-info p {
+            font-size: 13px;
+            color: var(--gray-text);
+        }
+
+        /* Right Column - Order Summary */
+        .order-summary {
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .summary-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: var(--dark-text);
+            letter-spacing: 0.5px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .cart-items {
+            margin-bottom: 25px;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #faf8f3 0%, #f5f1e8 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .item-details {
+            flex-grow: 1;
+        }
+
+        .item-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--dark-text);
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+
+        .item-category {
+            font-size: 13px;
+            color: var(--gray-text);
+            margin-bottom: 8px;
+        }
+
+        .item-quantity {
+            font-size: 13px;
+            color: var(--gray-text);
+        }
+
+        .item-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-gold);
+            text-align: right;
+        }
+
+        /* Promo Code */
+        .promo-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 8px;
+        }
+
+        .promo-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .promo-input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .promo-btn {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, var(--primary-gold) 0%, var(--light-gold) 100%);
+            color: var(--dark-text);
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .promo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Price Summary */
+        .price-summary {
+            margin-bottom: 25px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+
+        .price-label {
+            color: var(--gray-text);
+        }
+
+        .price-value {
+            font-weight: 600;
+            color: var(--dark-text);
+        }
+
+        .price-row.discount .price-value {
+            color: #c62828;
+        }
+
+        .price-row.total {
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .price-row.total .price-value {
+            color: var(--primary-gold);
+            font-size: 24px;
+        }
+
+        /* Place Order Button */
+        .place-order-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary-gold) 0%, var(--light-gold) 100%);
+            color: var(--dark-text);
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .place-order-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.5);
+        }
+
+        .place-order-btn i {
+            margin-left: 8px;
+        }
+
+        /* Security Badge */
+        .security-badge {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #f0f0f0;
+            font-size: 13px;
+            color: var(--gray-text);
+        }
+
+        .security-badge i {
+            color: #4caf50;
+            margin-right: 5px;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .checkout-content {
+                grid-template-columns: 1fr;
+            }
+
+            .order-summary {
+                position: static;
+            }
+
+            .progress-steps {
+                flex-wrap: wrap;
+            }
+
+            .checkout-title {
+                font-size: 32px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+
+            .checkout-form, .order-summary {
+                padding: 25px 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .checkout-title {
+                font-size: 28px;
+            }
+
+            .step-label {
+                display: none;
+            }
+
+            .step-divider {
+                width: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="checkout-header">
+        <h1 class="checkout-title">Thanh Toán</h1>
+        <p class="checkout-subtitle">Hoàn tất đơn hàng của bạn</p>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="progress-steps">
+        <div class="step completed">
+            <div class="step-number"><i class="fas fa-check"></i></div>
+            <span class="step-label">Giỏ hàng</span>
+        </div>
+        <div class="step-divider"></div>
+        <div class="step active">
+            <div class="step-number">2</div>
+            <span class="step-label">Thông tin</span>
+        </div>
+        <div class="step-divider"></div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <span class="step-label">Thanh toán</span>
+        </div>
+        <div class="step-divider"></div>
+        <div class="step">
+            <div class="step-number">4</div>
+            <span class="step-label">Hoàn tất</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="checkout-content">
+        <!-- Left Column - Form -->
+        <div class="checkout-form">
+            <!-- Shipping Information -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Thông tin giao hàng
+                </h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Họ và tên <span class="required">*</span></label>
+                        <input type="text" class="form-input" placeholder="Nguyễn Văn A" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Số điện thoại <span class="required">*</span></label>
+                        <input type="tel" class="form-input" placeholder="0912 345 678" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Email <span class="required">*</span></label>
+                        <input type="email" class="form-input" placeholder="example@email.com" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Địa chỉ <span class="required">*</span></label>
+                        <input type="text" class="form-input" placeholder="Số nhà, tên đường" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tỉnh/Thành phố <span class="required">*</span></label>
+                        <select class="form-input" required>
+                            <option value="">Chọn Tỉnh/TP</option>
+                            <option>Hồ Chí Minh</option>
+                            <option>Hà Nội</option>
+                            <option>Đà Nẵng</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quận/Huyện <span class="required">*</span></label>
+                        <select class="form-input" required>
+                            <option value="">Chọn Quận/Huyện</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Ghi chú (Tùy chọn)</label>
+                        <textarea class="form-input" placeholder="Thêm ghi chú cho đơn hàng..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-credit-card"></i>
+                    Phương thức thanh toán
+                </h3>
+                <div class="payment-methods">
+                    <label class="payment-option selected">
+                        <input type="radio" name="payment" class="payment-radio" checked>
+                        <div class="payment-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="payment-info">
+                            <h4>Thanh toán khi nhận hàng (COD)</h4>
+                            <p>Thanh toán bằng tiền mặt khi nhận hàng</p>
+                        </div>
+                    </label>
+
+                    <label class="payment-option">
+                        <input type="radio" name="payment" class="payment-radio">
+                        <div class="payment-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div class="payment-info">
+                            <h4>Thẻ tín dụng/Ghi nợ</h4>
+                            <p>Visa, Mastercard, JCB</p>
+                        </div>
+                    </label>
+
+                    <label class="payment-option">
+                        <input type="radio" name="payment" class="payment-radio">
+                        <div class="payment-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <div class="payment-info">
+                            <h4>Chuyển khoản ngân hàng</h4>
+                            <p>Chuyển khoản trực tiếp</p>
+                        </div>
+                    </label>
+
+                    <label class="payment-option">
+                        <input type="radio" name="payment" class="payment-radio">
+                        <div class="payment-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="payment-info">
+                            <h4>Ví điện tử</h4>
+                            <p>MoMo, ZaloPay, VNPay</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Order Summary -->
+        <div class="order-summary">
+            <h3 class="summary-title">Đơn hàng của bạn</h3>
+
+            <!-- Cart Items -->
+            <div class="cart-items">
+                <div class="cart-item">
+                    <div class="item-image">
+                        <i class="fas fa-gem" style="font-size: 30px; color: var(--primary-gold);"></i>
+                    </div>
+                    <div class="item-details">
+                        <div class="item-name">Nhẫn Kim cương Vàng trắng 14K</div>
+                        <div class="item-category">Nhẫn</div>
+                        <div class="item-quantity">Số lượng: 1</div>
+                    </div>
+                    <div class="item-price">15.750.000 đ</div>
+                </div>
+
+                <div class="cart-item">
+                    <div class="item-image">
+                        <i class="fas fa-ring" style="font-size: 28px; color: var(--primary-gold);"></i>
+                    </div>
+                    <div class="item-details">
+                        <div class="item-name">Dây chuyền Vàng 18K</div>
+                        <div class="item-category">Dây chuyền</div>
+                        <div class="item-quantity">Số lượng: 1</div>
+                    </div>
+                    <div class="item-price">8.950.000 đ</div>
+                </div>
+            </div>
+
+            <!-- Promo Code -->
+            <div class="promo-section">
+                <div class="promo-input-group">
+                    <input type="text" class="promo-input" placeholder="Nhập mã giảm giá">
+                    <button class="promo-btn">Áp dụng</button>
+                </div>
+            </div>
+
+            <!-- Price Summary -->
+            <div class="price-summary">
+                <div class="price-row">
+                    <span class="price-label">Tạm tính</span>
+                    <span class="price-value">24.700.000 đ</span>
+                </div>
+                <div class="price-row">
+                    <span class="price-label">Phí vận chuyển</span>
+                    <span class="price-value">Miễn phí</span>
+                </div>
+                <div class="price-row discount">
+                    <span class="price-label">Giảm giá</span>
+                    <span class="price-value">-0 đ</span>
+                </div>
+                <div class="price-row total">
+                    <span class="price-label">Tổng cộng</span>
+                    <span class="price-value">24.700.000 đ</span>
+                </div>
+            </div>
+
+            <!-- Place Order Button -->
+            <button class="place-order-btn">
+                Đặt hàng
+                <i class="fas fa-arrow-right"></i>
+            </button>
+
+            <!-- Security Badge -->
+            <div class="security-badge">
+                <i class="fas fa-lock"></i>
+                Thanh toán an toàn & bảo mật
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Payment method selection
+    document.querySelectorAll('.payment-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.payment-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            this.classList.add('selected');
+            this.querySelector('input[type="radio"]').checked = true;
+        });
+    });
+
+    // Place order button
+    document.querySelector('.place-order-btn').addEventListener('click', function() {
+        alert('Đơn hàng của bạn đã được đặt thành công! 🎉');
+    });
+
+    // Promo code
+    document.querySelector('.promo-btn').addEventListener('click', function() {
+        const promoInput = document.querySelector('.promo-input');
+        if (promoInput.value.trim()) {
+            alert('Mã giảm giá không hợp lệ!');
+        }
+    });
+</script>
+</body>
+</html>

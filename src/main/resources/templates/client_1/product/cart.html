@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ Hàng - LuxuryGems</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary-color: #d4af37;
+            --secondary-color: #f8f5e6;
+            --accent-color: #2c2c2c;
+            --light-color: #ffffff;
+            --dark-color: #1a1a1a;
+            --text-color: #333333;
+            --border-radius: 12px;
+            --red-color: #dc3545;
+            --green-color: #28a745;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f9f7f0 0%, #f0ece1 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--light-color);
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark-color);
+            letter-spacing: 2px;
+        }
+
+        .brand span {
+            color: var(--primary-color);
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 25px;
+            font-size: 20px;
+        }
+
+        .header-icons i {
+            cursor: pointer;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .header-icons i:hover {
+            color: var(--primary-color);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--red-color);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            max-width: 1400px;
+            margin: 0 auto 30px;
+            padding: 0 30px;
+            display: flex;
+            gap: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .breadcrumb a {
+            color: #666;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--primary-color);
+        }
+
+        .breadcrumb span {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* Page Title */
+        .page-title {
+            max-width: 1400px;
+            margin: 0 auto 40px;
+            padding: 0 30px;
+        }
+
+        .page-title h1 {
+            font-size: 36px;
+            font-weight: 300;
+            color: var(--dark-color);
+            letter-spacing: 2px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .page-title h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 80px;
+            height: 3px;
+            background: var(--primary-color);
+        }
+
+        .cart-count {
+            font-size: 16px;
+            color: #666;
+            margin-top: 15px;
+        }
+
+        /* Main Container */
+        .cart-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px 60px;
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        /* Cart Items Section */
+        .cart-items {
+            flex: 1;
+        }
+
+        .cart-item {
+            background: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            display: flex;
+            gap: 20px;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .cart-item:hover {
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .item-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--secondary-color);
+            flex-shrink: 0;
+        }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .item-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .item-title:hover {
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .item-code {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 10px;
+        }
+
+        .item-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .item-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .item-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .qty-btn {
+            width: 35px;
+            height: 35px;
+            border: none;
+            background: var(--secondary-color);
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            color: var(--dark-color);
+        }
+
+        .qty-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .qty-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .qty-input {
+            width: 50px;
+            text-align: center;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            outline: none;
+        }
+
+        .item-price {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+        }
+
+        .current-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .original-price {
+            font-size: 14px;
+            color: #999;
+            text-decoration: line-through;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: transparent;
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+
+        .remove-btn:hover {
+            color: var(--red-color);
+            transform: scale(1.2);
+        }
+
+        /* Empty Cart */
+        .empty-cart {
+            background: white;
+            padding: 60px 40px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .empty-cart i {
+            font-size: 80px;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-cart h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: var(--dark-color);
+        }
+
+        .empty-cart p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .continue-shopping {
+            display: inline-block;
+            padding: 14px 35px;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .continue-shopping:hover {
+            background: var(--dark-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Order Summary Sidebar */
+        .order-summary {
+            width: 400px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 30px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            margin-bottom: 20px;
+        }
+
+        .summary-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        /* Coupon Section */
+        .coupon-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .coupon-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .coupon-input input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .apply-btn {
+            padding: 12px 20px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .apply-btn:hover {
+            background: var(--dark-color);
+        }
+
+        .voucher-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .voucher-item {
+            padding: 12px 15px;
+            background: linear-gradient(135deg, #fff8e1 0%, #fff3cd 100%);
+            border: 2px dashed var(--primary-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .voucher-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+        }
+
+        .voucher-item input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .voucher-info {
+            flex: 1;
+        }
+
+        .voucher-code {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 14px;
+        }
+
+        .voucher-desc {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Price Summary */
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            font-size: 15px;
+        }
+
+        .price-row.subtotal {
+            color: #666;
+        }
+
+        .price-row.discount {
+            color: var(--green-color);
+        }
+
+        .price-row.shipping {
+            color: #666;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .price-row.total {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--dark-color);
+            padding-top: 15px;
+            border-top: 2px solid var(--secondary-color);
+        }
+
+        .price-row.total .amount {
+            color: var(--red-color);
+        }
+
+        /* Shipping Options */
+        .shipping-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .shipping-option {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .shipping-option:hover {
+            border-color: var(--primary-color);
+        }
+
+        .shipping-option input[type="radio"]:checked + .shipping-info {
+            color: var(--primary-color);
+        }
+
+        .shipping-option:has(input:checked) {
+            border-color: var(--primary-color);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .shipping-info {
+            flex: 1;
+        }
+
+        .shipping-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+        .shipping-time {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .shipping-price {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        /* Checkout Button */
+        .checkout-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+            color: var(--dark-color);
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            box-shadow: 0 6px 20px rgba(255, 193, 7, 0.3);
+            margin-bottom: 15px;
+        }
+
+        .checkout-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4);
+        }
+
+        .secure-checkout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .secure-checkout i {
+            color: var(--green-color);
+        }
+
+        /* Payment Methods */
+        .payment-methods {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .payment-methods img {
+            height: 30px;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .payment-methods img:hover {
+            opacity: 1;
+        }
+
+        /* Checkbox chọn sản phẩm */
+        .item-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary-color);
+            margin-right: 10px;
+            cursor: pointer;
+            align-self: center;
+        }
+        .cart-item {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        /* Hiệu ứng khi checkbox được chọn */
+        .cart-item.selected {
+            border: 2px solid #f4c542;
+            box-shadow: 0 0 18px rgba(255, 223, 0, 0.5);
+            transform: scale(1.02);
+        }
+
+        /* Khi bỏ chọn, hiệu ứng mượt mà */
+        .cart-item {
+            transition: all 0.25s ease;
+        }
+
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .order-summary {
+                width: 350px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .cart-container {
+                flex-direction: column;
+            }
+
+            .order-summary {
+                width: 100%;
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .cart-item {
+                flex-direction: column;
+            }
+
+            .item-image {
+                width: 100%;
+                height: 250px;
+            }
+
+            .item-actions {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .item-price {
+                align-items: flex-start;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .page-title h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<header class="header">
+    <div class="header-content">
+        <div class="brand">LUXURY<span>GEMS</span></div>
+        <div class="header-icons">
+            <i class="fas fa-search"></i>
+            <i class="far fa-heart"></i>
+            <i class="fas fa-shopping-cart">
+                <span class="cart-badge">3</span>
+            </i>
+            <i class="far fa-user"></i>
+        </div>
+    </div>
+</header>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <a href="#">Trang chủ</a> /
+    <span>Giỏ hàng</span>
+</div>
+
+<!-- Page Title -->
+<div class="page-title">
+    <h1>GIỎ HÀNG</h1>
+    <p class="cart-count">Bạn đang có <strong>3 sản phẩm</strong> trong giỏ hàng</p>
+</div>
+
+<!-- Cart Container -->
+<div class="cart-container">
+    <!-- Cart Items -->
+    <div class="cart-items">
+        <!-- Cart Item 1 -->
+        <div class="cart-item">
+            <button class="remove-btn" onclick="removeItem(this)">
+                <i class="fas fa-times"></i>
+            </button>
+            <input type="checkbox" class="item-checkbox" onchange="updateTotal()" />
+            <div class="item-image">
+                <img src="https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=300" alt="Lắc tay vàng">
+            </div>
+            <div class="item-details">
+                <h3 class="item-title">Lắc tay Đá ECZ Vàng 14K PNJ XM00Y000751</h3>
+                <p class="item-code">Mã SP: XM00Y000751</p>
+                <div class="item-meta">
+                    <span><i class="fas fa-ring"></i> Size: 17</span>
+                    <span><i class="fas fa-palette"></i> Màu: Vàng</span>
+                </div>
+                <div class="item-actions">
+                    <div class="quantity-control">
+                        <button class="qty-btn" onclick="decreaseQty(this)">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="text" class="qty-input" value="1" readonly>
+                        <button class="qty-btn" onclick="increaseQty(this)">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="item-price">
+                        <span class="current-price">13.732.000 ₫</span>
+                        <span class="original-price">15.500.000 ₫</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Item 2 -->
+        <div class="cart-item">
+            <button class="remove-btn" onclick="removeItem(this)">
+                <i class="fas fa-times"></i>
+            </button>
+            <input type="checkbox" class="item-checkbox" onchange="updateTotal()" />
+            <div class="item-image">
+                <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300" alt="Dây chuyền">
+            </div>
+            <div class="item-details">
+                <h3 class="item-title">Dây Chuyền Vàng 18K Ngọc Trai Cao Cấp</h3>
+                <p class="item-code">Mã SP: DC18K002345</p>
+                <div class="item-meta">
+                    <span><i class="fas fa-ruler"></i> Dài: 45cm</span>
+                    <span><i class="fas fa-gem"></i> Ngọc trai 8mm</span>
+                </div>
+                <div class="item-actions">
+                    <div class="quantity-control">
+                        <button class="qty-btn" onclick="decreaseQty(this)">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="text" class="qty-input" value="1" readonly>
+                        <button class="qty-btn" onclick="increaseQty(this)">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="item-price">
+                        <span class="current-price">8.950.000 ₫</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Item 3 -->
+        <div class="cart-item">
+            <button class="remove-btn" onclick="removeItem(this)">
+                <i class="fas fa-times"></i>
+            </button>
+            <input type="checkbox" class="item-checkbox" onchange="updateTotal()" />
+            <div class="item-image">
+                <img src="https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=300" alt="Bông tai">
+            </div>
+            <div class="item-details">
+                <h3 class="item-title">Bông Tai Kim Cương Luxury Pearl</h3>
+                <p class="item-code">Mã SP: BT14K008976</p>
+                <div class="item-meta">
+                    <span><i class="fas fa-gem"></i> Kim cương 0.5ct</span>
+                    <span><i class="fas fa-certificate"></i> GIA</span>
+                </div>
+                <div class="item-actions">
+                    <div class="quantity-control">
+                        <button class="qty-btn" onclick="decreaseQty(this)">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="text" class="qty-input" value="2" readonly>
+                        <button class="qty-btn" onclick="increaseQty(this)">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="item-price">
+                        <span class="current-price">25.000.000 ₫</span>
+                        <span class="original-price">28.400.000 ₫</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Summary -->
+    <aside class="order-summary">
+        <!-- Coupon Card -->
+        <div class="summary-card">
+            <h3 class="summary-title">Mã Giảm Giá</h3>
+            <div class="coupon-input">
+                <input type="text" placeholder="Nhập mã giảm giá" id="couponInput">
+                <button class="apply-btn" onclick="applyCoupon()">Áp dụng</button>
+            </div>
+            <div class="voucher-list">
+                <label class="voucher-item">
+                    <input type="radio" name="voucher">
+                    <div class="voucher-info">
+                        <div class="voucher-code">NEWMEMBER20</div>
+                        <div class="voucher-desc">Giảm 20% cho thành viên mới</div>
+                    </div>
+                </label>
+                <label class="voucher-item">
+                    <input type="radio" name="voucher">
+                    <div class="voucher-info">
+                        <div class="voucher-code">FREESHIP</div>
+                        <div class="voucher-desc">Miễn phí vận chuyển đơn > 10tr</div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Shipping Card -->
+        <div class="summary-card">
+            <h3 class="summary-title">Phương Thức Giao Hàng</h3>
+            <div class="shipping-options">
+                <label class="shipping-option">
+                    <input type="radio" name="shipping" checked>
+                    <div class="shipping-info">
+                        <div class="shipping-name">Giao hàng tiêu chuẩn</div>
+                        <div class="shipping-time">3-5 ngày làm việc</div>
+                    </div>
+                    <div class="shipping-price">Miễn phí</div>
+                </label>
+                <label class="shipping-option">
+                    <input type="radio" name="shipping">
+                    <div class="shipping-info">
+                        <div class="shipping-name">Giao hàng nhanh</div>
+                        <div class="shipping-time">1-2 ngày làm việc</div>
+                    </div>
+                    <div class="shipping-price">50.000 ₫</div>
+                </label>
+                <label class="shipping-option">
+                    <input type="radio" name="shipping">
+                    <div class="shipping-info">
+                        <div class="shipping-name">Giao hàng siêu tốc</div>
+                        <div class="shipping-time">Trong ngày</div>
+                    </div>
+                    <div class="shipping-price">100.000 ₫</div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Price Summary Card -->
+        <div class="summary-card">
+            <h3 class="summary-title">Tổng Đơn Hàng</h3>
+            <div class="price-row subtotal">
+                <span>Tạm tính</span>
+                <span id="subtotal">60.414.000 ₫</span>
+            </div>
+            <div class="price-row discount">
+                <span>Giảm giá</span>
+                <span id="discount">- 0 ₫</span>
+            </div>
+            <div class="price-row shipping">
+                <span>Phí vận chuyển</span>
+                <span id="shippingFee">Miễn phí</span>
+            </div>
+            <div class="price-row total">
+                <span>Tổng cộng</span>
+                <span class="amount" id="total">60.414.000 ₫</span>
+            </div>
+
+            <button class="checkout-btn" onclick="checkout()">
+                <i class="fas fa-lock"></i> Thanh Toán
+            </button>
+
+            <div class="secure-checkout">
+                <i class="fas fa-shield-alt"></i>
+                <span>Thanh toán bảo mật 100%</span>
+            </div>
+
+            <div class="payment-methods">
+                <i class="fab fa-cc-visa" style="font-size: 30px; color: #1434CB;"></i>
+                <i class="fab fa-cc-mastercard" style="font-size: 30px; color: #EB001B;"></i>
+                <i class="fas fa-mobile-alt" style="font-size: 30px; color: #0066CC;"></i>
+                <i class="fas fa-university" style="font-size: 30px; color: #d4af37;"></i>
+            </div>
+        </div>
+    </aside>
+</div>
+
+<script>
+    // Increase quantity
+    function increaseQty(btn) {
+        const input = btn.parentElement.querySelector('.qty-input');
+        let value = parseInt(input.value);
+        input.value = value + 1;
+        updateTotal();
+    }
+
+    // Decrease quantity
+    function decreaseQty(btn) {
+        const input = btn.parentElement.querySelector('.qty-input');
+        let value = parseInt(input.value);
+        if (value > 1) {
+            input.value = value - 1;
+            updateTotal();
+        }
+    }
+
+    // Remove item from cart
+    function removeItem(btn) {
+        const cartItem = btn.closest('.cart-item');
+        cartItem.style.transform = 'translateX(100%)';
+        cartItem.style.opacity = '0';
+
+        setTimeout(() => {
+            cartItem.remove();
+            updateTotal();
+            updateCartCount();
+            checkEmptyCart();
+        }, 300);
+    }
+
+    // Update cart count
+    function updateCartCount() {
+        const cartItems = document.querySelectorAll('.cart-item').length;
+        document.querySelector('.cart-badge').textContent = cartItems;
+        document.querySelector('.cart-count strong').textContent = cartItems + ' sản phẩm';
+    }
+
+    // Check if cart is empty
+    function checkEmptyCart() {
+        const cartItems = document.querySelectorAll('.cart-item').length;
+        if (cartItems === 0) {
+            const cartContainer = document.querySelector('.cart-items');
+            cartContainer.innerHTML = `
+                    <div class="empty-cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h3>Giỏ hàng trống</h3>
+                        <p>Bạn chưa có sản phẩm nào trong giỏ hàng</p>
+                        <a href="#" class="continue-shopping">
+                            <i class="fas fa-arrow-left"></i> Tiếp tục mua sắm
+                        </a>
+                    </div>
+                `;
+
+            // Hide order summary
+            document.querySelector('.order-summary').style.display = 'none';
+        }
+    }
+
+    // Calculate and update total
+    function updateTotal() {
+        let subtotal = 0;
+        const cartItems = document.querySelectorAll('.cart-item');
+
+        cartItems.forEach(item => {
+            const checkbox = item.querySelector('.item-checkbox');
+            if (checkbox && checkbox.checked) {
+                const priceText = item.querySelector('.current-price').textContent;
+                const price = parseInt(priceText.replace(/[^0-9]/g, ''));
+                const qty = parseInt(item.querySelector('.qty-input').value);
+                subtotal += price * qty;
+            }
+        });
+
+        // Update subtotal
+        document.getElementById('subtotal').textContent = subtotal.toLocaleString('vi-VN') + ' ₫';
+
+        // Lấy discount hiện tại
+        const discountText = document.getElementById('discount').textContent.replace(/[^0-9]/g, '');
+        const discount = parseInt(discountText || '0');
+
+        // Lấy shipping fee
+        const shippingRadio = document.querySelector('input[name="shipping"]:checked');
+        const shippingText = shippingRadio.parentElement.querySelector('.shipping-price').textContent;
+        let shippingFee = 0;
+        if (shippingText !== 'Miễn phí') {
+            shippingFee = parseInt(shippingText.replace(/[^0-9]/g, ''));
+        }
+
+        // Tổng cộng
+        const total = subtotal - discount + shippingFee;
+        document.getElementById('total').textContent = total.toLocaleString('vi-VN') + ' ₫';
+    }
+
+
+    // Apply coupon
+    function applyCoupon() {
+        const couponInput = document.getElementById('couponInput');
+        const couponCode = couponInput.value.trim().toUpperCase();
+
+        if (!couponCode) {
+            alert('Vui lòng nhập mã giảm giá!');
+            return;
+        }
+
+        // Simulate coupon validation
+        const validCoupons = {
+            'NEWMEMBER20': { type: 'percent', value: 20, desc: 'Giảm 20%' },
+            'FREESHIP': { type: 'shipping', value: 0, desc: 'Miễn phí ship' },
+            'SAVE500K': { type: 'fixed', value: 500000, desc: 'Giảm 500.000đ' }
+        };
+
+        if (validCoupons[couponCode]) {
+            alert('✓ Áp dụng mã giảm giá thành công: ' + validCoupons[couponCode].desc);
+            couponInput.value = '';
+
+            // Update discount
+            const subtotalText = document.getElementById('subtotal').textContent;
+            const subtotal = parseInt(subtotalText.replace(/[^0-9]/g, ''));
+
+            let discountAmount = 0;
+            if (validCoupons[couponCode].type === 'percent') {
+                discountAmount = subtotal * validCoupons[couponCode].value / 100;
+            } else if (validCoupons[couponCode].type === 'fixed') {
+                discountAmount = validCoupons[couponCode].value;
+            }
+
+            document.getElementById('discount').textContent = '- ' + discountAmount.toLocaleString('vi-VN') + ' ₫';
+            updateTotal();
+        } else {
+            alert('✗ Mã giảm giá không hợp lệ!');
+        }
+    }
+
+    // Shipping option change
+    document.querySelectorAll('input[name="shipping"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const shippingText = this.parentElement.querySelector('.shipping-price').textContent;
+            document.getElementById('shippingFee').textContent = shippingText;
+            updateTotal();
+        });
+    });
+
+    // Voucher radio change
+    document.querySelectorAll('input[name="voucher"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const voucherCode = this.parentElement.querySelector('.voucher-code').textContent;
+            document.getElementById('couponInput').value = voucherCode;
+            applyCoupon();
+        });
+    });
+
+    // Checkout button
+    function checkout() {
+        const selectedItems = document.querySelectorAll('.cart-item .item-checkbox:checked');
+        if (selectedItems.length === 0) {
+            alert('Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
+            return;
+        }
+
+        const total = document.getElementById('total').textContent;
+        alert('Bạn đã chọn ' + selectedItems.length + ' sản phẩm.\nTổng thanh toán: ' + total);
+
+        // Sau này có thể redirect
+        // window.location.href = '/checkout';
+    }
+
+
+    // Allow Enter key on coupon input
+    document.getElementById('couponInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            applyCoupon();
+        }
+    });
+
+    // Initialize total on page load
+    updateTotal();
+
+    // Lắng nghe sự thay đổi của checkbox để highlight sản phẩm
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('item-checkbox')) {
+            const item = e.target.closest('.cart-item');
+            if (e.target.checked) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+            updateTotal();
+        }
+    });
+</script>
+</body>
+</html>

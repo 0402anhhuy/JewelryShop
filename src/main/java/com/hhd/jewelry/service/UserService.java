@@ -1,0 +1,15 @@
+package com.hhd.jewelry.service;
+
+import com.hhd.jewelry.entity.User;
+
+import java.util.Optional;
+
+public interface UserService {
+    Optional<User> findByEmail(String email);
+    boolean existsByEmail(String email);
+    boolean existsByPhone(String phone);
+    boolean existsByEmailAndIdNot(String email, Integer id);
+    boolean existsByPhoneAndIdNot(String phone, Integer id);
+    void save(User user);
+    void delete(User user);
+}

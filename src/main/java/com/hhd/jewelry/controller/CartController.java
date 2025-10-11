@@ -1,6 +1,6 @@
 package com.hhd.jewelry.controller;
 
-import com.hhd.jewelry.DTO.CheckoutDTO;
+import com.hhd.jewelry.dto.CheckoutDto;
 import com.hhd.jewelry.entity.*;
 import com.hhd.jewelry.repository.*;
 import com.hhd.jewelry.service.ProductService;
@@ -44,13 +44,12 @@ public class CartController {
         model.addAttribute("discount", discount);
         model.addAttribute("total", total);
 
-        return "client/product/cart";
+        return "client_1/product/cart";
     }
 
     @PostMapping(value="/cart/add/{serialnumber}", params="ajax=1")
     @ResponseBody
-    public Map<String, Object> addToCartAjax(@PathVariable String serialnumber,
-                                             Authentication auth) {
+    public Map<String, Object> addToCartAjax(@PathVariable String serialnumber, Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) {
             return Map.of("ok", false, "reason", "unauthenticated");
         }
@@ -154,6 +153,7 @@ public class CartController {
         model.addAttribute("cartId", id);
         return "client/product/checkout";
     }
+
     @GetMapping("/checkout/{serialNumber}")
     public String getCheckout(Model model, @PathVariable("serialNumber") String serialNumber, Authentication auth){
         if  (auth != null && auth.isAuthenticated()) {model.addAttribute("user", userRepository.findByEmail(auth.getName()).orElse(null));};
@@ -171,7 +171,7 @@ public class CartController {
 
     @PostMapping("/checkout/confirm")
     @Transactional
-    public String confirmCheckout(@Valid @ModelAttribute CheckoutDTO form, BindingResult errors, Model model, Authentication auth, @ModelAttribute("carts") List<CartItem> carts){
+    public String confirmCheckout(@Valid @ModelAttribute CheckoutDto form, BindingResult errors, Model model, Authentication auth, @ModelAttribute("carts") List<CartItem> carts){
         // 1) Validate đúng các field trên form
         if (errors.hasErrors()) {
             // Bind lại vài biến view bạn đang dùng để render lại trang

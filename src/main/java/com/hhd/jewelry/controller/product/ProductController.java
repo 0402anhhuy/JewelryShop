@@ -1,4 +1,4 @@
-package com.hhd.jewelry.controller;
+package com.hhd.jewelry.controller.product;
 
 import com.hhd.jewelry.entity.Product;
 import com.hhd.jewelry.repository.ProductRepository;
@@ -25,23 +25,23 @@ public class ProductController {
     @GetMapping("/products")
     public String products(
             @RequestParam(value = "q", required = false) String q,
-            @RequestParam(value = "cat", required = false) List<Long> cat,
-            @RequestParam(value = "catName", required = false) List<String> catName,
+            @RequestParam(value = "category", required = false) List<Long> category,
+            @RequestParam(value = "catName", required = false) List<String> categoryName,
             @RequestParam(value = "priceRange", required = false) String priceRange,
             @RequestParam(value = "minPrice", required = false) BigDecimal minPrice,
             @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
             @RequestParam(value = "sort", defaultValue = "") String sort,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "12") int size,
-            Model model
-    ) {
-        boolean initial = isInitialLoad(q, cat, catName, priceRange, minPrice, maxPrice, sort, page);
+            Model model)
+    {
+        boolean initial = isInitialLoad(q, category, categoryName, priceRange, minPrice, maxPrice, sort, page);
 
         // 1) LUÔN chuẩn bị params để view không lỗi
         Map<String, Object> params = new LinkedHashMap<>();
         if (q != null) params.put("q", q);
-        if (cat != null) params.put("cat", cat);
-        if (catName != null) params.put("catName", catName);
+        if (category != null) params.put("category", category);
+        if (categoryName != null) params.put("categoryName", categoryName);
         if (priceRange != null) params.put("priceRange", priceRange);
         if (minPrice != null) params.put("minPrice", minPrice);
         if (maxPrice != null) params.put("maxPrice", maxPrice);
@@ -52,8 +52,8 @@ public class ProductController {
             // 2) Lần đầu: load toàn bộ (không phân trang)
             List<Product> products = productService.getAllProducts();
             model.addAttribute("products", products);
-            model.addAttribute("pageData", Page.empty()); // để th:if="${pageData.totalPages > 1}" không hiển thị
-            return "client/product/show"; // <-- ĐÚNG với cấu trúc bạn chụp
+            model.addAttribute("pageData", Page.empty());
+            return "client_1/product/show";
         }
 
         // 3) Có filter → Specification + Pageable
@@ -62,16 +62,14 @@ public class ProductController {
                 .orElse(ProductSpecs.priceBetween(minPrice, maxPrice));
 
         Specification<Product> spec = Specification.allOf(
-                ProductSpecs.keywordSafe(q),     // an toàn với name/displayName
-                ProductSpecs.categoryIds(cat),
-                ProductSpecs.categoryNames(catName),
+                ProductSpecs.keywordSafe(q),
+                ProductSpecs.categoryIds(category),
+                ProductSpecs.categoryNames(categoryName),
                 priceSpec
         );
 
         Pageable pageable = PageRequest.of(page, size, parseSort(sort));
-        Page<Product> result = (spec == null)
-                ? productRepository.findAll(pageable)
-                : productRepository.findAll(spec, pageable);
+        Page<Product> result = productRepository.findAll(spec, pageable);
 
         model.addAttribute("products", result.getContent());
         model.addAttribute("pageData", result);
@@ -80,8 +78,8 @@ public class ProductController {
 
     private boolean isInitialLoad(
             String q, List<Long> cat, List<String> catName, String priceRange,
-            BigDecimal minPrice, BigDecimal maxPrice, String sort, int page
-    ) {
+            BigDecimal minPrice, BigDecimal maxPrice, String sort, int page)
+    {
         return (q == null || q.isBlank())
                 && (cat == null || cat.isEmpty())
                 && (catName == null || catName.isEmpty())

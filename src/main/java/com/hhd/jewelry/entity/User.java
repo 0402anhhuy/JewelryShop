@@ -35,7 +35,7 @@ public class User {
     @Column(columnDefinition = "TEXT")
     private String address;
 
-    @Column(unique = true)
+    @Column(nullable = false)
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)

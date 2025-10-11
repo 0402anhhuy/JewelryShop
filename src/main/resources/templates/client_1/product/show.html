@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sản Phẩm Trang Sức</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary-color: #d4af37;
+            --secondary-color: #f8f5e6;
+            --accent-color: #2c2c2c;
+            --light-color: #ffffff;
+            --dark-color: #1a1a1a;
+            --text-color: #333333;
+            --border-radius: 12px;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f9f7f0 0%, #f0ece1 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: var(--light-color);
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark-color);
+            letter-spacing: 2px;
+        }
+
+        .brand span {
+            color: var(--primary-color);
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 500px;
+            margin: 0 40px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 45px 12px 20px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 30px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 25px;
+            font-size: 20px;
+        }
+
+        .header-icons i {
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .header-icons i:hover {
+            color: var(--primary-color);
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px 60px;
+            display: flex;
+            gap: 30px;
+        }
+
+        /* Sidebar Filter */
+        .sidebar {
+            width: 280px;
+            flex-shrink: 0;
+        }
+
+        .filter-section {
+            background: var(--light-color);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filter-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .clear-filters {
+            color: var(--primary-color);
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .filter-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-title i {
+            color: var(--primary-color);
+            font-size: 16px;
+        }
+
+        .category-list {
+            list-style: none;
+        }
+
+        .category-item {
+            padding: 10px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .category-item:last-child {
+            border-bottom: none;
+        }
+
+        .category-item:hover {
+            color: var(--primary-color);
+            padding-left: 5px;
+        }
+
+        .category-item input[type="checkbox"] {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .category-label {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-count {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* Price Range */
+        .price-range {
+            margin: 20px 0;
+        }
+
+        .price-inputs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .price-input {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            min-width: 0;
+            width: 100%;
+        }
+
+        .price-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .price-separator {
+            color: #999;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .price-slider {
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--primary-color));
+            border-radius: 5px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .price-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Material/Brand Pills */
+        .filter-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .pill {
+            padding: 8px 15px;
+            background: var(--secondary-color);
+            border: 1px solid transparent;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pill:hover {
+            border-color: var(--primary-color);
+            background: white;
+        }
+
+        .pill.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Apply Filter Button */
+        .apply-filter-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary-color), #f4d47c);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .apply-filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Product Section */
+        .product-section {
+            flex: 1;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 300;
+            color: var(--dark-color);
+            letter-spacing: 2px;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: var(--primary-color);
+            margin-top: 10px;
+        }
+
+        .result-info {
+            color: #666;
+            font-size: 15px;
+        }
+
+        .sort-dropdown {
+            padding: 10px 20px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            outline: none;
+            background: white;
+        }
+
+        .sort-dropdown:hover {
+            border-color: var(--primary-color);
+        }
+
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(212, 175, 55, 0.2);
+        }
+
+        .product-image {
+            height: 320px;
+            background: linear-gradient(135deg, #faf8f3 0%, #f5f1e8 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.1);
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: white;
+            color: var(--primary-color);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .product-badge::before {
+            content: '✨';
+            margin-right: 4px;
+        }
+
+        .quick-actions {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .product-card:hover .quick-actions {
+            opacity: 1;
+        }
+
+        .action-btn {
+            width: 45px;
+            height: 45px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s;
+            font-size: 16px;
+            color: var(--dark-color);
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .product-info {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .product-category {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .product-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: var(--dark-color);
+            min-height: 40px;
+            line-height: 1.4;
+        }
+
+        .product-price {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .current-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .original-price {
+            font-size: 14px;
+            color: #bbb;
+            text-decoration: line-through;
+        }
+
+        .product-rating {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-size: 13px;
+            color: #ffa500;
+            margin-bottom: 10px;
+        }
+
+        .product-sold {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .add-to-cart-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .add-to-cart-btn:hover {
+            background: var(--dark-color);
+            transform: translateY(-2px);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 50px;
+        }
+
+        .page-btn {
+            width: 45px;
+            height: 45px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .page-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .page-btn.active {
+            background: linear-gradient(135deg, var(--primary-color), #f4d47c);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .page-dots {
+            color: #ccc;
+            font-size: 18px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 992px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .filter-section {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .search-box {
+                margin: 0;
+                max-width: 100%;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<header class="header">
+    <div class="header-content">
+        <div class="brand">LUXURY<span>GEMS</span></div>
+        <div class="search-box">
+            <input type="text" placeholder="Tìm kiếm sản phẩm...">
+        </div>
+        <div class="header-icons">
+            <i class="far fa-heart"></i>
+            <i class="fas fa-shopping-cart"></i>
+            <i class="far fa-user"></i>
+        </div>
+    </div>
+</header>
+
+<!-- Main Container -->
+<div class="main-container">
+    <!-- Sidebar Filter -->
+    <aside class="sidebar">
+        <!-- Filter Header -->
+        <div class="filter-section">
+            <div class="filter-header">
+                <h3><i class="fas fa-filter"></i> Bộ Lọc</h3>
+                <span class="clear-filters">Xóa tất cả</span>
+            </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-list"></i>
+                Danh Mục
+            </div>
+            <ul class="category-list">
+                <li class="category-item">
+                    <label class="category-label">
+                        <input type="checkbox" checked>
+                        <span>Nhẫn</span>
+                    </label>
+                    <span class="category-count">156</span>
+                </li>
+                <li class="category-item">
+                    <label class="category-label">
+                        <input type="checkbox">
+                        <span>Vòng tay</span>
+                    </label>
+                    <span class="category-count">89</span>
+                </li>
+                <li class="category-item">
+                    <label class="category-label">
+                        <input type="checkbox">
+                        <span>Bông tai</span>
+                    </label>
+                    <span class="category-count">124</span>
+                </li>
+                <li class="category-item">
+                    <label class="category-label">
+                        <input type="checkbox">
+                        <span>Dây chuyền</span>
+                    </label>
+                    <span class="category-count">98</span>
+                </li>
+                <li class="category-item">
+                    <label class="category-label">
+                        <input type="checkbox">
+                        <span>Đồng hồ</span>
+                    </label>
+                    <span class="category-count">67</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Price Range -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-dollar-sign"></i>
+                Khoảng Giá
+            </div>
+            <div class="price-range">
+                <div class="price-inputs">
+                    <label>
+                        <input type="text" class="price-input" placeholder="0 đ" value="0 đ">
+                    </label>
+                    <span class="price-separator">—</span>
+                    <label>
+                        <input type="text" class="price-input" placeholder="50tr" value="50.000.000 đ">
+                    </label>
+                </div>
+                <label>
+                    <input type="range" class="price-slider" min="0" max="50000000" value="25000000">
+                </label>
+            </div>
+        </div>
+
+        <!-- Material -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-gem"></i>
+                Chất Liệu
+            </div>
+            <div class="filter-pills">
+                <span class="pill active">Vàng 18K</span>
+                <span class="pill">Vàng 14K</span>
+                <span class="pill">Vàng 10K</span>
+                <span class="pill">Bạc 925</span>
+                <span class="pill">Kim cương</span>
+                <span class="pill">Ngọc trai</span>
+            </div>
+        </div>
+
+        <!-- Brand/Collection -->
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-crown"></i>
+                Bộ Sưu Tập
+            </div>
+            <div class="filter-pills">
+                <span class="pill">Wedding</span>
+                <span class="pill">Classic</span>
+                <span class="pill">Modern</span>
+                <span class="pill">Vintage</span>
+                <span class="pill">Limited</span>
+            </div>
+        </div>
+
+        <button class="apply-filter-btn">
+            <i class="fas fa-check"></i> Áp Dụng Bộ Lọc
+        </button>
+    </aside>
+
+    <!-- Product Section -->
+    <section class="product-section">
+        <!-- Section Header -->
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Sản Phẩm</h2>
+                <p class="result-info">Hiển thị 1-12 trong 156 sản phẩm</p>
+            </div>
+            <label>
+                <select class="sort-dropdown">
+                    <option>Mới nhất</option>
+                    <option>Giá: Thấp → Cao</option>
+                    <option>Giá: Cao → Thấp</option>
+                    <option>Bán chạy nhất</option>
+                    <option>Đánh giá cao</option>
+                </select>
+            </label>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="products-grid">
+            <!-- Lặp qua danh sách sản phẩm -->
+            <div class="product-card" th:each="product : ${products}">
+                <div class="product-image">
+                    <!-- Badge nếu có -->
+<!--                    <span class="product-badge" th:if="${product.isNew}" th:text="'NEW'"></span>-->
+
+                    <!-- Ảnh sản phẩm -->
+                    <img th:src="${product.imageUrls[0]}" th:alt="${product.name}" alt="Product">
+
+                    <!-- Nút hành động -->
+                    <div class="quick-actions">
+                        <a th:href="@{/products/detail/{serialNumber}(serialNumber=${product.serialNumber})}"
+                           class="action-btn" title="Chi tiết">
+                            <i class="far fa-eye"></i>
+                        </a>
+                        <button class="action-btn" title="Yêu thích">
+                            <i class="far fa-heart"></i>
+                        </button>
+                    </div>
+
+                </div>
+
+                <div class="product-info">
+                    <!-- Danh mục -->
+                    <p class="product-category" th:text="${product.category.name}">Danh mục</p>
+
+                    <!-- Tên sản phẩm -->
+                    <h3 class="product-title" th:text="${product.name}">Tên sản phẩm</h3>
+
+                    <!-- Đánh giá -->
+                    <div class="product-rating">
+                        <!-- Dưới đây là ví dụ: hiển thị số sao tĩnh. Nếu muốn render sao động thì mình có thể viết JS hoặc template riêng -->
+                        <i class="fas fa-star" th:each="i : ${#numbers.sequence(1, T(java.lang.Math).floor(product.id))}"></i>
+                        <i class="far fa-star" th:each="i : ${#numbers.sequence(T(java.lang.Math).floor(product.id) + 1, 5)}"></i>
+                        <span th:text="'(' + ${product.id} + ')'">(4.5)</span>
+                    </div>
+
+                    <!-- Giá -->
+                    <div class="product-price">
+                <span class="current-price" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                    6.750.000 đ
+                </span>
+                        <span class="original-price" th:if="${product.price != null}"
+                              th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                    8.000.000 đ
+                </span>
+                    </div>
+
+                    <!-- Số lượng đã bán -->
+                    <p class="product-sold" th:text="${product.order} + ' đã bán'">56 đã bán</p>
+
+                    <!-- Nút thêm giỏ hàng -->
+                    <button class="add-to-cart-btn">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Thêm vào giỏ</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <button class="page-btn">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">4</button>
+            <span class="page-dots">...</span>
+            <button class="page-btn">13</button>
+            <button class="page-btn">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </section>
+</div>
+
+<script>
+    // Filter Pills Toggle
+    document.querySelectorAll('.pill').forEach(pill => {
+        pill.addEventListener('click', function() {
+            this.classList.toggle('active');
+        });
+    });
+
+    // Category Checkbox Interaction
+    document.querySelectorAll('.category-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            if(e.target.type !== 'checkbox') {
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+            }
+        });
+    });
+
+    // Clear All Filters
+    document.querySelector('.clear-filters').addEventListener('click', function() {
+        document.querySelectorAll('.category-item input[type="checkbox"]').forEach(cb => {
+            cb.checked = false;
+        });
+        document.querySelectorAll('.pill.active').forEach(pill => {
+            pill.classList.remove('active');
+        });
+        document.querySelectorAll('.price-input').forEach(input => {
+            input.value = input.placeholder;
+        });
+    });
+
+    // Pagination
+    document.querySelectorAll('.page-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if(!this.querySelector('i')) {
+                document.querySelector('.page-btn.active').classList.remove('active');
+                this.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    });
+
+    // Add to Cart Animation
+    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-check"></i> Đã thêm!';
+            this.style.background = '#28a745';
+
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.style.background = '';
+            }, 1500);
+        });
+    });
+
+    // Quick View & Wishlist Buttons
+    document.querySelectorAll('.action-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            if(icon.classList.contains('fa-heart')) {
+                icon.classList.toggle('far');
+                icon.classList.toggle('fas');
+
+                if(icon.classList.contains('fas')) {
+                    this.style.color = '#e74c3c';
+                } else {
+                    this.style.color = '';
+                }
+            }
+        });
+    });
+
+    // Price Range Slider
+    const priceSlider = document.querySelector('.price-slider');
+    const maxPriceInput = document.querySelectorAll('.price-input')[1];
+
+    priceSlider.addEventListener('input', function() {
+        const value = parseInt(this.value).toLocaleString('vi-VN');
+        maxPriceInput.value = value;
+    });
+
+    // Sort Dropdown
+    document.querySelector('.sort-dropdown').addEventListener('change', function() {
+        console.log('Sắp xếp theo:', this.value);
+        // Add your sorting logic here
+    });
+
+    // Apply Filter Button
+    document.querySelector('.apply-filter-btn').addEventListener('click', function() {
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lọc...';
+
+        setTimeout(() => {
+            this.innerHTML = '<i class="fas fa-check"></i> Áp Dụng Bộ Lọc';
+            window.scrollTo({ top: 300, behavior: 'smooth' });
+        }, 800);
+    });
+</script>
+</body>
+</html>

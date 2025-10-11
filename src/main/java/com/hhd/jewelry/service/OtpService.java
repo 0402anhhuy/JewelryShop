@@ -21,18 +21,22 @@ public class OtpService {
         this.repo = repo; this.email = email;
     }
 
-    public void sendOtp(String emailAddr){
+    public void sendOtp(String emailAddr) {
         String code = String.format("%06d", rnd.nextInt(1_000_000));
+
         OtpToken t = new OtpToken();
         t.setEmail(emailAddr);
         t.setCode(code);
         t.setExpiresAt(LocalDateTime.now().plusMinutes(ttlMinutes));
         repo.save(t);
 
-        email.send(emailAddr,
+        email.send(
+                emailAddr,
                 "Mã xác thực đăng ký (OTP)",
-                "Mã OTP của bạn là: " + code + " (hết hạn trong " + ttlMinutes + " phút).");
+                "Mã OTP của bạn là: " + code + " (hết hạn trong " + ttlMinutes + " phút)."
+        );
     }
+
 
     public boolean verify(String emailAddr, String code){
         var tk = repo.findTopByEmailAndUsedIsFalseOrderByIdDesc(emailAddr).orElse(null);
