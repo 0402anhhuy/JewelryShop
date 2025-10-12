@@ -1,4 +1,3 @@
-
 export function initAddressPicker({
                                       provinceEl, wardEl, streetEl, addressEl,
                                       groupDistrict, groupWard,
@@ -37,7 +36,6 @@ export function initAddressPicker({
                 const r = await fetch(u, { cache: 'no-store', signal });
                 if (r.ok) return await r.json();
             } catch (_) {
-                /* try next */
             }
         }
         throw new Error('All endpoints failed');

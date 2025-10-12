@@ -10,25 +10,19 @@ import com.hhd.jewelry.repository.ProductRepository;
 import com.hhd.jewelry.repository.UserRepository;
 import com.hhd.jewelry.service.ProductService;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final UserRepository  userRepository;
-
-
-    public ProductServiceImpl(ProductRepository productRepository, CartRepository cartRepository, CartItemRepository cartItemRepository, UserRepository userRepository) {
-        this.productRepository = productRepository;
-        this.cartRepository = cartRepository;
-        this.cartItemRepository = cartItemRepository;
-        this.userRepository = userRepository;
-    }
 
     @Override
     public List<Product> getAllProducts() {

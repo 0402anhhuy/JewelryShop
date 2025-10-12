@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta th:name="_csrf" th:content="${_csrf.token}"/>
+    <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Tài Khoản Của Tôi - LuxuryGems</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -72,6 +74,7 @@
         .header-icons i {
             cursor: pointer;
             transition: color 0.3s;
+            color: #000;
         }
 
         .header-icons i:hover {
@@ -169,7 +172,7 @@
             border-radius: 20px;
             font-size: 11px;
             font-weight: 700;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
 
         /* Menu */
@@ -572,6 +575,35 @@
             margin-bottom: 10px;
         }
 
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .form-input:read-only {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+            border-color: #e9ecef;
+        }
+
+        .form-input:not(:read-only) {
+            background-color: #fff;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+        }
+
+        .btn {
+            transition: all 0.3s ease;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         /* Wishlist Grid */
         .wishlist-grid {
             display: grid;
@@ -609,6 +641,23 @@
 
         .wishlist-item:hover .wishlist-image img {
             transform: scale(1.1);
+        }
+
+        .form-input:read-only, .form-select:disabled {
+            background-color: #f8f9fa;
+            border-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .form-input:not(:read-only) {
+            background-color: #fff;
+            border-color: #007bff;
+        }
+
+        .form-group label small {
+            font-size: 0.8em;
+            font-weight: normal;
         }
 
         .remove-wishlist {
@@ -752,6 +801,137 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            min-width: 300px;
+            padding: 16px 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .toast.hiding {
+            animation: slideOut 0.3s ease forwards;
+        }
+
+        .toast::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+        }
+
+        .toast.success::before {
+            background: #28a745;
+        }
+
+        .toast.error::before {
+            background: #dc3545;
+        }
+
+        .toast.info::before {
+            background: #17a2b8;
+        }
+
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 14px;
+            color: white;
+        }
+
+        .toast.success .toast-icon {
+            background: #28a745;
+        }
+
+        .toast.error .toast-icon {
+            background: #dc3545;
+        }
+
+        .toast.info .toast-icon {
+            background: #17a2b8;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 2px;
+            color: var(--dark-color);
+        }
+
+        .toast-message {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.3s;
+        }
+
+        .toast-close:hover {
+            color: #333;
+        }
+
         /* Empty State */
         .empty-state {
             text-align: center;
@@ -839,30 +1019,29 @@
 <!-- Header -->
 <header class="header">
     <div class="header-content">
-        <a href="#" class="brand">LUXURY<span>GEMS</span></a>
+        <a th:href="@{/}" class="brand">LUXURY<span>GEMS</span></a>
         <div class="header-icons">
-            <i class="fas fa-search"></i>
-            <i class="far fa-heart"></i>
-            <i class="fas fa-shopping-cart"></i>
-            <i class="far fa-user"></i>
+            <a th:href="@{/products}" aria-label="Products" title="Products"><i class="fas fa-box-open"></i></a>
+            <a th:href="@{/cart}" aria-label="Cart" title="Cart"><i class="fas fa-shopping-bag"></i></a>
         </div>
     </div>
 </header>
 
+<div id="toastContainer" class="toast-container"></div>
 <!-- Account Container -->
 <div class="account-container">
     <!-- Sidebar -->
     <aside class="account-sidebar">
         <div class="user-profile">
             <div class="user-avatar">
-                NV
+                <span th:text="${user?.fullName != null ? #strings.substring(user.fullName, 0, 2) : 'US'}">NV</span>
                 <div class="avatar-edit">
                     <i class="fas fa-camera"></i> Đổi ảnh
                 </div>
             </div>
-            <div class="user-name">Nguyễn Văn A</div>
-            <div class="user-email">nguyenvana@email.com</div>
-            <span class="user-badge"><i class="fas fa-crown"></i> VIP MEMBER</span>
+            <div class="user-name" th:text="${user?.fullName ?: 'Người dùng'}">Nguyễn Văn A</div>
+            <div class="user-email" th:text="${user?.email ?: 'Chưa có email'}">nguyenvana@email.com</div>
+            <span class="user-badge" th:if="${user?.role}">ADMIN</span>
         </div>
 
         <ul class="account-menu">
@@ -891,13 +1070,13 @@
                 </a>
             </li>
             <li class="menu-item">
-                <a href="/wishlist" class="menu-link" data-section="wishlist">
+                <a href="#" class="menu-link" data-section="wishlist">
                     <i class="fas fa-heart"></i>
                     <span>Sản phẩm yêu thích</span>
                 </a>
             </li>
             <li class="menu-item">
-                <a href="#" class="menu-link logout" onclick="return confirm('Bạn có chắc muốn đăng xuất?')">
+                <a href="#" class="menu-link logout" th:href="@{/logout}" onclick="return confirm('Bạn có chắc muốn đăng xuất?')">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Đăng xuất</span>
                 </a>
@@ -911,62 +1090,62 @@
         <section class="content-section active" id="profile">
             <div class="section-header">
                 <h2 class="section-title">Thông Tin Cá Nhân</h2>
-                <p class="section-subtitle">Quản lý thông tin cá nhân của bạn</p>
             </div>
-
-            <!-- Success / Error Messages -->
-            <div th:if="${saved}" class="alert alert-success" th:text="${saved}"></div>
-            <div th:if="${#fields.hasErrors()}" class="alert alert-danger">
-                <ul>
-                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
-                </ul>
-            </div>
-
-            <form th:action="@{/account}" th:object="${form}" method="post">
-
+            <form th:action="@{/account}" th:object="${form}" method="post" id="profileForm">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                 <div class="form-group">
                     <label class="form-label">Họ và tên</label>
-                    <input type="text" th:field="*{fullname}" class="form-input" placeholder="Họ và tên">
+                    <input type="text" th:field="*{fullname}" class="form-input" placeholder="Họ và tên" readonly id="fullnameInput">
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Email</label>
-                    <input type="email" th:field="*{email}" class="form-input" readonly>
+                    <input type="email" th:field="*{email}" class="form-input" placeholder="Email" readonly id="emailInput">
+                    <!-- Hiển thị lỗi cụ thể nếu có -->
+                    <div th:if="${param.emailError != null}" class="error-message" th:text="${param.emailError}"></div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Số điện thoại</label>
-                        <input type="tel" th:field="*{phone}" class="form-input" placeholder="Nhập số điện thoại">
+                        <input type="tel" th:field="*{phone}" class="form-input" placeholder="Nhập số điện thoại" readonly id="phoneInput">
+                        <div th:if="${param.phoneError != null}" class="error-message" th:text="${param.phoneError}"></div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Ngày sinh</label>
-                        <input type="date" th:field="*{dateOfBirth}" class="form-input">
+                        <input type="date" th:field="*{dateOfBirth}" class="form-input" readonly id="dobInput">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Giới tính</label>
-                        <select th:field="*{gender}" class="form-select">
-                            <option value="" disabled>-- Chọn giới tính --</option>
-                            <option value="Nam">Nam</option>
-                            <option value="Nữ">Nữ</option>
-                            <option value="Khác">Khác</option>
+                        <select th:field="*{gender}" class="form-input" readonly id="genderSelect" style="appearance: none; background-color: #f8f9fa;">
+                            <option value="">Chưa cập nhật</option>
+                            <option value="MALE">Nam</option>
+                            <option value="FEMALE">Nữ</option>
+                            <option value="OTHER">Khác</option>
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Thành viên từ</label>
-                        <input type="text" class="form-input"
-                               th:value="${#temporals.format(user.createdAt, 'dd/MM/yyyy')}" disabled>
+                        <input type="text" class="form-input" th:value="${user?.createdAt != null ? #temporals.format(user.createdAt, 'dd/MM/yyyy') : 'N/A'}" readonly>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Lưu thay đổi
-                </button>
+                <div class="form-actions" id="saveActions">
+                    <button type="button" id="editProfileBtn" class="btn btn-secondary">
+                        <i class="fas fa-edit"></i> Chỉnh sửa
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="saveBtn" disabled style="display: none;">
+                        <i class="fas fa-save"></i> Lưu thay đổi
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="cancelEditBtn" style="display: none;">
+                        <i class="fas fa-times"></i> Hủy
+                    </button>
+                </div>
             </form>
         </section>
 
@@ -974,7 +1153,6 @@
         <section class="content-section" id="orders">
             <div class="section-header">
                 <h2 class="section-title">Đơn Hàng Của Tôi</h2>
-                <p class="section-subtitle">Theo dõi và quản lý đơn hàng</p>
             </div>
 
             <div class="orders-tabs">
@@ -986,29 +1164,44 @@
                 <button class="tab-btn">Đã hủy</button>
             </div>
 
-            <div class="orders-list">
-                <!-- Order 1 -->
-                <div class="order-card">
+            <div class="orders-list" th:if="${not #lists.isEmpty(user.orders)}">
+                <!-- Order List -->
+                <div class="order-card" th:each="order : ${user.orders}">
                     <div class="order-header">
                         <div>
-                            <div class="order-id">Đơn hàng #LG20241015001</div>
-                            <small style="color: #999;">Đặt ngày 15/10/2024</small>
+                            <div class="order-id" th:text="'Đơn hàng #' + ${order.id}">Đơn hàng #LG20241015001</div>
+                            <small style="color: #999;" th:text="'Đặt ngày ' + ${#temporals.format(order.createdAt, 'dd/MM/yyyy')}">Đặt ngày 15/10/2024</small>
                         </div>
-                        <span class="order-status status-shipping">Đang giao hàng</span>
+                        <span class="order-status" th:classappend="'status-' + ${order.status.name().toLowerCase()}"
+                              th:text="${order.statusDisplay}">Đang giao hàng
+                        </span>
                     </div>
-                    <div class="order-items">
+                    <div class="order-items" th:each="item : ${order.items}">
                         <div class="order-item-image">
-                            <img src="https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=200" alt="Product">
+                            <img th:if="${not #lists.isEmpty(item.product.imageUrls)}"
+                                 th:src="${item.product.imageUrls[0]}"
+                                 alt="Product"
+                                 style="width: 60px; height: 60px; object-fit: cover;">
+                            <div th:unless="${not #lists.isEmpty(item.product.imageUrls)}"
+                                 style="width: 60px; height: 60px; background: #f5f5f5; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-image" style="color: #ccc;"></i>
+                            </div>
                         </div>
                         <div class="order-item-info">
-                            <div class="order-item-name">Lắc tay Đá ECZ Vàng 14K</div>
-                            <div class="order-item-details">Size: 17 | Số lượng: 1</div>
+                            <div class="order-item-name" th:text="${item.product.name}">Lắc tay Đá ECZ Vàng 14K</div>
+                            <div class="order-item-details" th:text="'Số lượng: ' + ${item.quantity}">Số lượng: 1</div>
+                            <div class="order-item-price" th:if="${item.totalPrice}"
+                                 th:text="'Thành tiền: ' + ${#numbers.formatDecimal(item.totalPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                Thành tiền: 13.732.000 ₫
+                            </div>
                         </div>
                     </div>
                     <div class="order-footer">
-                        <div class="order-total">Tổng: 13.732.000 ₫</div>
+                        <div class="order-total" th:text="'Tổng: ' + ${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                            Tổng: 13.732.000 ₫
+                        </div>
                         <div class="order-actions">
-                            <button class="btn btn-primary btn-sm">
+                            <button class="btn btn-primary btn-sm" th:if="${order.status}">
                                 <i class="fas fa-truck"></i> Theo dõi
                             </button>
                             <button class="btn btn-secondary btn-sm">
@@ -1018,50 +1211,57 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Empty State for Orders -->
+            <div class="empty-state" th:if="${#lists.isEmpty(user.orders)}">
+                <i class="fas fa-shopping-bag"></i>
+                <h3>Chưa có đơn hàng nào</h3>
+                <p>Hãy khám phá và mua sắm những món trang sức ưng ý của bạn</p>
+                <button class="btn btn-primary" onclick="window.location.href='/products'">
+                    Mua sắm ngay
+                </button>
+            </div>
         </section>
-        <!-- Addresses Section -->
+
+        <!-- Addresses Section - Thay thế phần cũ -->
         <section class="content-section" id="addresses">
             <div class="section-header">
                 <h2 class="section-title">Địa Chỉ Giao Hàng</h2>
-                <p class="section-subtitle">Quản lý địa chỉ nhận hàng của bạn</p>
             </div>
 
             <div class="address-grid">
-                <!-- Default Address -->
-                <div class="address-card default">
-                    <span class="default-badge"><i class="fas fa-check"></i> Mặc định</span>
-                    <div class="address-name">Nguyễn Văn A</div>
-                    <div class="address-phone"><i class="fas fa-phone"></i> 0912 345 678</div>
+                <!-- Loop through addresses -->
+                <div class="address-card" th:each="address : ${addresses}" th:classappend="${address.isDefault} ? 'default' : ''">
+                <span class="default-badge" th:if="${address.isDefault}">
+                    <i class="fas fa-check"></i> Mặc định
+                </span>
+                    <div class="address-name" th:text="${address.receiverName}">Nguyễn Văn A</div>
+                    <div class="address-phone">
+                        <i class="fas fa-phone"></i>
+                        <span th:text="${address.phone}">0912 345 678</span>
+                    </div>
                     <div class="address-detail">
-                        123 Đường ABC, Phường Tân Bình, Quận 1,<br>
-                        Thành phố Hồ Chí Minh
-                    </div>
+                        <span th:text="${address.addressLine}">123 Đường ABC</span>
+                        <span th:if="${address.ward}" th:text="', ' + ${address.ward}">, Phường Tân Bình</span>
+                        <span th:if="${address.district}" th:text="', ' + ${address.district}">, Quận 1</span>
+                        <span th:if="${address.city}" th:text="', ' + ${address.city}">, TP. Hồ Chí Minh</span>
+                    </div>.addressType == 'office'} ? 'fa-building' : 'fa-map-marker-alt')">
+                    <span th:text="${address.addressType == 'home'} ? 'Nhà riêng' :
+                              (${address.addressType == 'office'} ? 'Văn phòng' : 'Khác')">Nhà riêng
+                    </span>
                     <div class="address-actions">
-                        <button class="btn btn-sm btn-primary" onclick="editAddress(1)">
-                            <i class="fas fa-edit"></i> Sửa
-                        </button>
-                        <button class="btn btn-sm btn-secondary" onclick="deleteAddress(1)">
-                            <i class="fas fa-trash"></i> Xóa
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Address 2 -->
-                <div class="address-card">
-                    <div class="address-name">Văn phòng</div>
-                    <div class="address-phone"><i class="fas fa-phone"></i> 0987 654 321</div>
-                    <div class="address-detail">
-                        456 Đường XYZ, Phường An Phú, Quận 2,<br>
-                        Thành phố Hồ Chí Minh
-                    </div>
-                    <div class="address-actions">
-                        <button class="btn btn-sm" style="background: white; border: 1px solid var(--border-color); color: var(--primary-color);" onclick="setDefaultAddress(2)">
+                        <button class="btn btn-sm"
+                                th:if="${!address.isDefault}"
+                                style="background: white; border: 1px solid var(--border-color); color: var(--primary-color);"
+                                th:onclick="'setDefaultAddress(' + ${address.id} + ')'">
                             <i class="fas fa-star"></i> Đặt mặc định
                         </button>
-                        <button class="btn btn-sm btn-primary" onclick="editAddress(2)">
+                        <button class="btn btn-sm btn-primary"
+                                th:onclick="'editAddress(' + ${address.id} + ')'">
                             <i class="fas fa-edit"></i> Sửa
                         </button>
-                        <button class="btn btn-sm btn-secondary" onclick="deleteAddress(2)">
+                        <button class="btn btn-sm btn-secondary"
+                                th:onclick="'deleteAddress(' + ${address.id} + ')'">
                             <i class="fas fa-trash"></i> Xóa
                         </button>
                     </div>
@@ -1075,157 +1275,38 @@
             </div>
         </section>
 
-        <!-- Change Password Section -->
-        <section class="content-section" id="password">
-            <div class="section-header">
-                <h2 class="section-title">Đổi Mật Khẩu</h2>
-                <p class="section-subtitle">Cập nhật mật khẩu để bảo mật tài khoản</p>
-            </div>
-
-            <form onsubmit="changePassword(event)" style="max-width: 600px;">
-                <div class="form-group">
-                    <label class="form-label">Mật khẩu hiện tại <span style="color: var(--danger-color);">*</span></label>
-                    <div style="position: relative;">
-                        <input type="password" id="currentPassword" class="form-input" placeholder="Nhập mật khẩu hiện tại" required style="padding-right: 45px;">
-                        <button type="button" onclick="togglePassword('currentPassword')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer; color: var(--gray-text);">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Mật khẩu mới <span style="color: var(--danger-color);">*</span></label>
-                    <div style="position: relative;">
-                        <input type="password" id="newPassword" class="form-input" placeholder="Nhập mật khẩu mới" required minlength="8" style="padding-right: 45px;">
-                        <button type="button" onclick="togglePassword('newPassword')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer; color: var(--gray-text);">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                    <small style="color: #999; display: block; margin-top: 5px;">
-                        <i class="fas fa-info-circle"></i> Mật khẩu phải có ít nhất 8 ký tự
-                    </small>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Xác nhận mật khẩu mới <span style="color: var(--danger-color);">*</span></label>
-                    <div style="position: relative;">
-                        <input type="password" id="confirmPassword" class="form-input" placeholder="Nhập lại mật khẩu mới" required minlength="8" style="padding-right: 45px;">
-                        <button type="button" onclick="togglePassword('confirmPassword')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer; color: var(--gray-text);">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div style="background: #fff8e1; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid var(--warning-color);">
-                    <strong style="color: #856404;"><i class="fas fa-shield-alt"></i> Lưu ý bảo mật:</strong>
-                    <ul style="margin: 10px 0 0 20px; color: #856404; font-size: 14px; line-height: 1.8;">
-                        <li>Sử dụng mật khẩu mạnh với chữ hoa, chữ thường, số và ký tự đặc biệt</li>
-                        <li>Không sử dụng lại mật khẩu cũ</li>
-                        <li>Không chia sẻ mật khẩu với bất kỳ ai</li>
-                    </ul>
-                </div>
-
-                <div style="display: flex; gap: 12px;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-key"></i> Đổi mật khẩu
-                    </button>
-                    <button type="reset" class="btn btn-secondary">
-                        <i class="fas fa-redo"></i> Làm mới
-                    </button>
-                </div>
-            </form>
-        </section>
-
         <!-- Wishlist Section -->
         <section class="content-section" id="wishlist">
             <div class="section-header">
                 <h2 class="section-title">Sản Phẩm Yêu Thích</h2>
                 <p class="section-subtitle">Danh sách những món trang sức bạn đã lưu lại</p>
+                <div th:if="${wishlistItems.hasContent}" class="wishlist-count">
+                    Tổng cộng: <span th:text="${wishlistItems.totalElements}"></span> sản phẩm
+                </div>
             </div>
 
-            <div class="wishlist-grid">
-                <!-- Wishlist Item 1 -->
-                <div class="wishlist-item">
+            <div class="wishlist-grid" th:if="${wishlistItems.hasContent}">
+                <div class="wishlist-item" th:each="wishlistItem : ${wishlistItems}">
                     <div class="wishlist-image">
-                        <img src="https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=400" alt="Product">
-                        <button class="remove-wishlist" onclick="removeFromWishlist(1)">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="wishlist-info">
-                        <div class="wishlist-name">Nhẫn Kim cương Vàng trắng 14K</div>
-                        <div class="wishlist-price">15.750.000 đ</div>
-                        <div class="wishlist-actions">
-                            <button class="btn btn-primary btn-sm" style="flex: 1;" onclick="addToCart(1)">
-                                <i class="fas fa-shopping-cart"></i> Thêm vào giỏ
-                            </button>
-                            <button class="btn btn-secondary btn-sm" onclick="viewProduct(1)">
-                                <i class="fas fa-eye"></i>
-                            </button>
+                        <img th:if="${not #lists.isEmpty(wishlistItem.product.imageUrls)}"
+                             th:src="${wishlistItem.product.imageUrls[0]}"
+                             alt="Product">
+                        <div th:unless="${not #lists.isEmpty(wishlistItem.product.imageUrls)}"
+                             style="width: 100%; height: 200px; background: #f5f5f5; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-image" style="color: #ccc; font-size: 2rem;"></i>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Wishlist Item 2 -->
-                <div class="wishlist-item">
-                    <div class="wishlist-image">
-                        <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400" alt="Product">
-                        <button class="remove-wishlist" onclick="removeFromWishlist(2)">
+                        <button class="remove-wishlist" th:onclick="'removeFromWishlist(' + ${wishlistItem.id} + ')'">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                     <div class="wishlist-info">
-                        <div class="wishlist-name">Dây chuyền Vàng 18K</div>
-                        <div class="wishlist-price">8.950.000 đ</div>
+                        <div class="wishlist-name" th:text="${wishlistItem.product.getDisplayName()}">Nhẫn Kim cương Vàng trắng 14K</div>
+                        <div class="wishlist-price" th:text="${#numbers.formatDecimal(wishlistItem.product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">15.750.000 đ</div>
                         <div class="wishlist-actions">
-                            <button class="btn btn-primary btn-sm" style="flex: 1;" onclick="addToCart(2)">
+                            <button class="btn btn-primary btn-sm" style="flex: 1;" th:onclick="'addToCart(' + ${wishlistItem.product.id} + ')'">
                                 <i class="fas fa-shopping-cart"></i> Thêm vào giỏ
                             </button>
-                            <button class="btn btn-secondary btn-sm" onclick="viewProduct(2)">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Wishlist Item 3 -->
-                <div class="wishlist-item">
-                    <div class="wishlist-image">
-                        <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400" alt="Product">
-                        <button class="remove-wishlist" onclick="removeFromWishlist(3)">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="wishlist-info">
-                        <div class="wishlist-name">Vương miện cô dâu cao cấp</div>
-                        <div class="wishlist-price">25.000.000 đ</div>
-                        <div class="wishlist-actions">
-                            <button class="btn btn-primary btn-sm" style="flex: 1;" onclick="addToCart(3)">
-                                <i class="fas fa-shopping-cart"></i> Thêm vào giỏ
-                            </button>
-                            <button class="btn btn-secondary btn-sm" onclick="viewProduct(3)">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Wishlist Item 4 -->
-                <div class="wishlist-item">
-                    <div class="wishlist-image">
-                        <img src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400" alt="Product">
-                        <button class="remove-wishlist" onclick="removeFromWishlist(4)">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="wishlist-info">
-                        <div class="wishlist-name">Bông tai Kim cương Platinum</div>
-                        <div class="wishlist-price">12.300.000 đ</div>
-                        <div class="wishlist-actions">
-                            <button class="btn btn-primary btn-sm" style="flex: 1;" onclick="addToCart(4)">
-                                <i class="fas fa-shopping-cart"></i> Thêm vào giỏ
-                            </button>
-                            <button class="btn btn-secondary btn-sm" onclick="viewProduct(4)">
+                            <button class="btn btn-secondary btn-sm" th:onclick="'viewProduct(' + ${wishlistItem.product.id} + ')'">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
@@ -1233,141 +1314,435 @@
                 </div>
             </div>
 
-            <!-- Empty State (hiển thị khi wishlist trống) -->
-            <!-- <div class="empty-state">
+            <!-- Phân trang cho wishlist items -->
+            <div class="pagination" th:if="${wishlistItems.totalPages > 1}">
+                <a
+                        th:if="${wishlistPage > 0}"
+                        th:href="@{/account(wishlistPage=${wishlistPage}-1, wishlistSize=8, addressPage=${addressPage}, addressSize=5)}"
+                        class="btn btn-sm btn-secondary">
+                    <i class="fas fa-chevron-left"></i> Trước
+                </a>
+
+                <span class="pagination-info">Trang <span th:text="${wishlistPage + 1}"></span> / <span th:text="${wishlistItems.totalPages}"></span></span>
+                <a
+                        th:if="${wishlistPage < wishlistItems.totalPages - 1}"
+                        th:href="@{/account(wishlistPage=${wishlistPage}+1, wishlistSize=8, addressPage=${addressPage}, addressSize=5)}"
+                        class="btn btn-sm btn-secondary">
+                    Sau <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+
+            <!-- Empty State for Wishlist -->
+            <div class="empty-state" th:if="${!wishlistItems.hasContent}">
                 <i class="far fa-heart"></i>
                 <h3>Chưa có sản phẩm yêu thích</h3>
                 <p>Hãy khám phá và lưu lại những món trang sức ưng ý của bạn</p>
                 <button class="btn btn-primary" onclick="window.location.href='/products'">
-                    <i class="fas fa-shopping-bag"></i> Khám phá ngay
+                    Khám phá ngay
                 </button>
-            </div> -->
+            </div>
         </section>
     </main>
-</div>
-<!-- Modal Add/Edit Address -->
-<div id="addressModal" class="address-modal">
-    <div class="address-modal-content">
-        <div class="address-modal-header">
-            <h3>Thêm địa chỉ mới</h3>
-            <button type="button" class="address-modal-close" onclick="closeAddressModal()">
-                <i class="fas fa-times"></i>
-            </button>
+    <!-- Thêm địa chỉ mới -->
+    <div id="addressModal" class="address-modal">
+        <div class="address-modal-content">
+            <div class="address-modal-header">
+                <h3 id="addressModalTitle">Thêm địa chỉ mới</h3>
+                <button type="button" class="address-modal-close" onclick="closeAddressModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="addressForm" th:action="@{/account/address/add}" method="post" onsubmit="saveAddress(event)">
+                <!-- CSRF Token -->
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <div class="form-group">
+                    <label class="form-label">Họ và tên <span style="color: var(--danger-color);">*</span></label>
+                    <input type="text" name="receiverName" class="form-input" placeholder="Nhập họ và tên" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Số điện thoại <span style="color: var(--danger-color);">*</span></label>
+                        <input type="tel" name="phone" class="form-input" placeholder="Nhập số điện thoại"
+                               pattern="[0-9]{10,11}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Loại địa chỉ</label>
+                        <select name="addressType" class="form-select">
+                            <option value="home" selected>Nhà riêng</option>
+                            <option value="office">Văn phòng</option>
+                            <option value="other">Khác</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Tỉnh/Thành phố <span style="color: var(--danger-color);">*</span></label>
+                        <select id="city" name="city" class="form-select" required>
+                            <option value="">- Chọn Tỉnh/Thành -</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quận/Huyện <span style="color: var(--danger-color);">*</span></label>
+                        <select id="district" name="district" class="form-select" required disabled>
+                            <option value="">- Chọn Quận/Huyện -</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phường/Xã <span style="color: var(--danger-color);">*</span></label>
+                    <select id="ward" name="ward" class="form-select" required disabled>
+                        <option value="">- Chọn Phường/Xã -</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Địa chỉ cụ thể <span style="color: var(--danger-color);">*</span></label>
+                    <textarea id="addressLine" name="addressLine" class="form-input" rows="3"
+                              placeholder="Số nhà, tên đường..." required></textarea>
+                </div>
+
+                <div class="form-group checkbox">
+                    <label>
+                        <input type="checkbox" name="isDefault" value="true"
+                               style="width: 18px; height: 18px; accent-color: var(--primary-color);">
+                        <span>Đặt làm địa chỉ mặc định</span>
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Lưu địa chỉ
+                    </button>
+                    <button type="button" onclick="closeAddressModal()" class="btn btn-secondary">
+                        Hủy
+                    </button>
+                </div>
+            </form>
         </div>
-
-        <form onsubmit="saveAddress(event)">
-            <div class="form-group">
-                <label class="form-label">Họ và tên <span style="color: var(--danger-color);">*</span></label>
-                <input type="text" class="form-input" placeholder="Nhập họ và tên" required>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Số điện thoại <span style="color: var(--danger-color);">*</span></label>
-                    <input type="tel" class="form-input" placeholder="Nhập số điện thoại" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Loại địa chỉ</label>
-                    <select class="form-select">
-                        <option value="home">Nhà riêng</option>
-                        <option value="office">Văn phòng</option>
-                        <option value="other">Khác</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Tỉnh/Thành phố <span style="color: var(--danger-color);">*</span></label>
-                    <select class="form-select" required>
-                        <option value="">Chọn Tỉnh/Thành phố</option>
-                        <option value="hcm">Hồ Chí Minh</option>
-                        <option value="hn">Hà Nội</option>
-                        <option value="dn">Đà Nẵng</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Quận/Huyện <span style="color: var(--danger-color);">*</span></label>
-                    <select class="form-select" required>
-                        <option value="">Chọn Quận/Huyện</option>
-                        <option value="q1">Quận 1</option>
-                        <option value="q2">Quận 2</option>
-                        <option value="q3">Quận 3</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Phường/Xã <span style="color: var(--danger-color);">*</span></label>
-                <select class="form-select" required>
-                    <option value="">Chọn Phường/Xã</option>
-                    <option value="p1">Phường Tân Bình</option>
-                    <option value="p2">Phường An Phú</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Địa chỉ cụ thể <span style="color: var(--danger-color);">*</span></label>
-                <textarea class="form-input" rows="3" placeholder="Số nhà, tên đường..." required></textarea>
-            </div>
-
-            <div class="form-group checkbox">
-                <label>
-                    <input type="checkbox" style="width: 18px; height: 18px; accent-color: var(--primary-color);">
-                    <span>Đặt làm địa chỉ mặc định</span>
-                </label>
-            </div>
-
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Lưu địa chỉ
-                </button>
-                <button type="button" onclick="closeAddressModal()" class="btn btn-secondary">
-                    Hủy
-                </button>
-            </div>
-        </form>
     </div>
 </div>
 <script>
-    // Tab Navigation
-    const menuLinks = document.querySelectorAll('.menu-link');
-    const contentSections = document.querySelectorAll('.content-section');
+    // ===== TOAST FUNCTIONS =====
+    function showToast(type, title, message, showConfirm = false, confirmCallback = null) {
+        const toastContainer = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
 
-    menuLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetSection = link.getAttribute('data-section');
+        const iconMap = {
+            success: '✓',
+            error: '✕',
+            info: 'ℹ',
+            warning: '⚠'
+        };
 
-            // Remove active class from all links and sections
-            menuLinks.forEach(l => l.classList.remove('active'));
-            contentSections.forEach(section => section.classList.remove('active'));
+        let buttonsHtml = '';
+        if (showConfirm && confirmCallback) {
+            buttonsHtml = `
+        <div class="toast-actions">
+            <button class="toast-btn confirm" onclick="this.closest('.toast').remove(); ${confirmCallback.name}()">Xác nhận</button>
+            <button class="toast-btn cancel" onclick="this.closest('.toast').remove()">Hủy</button>
+        </div>
+    `;
+        }
 
-            // Add active class to clicked link and corresponding section
-            link.classList.add('active');
-            document.getElementById(targetSection).classList.add('active');
+        toast.innerHTML = `
+    <div class="toast-icon">${iconMap[type]}</div>
+    <div class="toast-content">
+        <div class="toast-title">${title}</div>
+        <div class="toast-message">${message}</div>
+        ${buttonsHtml}
+    </div>
+    ${!showConfirm ? '<button class="toast-close">×</button>' : ''}
+`;
+
+        if (!showConfirm) {
+            toast.querySelector('.toast-close').addEventListener('click', () => removeToast(toast));
+        }
+
+        toastContainer.appendChild(toast);
+
+        // Auto remove after 4 seconds if not a confirmation toast
+        if (!showConfirm) {
+            setTimeout(() => removeToast(toast), 4000);
+        }
+    }
+
+    function removeToast(toast) {
+        if (toast && toast.parentNode) {
+            toast.classList.add('hiding');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 300);
+        }
+    }
+
+    // Enhanced toast with actions
+    function showConfirmToast(title, message, confirmText, cancelText, confirmCallback) {
+        const toastContainer = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = 'toast warning';
+
+        toast.innerHTML = `
+    <div class="toast-icon">⚠</div>
+    <div class="toast-content">
+        <div class="toast-title">${title}</div>
+        <div class="toast-message">${message}</div>
+        <div class="toast-actions">
+            <button class="toast-btn confirm" onclick="this.closest('.toast').remove(); (${confirmCallback})()">${confirmText}</button>
+            <button class="toast-btn cancel" onclick="this.closest('.toast').remove()">${cancelText}</button>
+        </div>
+    </div>
+`;
+
+        toastContainer.appendChild(toast);
+    }
+
+    // ===== PROFILE EDIT FUNCTIONS =====
+    let isEditing = false;
+    let originalData = {};
+
+    function enableEditMode() {
+        isEditing = true;
+
+        // Lưu dữ liệu gốc
+        originalData = {
+            email: document.getElementById('emailInput').value,
+            phone: document.getElementById('phoneInput').value,
+            gender: document.getElementById('genderSelect').value
+        };
+
+        // Enable các trường input
+        document.getElementById('emailInput').readOnly = false;
+        document.getElementById('phoneInput').readOnly = false;
+        document.getElementById('genderSelect').readOnly = false;
+        document.getElementById('genderSelect').style.backgroundColor = '#fff';
+        document.getElementById('genderSelect').style.appearance = 'auto';
+
+        // Ẩn nút chỉnh sửa, hiển thị nút lưu và hủy
+        document.getElementById('editProfileBtn').style.display = 'none';
+        document.getElementById('saveBtn').style.display = 'inline-block';
+        document.getElementById('cancelEditBtn').style.display = 'inline-block';
+
+        // Enable nút lưu
+        document.getElementById('saveBtn').disabled = true;
+
+        // Focus vào email field
+        document.getElementById('emailInput').focus();
+    }
+
+    function disableEditMode() {
+        isEditing = false;
+
+        // Disable các trường input
+        document.getElementById('emailInput').readOnly = true;
+        document.getElementById('phoneInput').readOnly = true;
+        document.getElementById('genderSelect').readOnly = true;
+        document.getElementById('genderSelect').style.backgroundColor = '#f8f9fa';
+        document.getElementById('genderSelect').style.appearance = 'none';
+
+        // Hiển thị nút chỉnh sửa, ẩn nút lưu và hủy
+        document.getElementById('editProfileBtn').style.display = 'inline-block';
+        document.getElementById('saveBtn').style.display = 'none';
+        document.getElementById('cancelEditBtn').style.display = 'none';
+
+        // Disable nút lưu
+        document.getElementById('saveBtn').disabled = true;
+    }
+
+    function cancelEdit() {
+        // Khôi phục dữ liệu gốc
+        document.getElementById('emailInput').value = originalData.email;
+        document.getElementById('phoneInput').value = originalData.phone;
+        document.getElementById('genderSelect').value = originalData.gender;
+
+        disableEditMode();
+        showToast('info', 'Đã hủy', 'Hủy chỉnh sửa thông tin');
+    }
+
+    // ===== REAL-TIME VALIDATION =====
+    function checkFormChanges() {
+        if (!isEditing) return;
+
+        const currentData = {
+            email: document.getElementById('emailInput').value,
+            phone: document.getElementById('phoneInput').value,
+            gender: document.getElementById('genderSelect').value
+        };
+
+        const hasChanges =
+            currentData.email !== originalData.email ||
+            currentData.phone !== originalData.phone ||
+            currentData.gender !== originalData.gender;
+
+        document.getElementById('saveBtn').disabled = !hasChanges;
+    }
+
+    // ===== INIT PROFILE EDIT =====
+    function initProfileEdit() {
+        // Thêm event listeners cho các input
+        document.getElementById('emailInput').addEventListener('input', checkFormChanges);
+        document.getElementById('phoneInput').addEventListener('input', checkFormChanges);
+        document.getElementById('genderSelect').addEventListener('change', checkFormChanges);
+
+        // Nút chỉnh sửa
+        document.getElementById('editProfileBtn').addEventListener('click', enableEditMode);
+
+        // Nút hủy
+        document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
+    }
+
+    // ===== HIỂN THỊ TOAST TỪ SERVER (RedirectAttributes) =====
+    document.addEventListener('DOMContentLoaded', function() {
+        const toastType = /*[[${toastType}]]*/ null;
+        const toastTitle = /*[[${toastTitle}]]*/ null;
+        const toastMessage = /*[[${toastMessage}]]*/ null;
+
+        if (toastType && toastMessage) {
+            showToast(toastType, toastTitle || '', toastMessage);
+        }
+
+        // ===== FORM SUBMIT VỚI AJAX - KHÔNG RELOAD TRANG =====
+        const profileForm = document.getElementById('profileForm');
+        if (profileForm) {
+            profileForm.addEventListener('submit', async function(e) {
+                e.preventDefault(); // Chặn submit mặc định
+
+                if (!isEditing) {
+                    showToast('warning', 'Thông báo', 'Vui lòng bấm "Chỉnh sửa" để thay đổi thông tin');
+                    return;
+                }
+
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+
+                // Hiển thị loading
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+
+                try {
+                    // Lấy CSRF token
+                    const csrfToken = document.querySelector('input[name="_csrf"]').value;
+
+                    // Tạo FormData từ form
+                    const formData = new FormData(this);
+
+                    // Gửi AJAX request
+                    const response = await fetch('/account/update-ajax', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    // Hiển thị toast
+                    showToast(result.toastType, result.toastTitle, result.toastMessage);
+
+                    if (result.success) {
+                        // Cập nhật originalData để tracking thay đổi
+                        originalData = {
+                            email: result.data.email,
+                            phone: result.data.phone,
+                            gender: result.data.gender
+                        };
+
+                        // Tắt chế độ edit
+                        disableEditMode();
+
+                        // Reset button
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    } else {
+                        // Nếu có lỗi validation, hiển thị lỗi cụ thể
+                        if (result.errors) {
+                            Object.keys(result.errors).forEach(field => {
+                                const input = document.querySelector(`[name="${field}"]`);
+                                if (input) {
+                                    input.classList.add('error');
+                                    // Tạo hoặc cập nhật error message
+                                    let errorDiv = input.parentElement.querySelector('.error-message');
+                                    if (!errorDiv) {
+                                        errorDiv = document.createElement('div');
+                                        errorDiv.className = 'error-message';
+                                        input.parentElement.appendChild(errorDiv);
+                                    }
+                                    errorDiv.textContent = result.errors[field];
+                                }
+                            });
+                        }
+
+                        // Reset button
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    }
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    showToast('error', 'Lỗi hệ thống', 'Không thể kết nối đến server. Vui lòng thử lại!');
+
+                    // Reset button
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            });
+        }
+
+        // Initialize profile edit functionality
+        initProfileEdit();
+
+        // Tab Navigation (giữ nguyên)
+        const menuLinks = document.querySelectorAll('.menu-link');
+        const contentSections = document.querySelectorAll('.content-section');
+
+        menuLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetSection = link.getAttribute('data-section');
+
+                menuLinks.forEach(l => l.classList.remove('active'));
+                contentSections.forEach(section => section.classList.remove('active'));
+
+                link.classList.add('active');
+                document.getElementById(targetSection).classList.add('active');
+            });
+        });
+
+        // Orders Tab Filtering (giữ nguyên)
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                console.log(`Filtering orders: ${btn.textContent}`);
+            });
         });
     });
 
-    // Orders Tab Filtering (Basic Example)
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const ordersList = document.querySelector('.orders-list');
-
-    tabButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            tabButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            // Here you would filter orders based on status
-            // For demo, we just log the selected tab
-            console.log(`Filtering orders: ${btn.textContent}`);
-        });
-    });
     // ========================================
     // ADDRESS MANAGEMENT
     // ========================================
     function showAddAddressModal() {
-        document.getElementById('addressModal').style.display = 'flex';
+        const modal = document.getElementById('addressModal');
+        const form = document.getElementById('addressForm');
+
+        // Reset form
+        if (form) form.reset();
+        form.action = '/account/address/add';
+        document.getElementById('addressModalTitle').textContent = 'Thêm địa chỉ mới';
+
+        // Load provinces và khởi tạo address picker
+        initAddressPickerForModal();
+
+        modal.style.display = 'flex';
     }
 
     function closeAddressModal() {
@@ -1376,95 +1751,240 @@
 
     function saveAddress(event) {
         event.preventDefault();
-        alert('Địa chỉ đã được lưu thành công! ✅');
-        closeAddressModal();
-        // Thực tế: Gửi data lên server
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        // Hiển thị loading
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+
+        // Gửi request
+        fetch(form.action, {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else {
+                    return response.text();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('error', 'Lỗi', 'Không thể lưu địa chỉ. Vui lòng thử lại!');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
     }
 
     function editAddress(id) {
         showAddAddressModal();
-        alert(`Chỉnh sửa địa chỉ ID: ${id}`);
-        // Load địa chỉ vào form để edit
+        showToast('info', 'Chỉnh sửa địa chỉ', `Đang chỉnh sửa địa chỉ ID: ${id}`);
     }
 
     function deleteAddress(id) {
-        if(confirm('Bạn có chắc muốn xóa địa chỉ này?')) {
-            alert(`Đã xóa địa chỉ ID: ${id}`);
-            // Thực tế: Gửi request xóa lên server
+        if (confirm('Bạn có chắc muốn xóa địa chỉ này?')) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/account/address/delete/${id}`;
+
+            const csrfToken = document.querySelector('input[name="_csrf"]').value;
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_csrf';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+
+            document.body.appendChild(form);
+            form.submit();
         }
     }
 
     function setDefaultAddress(id) {
-        alert(`Đã đặt địa chỉ ID ${id} làm mặc định! ⭐`);
-        // Thực tế: Update default address trên server
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/account/address/set-default/${id}`;
+
+        const csrfToken = document.querySelector('input[name="_csrf"]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_csrf';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+
+        document.body.appendChild(form);
+        form.submit();
     }
 
     // ========================================
-    // CHANGE PASSWORD
+    // ADDRESS PICKER API
     // ========================================
-    function togglePassword(inputId) {
-        const input = document.getElementById(inputId);
-        const icon = event.currentTarget.querySelector('i');
+    const apiUrl = 'https://provinces.open-api.vn/api';
 
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
-        } else {
-            input.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
+    function resetSelect(select, placeholder) {
+        if (!select) return;
+        select.innerHTML = `<option value="">${placeholder}</option>`;
+        select.disabled = true;
+    }
+
+    async function loadProvincesForAddress() {
+        const provinceEl = document.getElementById('province');
+        const districtEl = document.getElementById('district');
+        const wardEl = document.getElementById('ward');
+
+        if (!provinceEl) return;
+
+        try {
+            resetSelect(provinceEl, '- Đang tải... -');
+            resetSelect(districtEl, '- Chọn Quận/Huyện -');
+            resetSelect(wardEl, '- Chọn Phường/Xã -');
+
+            const response = await fetch(`${apiUrl}/?depth=1`);
+            const provinces = await response.json();
+
+            provinceEl.innerHTML = '<option value="">- Chọn Tỉnh/Thành -</option>';
+
+            provinces.forEach(province => {
+                const option = document.createElement('option');
+                option.value = province.name;
+                option.textContent = province.name;
+                option.dataset.code = province.code;
+                provinceEl.appendChild(option);
+            });
+
+            provinceEl.disabled = false;
+        } catch (error) {
+            console.error('Lỗi khi load tỉnh/thành:', error);
+            if (provinceEl) {
+                provinceEl.innerHTML = '<option value="">- Lỗi tải dữ liệu -</option>';
+            }
         }
     }
 
-    function changePassword(event) {
-        event.preventDefault();
+    async function loadDistrictsForAddress(provinceCode) {
+        const districtEl = document.getElementById('district');
+        const wardEl = document.getElementById('ward');
 
-        const currentPassword = document.getElementById('currentPassword').value;
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
+        if (!districtEl) return;
 
-        // Validate
-        if (newPassword !== confirmPassword) {
-            alert('Mật khẩu mới và xác nhận mật khẩu không khớp! ❌');
-            return;
+        try {
+            resetSelect(districtEl, '- Đang tải... -');
+            resetSelect(wardEl, '- Chọn Quận/Huyện trước -');
+
+            if (!provinceCode) {
+                resetSelect(districtEl, '- Chọn Quận/Huyện -');
+                return;
+            }
+
+            const response = await fetch(`${apiUrl}/p/${provinceCode}?depth=2`);
+            const province = await response.json();
+
+            districtEl.innerHTML = '<option value="">- Chọn Quận/Huyện -</option>';
+
+            province.districts.forEach(district => {
+                const option = document.createElement('option');
+                option.value = district.name;
+                option.textContent = district.name;
+                option.dataset.code = district.code;
+                districtEl.appendChild(option);
+            });
+
+            districtEl.disabled = false;
+        } catch (error) {
+            console.error('Lỗi khi load quận/huyện:', error);
+            if (districtEl) {
+                districtEl.innerHTML = '<option value="">- Lỗi tải dữ liệu -</option>';
+            }
         }
+    }
 
-        if (newPassword.length < 8) {
-            alert('Mật khẩu phải có ít nhất 8 ký tự! ❌');
-            return;
+    async function loadWardsForAddress(districtCode) {
+        const wardEl = document.getElementById('ward');
+
+        if (!wardEl) return;
+
+        try {
+            resetSelect(wardEl, '- Đang tải... -');
+
+            if (!districtCode) {
+                resetSelect(wardEl, '- Chọn Phường/Xã -');
+                return;
+            }
+
+            const response = await fetch(`${apiUrl}/d/${districtCode}?depth=2`);
+            const district = await response.json();
+
+            wardEl.innerHTML = '<option value="">- Chọn Phường/Xã -</option>';
+
+            district.wards.forEach(ward => {
+                const option = document.createElement('option');
+                option.value = ward.name;
+                option.textContent = ward.name;
+                wardEl.appendChild(option);
+            });
+
+            wardEl.disabled = false;
+        } catch (error) {
+            console.error('Lỗi khi load phường/xã:', error);
+            if (wardEl) {
+                wardEl.innerHTML = '<option value="">- Lỗi tải dữ liệu -</option>';
+            }
         }
+    }
 
-        if (currentPassword === newPassword) {
-            alert('Mật khẩu mới không được trùng với mật khẩu hiện tại! ❌');
-            return;
-        }
+    // Khởi tạo address picker cho modal
+    function initAddressPickerForModal() {
+        const provinceEl = document.getElementById('province');
+        const districtEl = document.getElementById('district');
+        const wardEl = document.getElementById('ward');
 
-        // Thực tế: Gửi request lên server
-        alert('Đổi mật khẩu thành công! ✅\nVui lòng đăng nhập lại.');
+        if (!provinceEl || !districtEl || !wardEl) return;
 
-        // Reset form
-        event.target.reset();
+        // Remove old listeners bằng cách clone
+        const newProvinceEl = provinceEl.cloneNode(true);
+        const newDistrictEl = districtEl.cloneNode(true);
+        const newWardEl = wardEl.cloneNode(true);
+
+        provinceEl.parentNode.replaceChild(newProvinceEl, provinceEl);
+        districtEl.parentNode.replaceChild(newDistrictEl, districtEl);
+        wardEl.parentNode.replaceChild(newWardEl, wardEl);
+
+        // Add event listeners
+        document.getElementById('province').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const provinceCode = selectedOption?.dataset.code;
+            loadDistrictsForAddress(provinceCode);
+        });
+
+        document.getElementById('district').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const districtCode = selectedOption?.dataset.code;
+            loadWardsForAddress(districtCode);
+        });
+
+        // Load provinces
+        loadProvincesForAddress();
     }
 
     // ========================================
     // WISHLIST MANAGEMENT
     // ========================================
     function removeFromWishlist(id) {
-        if(confirm('Bạn có chắc muốn xóa sản phẩm này khỏi danh sách yêu thích?')) {
-            alert(`Đã xóa sản phẩm ID ${id} khỏi wishlist! 💔`);
-            // Thực tế: Gửi request lên server và reload
-        }
+        showToast('warning', 'Xác nhận xóa', 'Bạn có chắc muốn xóa sản phẩm này khỏi danh sách yêu thích?', true, () => {
+            showToast('success', 'Thành công', `Đã xóa sản phẩm ID ${id} khỏi wishlist!`);
+        });
     }
 
     function addToCart(id) {
-        alert(`Đã thêm sản phẩm ID ${id} vào giỏ hàng! 🛒`);
-        // Thực tế: Thêm vào cart
+        showToast('success', 'Thành công', `Đã thêm sản phẩm ID ${id} vào giỏ hàng!`);
     }
 
     function viewProduct(id) {
-        alert(`Đang chuyển đến trang chi tiết sản phẩm ID ${id}...`);
-        // window.location.href = `/product/${id}`;
+        showToast('info', 'Chuyển hướng', `Đang chuyển đến trang chi tiết sản phẩm ID ${id}...`);
     }
 
     // Close modal when clicking outside

@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta th:name="_csrf" th:content="${_csrf.token}"/>
+    <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Đăng Nhập - LuxuryGems</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -649,6 +651,24 @@
         .toast-close:hover {
             color: #333;
         }
+
+        /* Thêm vào phần CSS hiện có */
+        .form-input.is-valid {
+            border-color: #28a745 !important;
+            box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.1) !important;
+        }
+
+        .form-input.error {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.1) !important;
+            animation: shake 0.3s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
     </style>
 </head>
 <body>
@@ -700,9 +720,8 @@
             </p>
         </div>
 
-        <!-- Form bắt dữ liệu LoginDto -->
-        <form th:action="@{/login}" th:object="${form}" method="post" id="loginForm">
-
+        <!-- Form Spring Security -->
+        <form th:action="@{/login}" method="POST" id="loginForm">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
             <!-- Email/Phone -->
@@ -710,9 +729,8 @@
                 <label class="form-label">Email hoặc Số điện thoại <span class="required">*</span></label>
                 <div class="input-wrapper">
                     <i class="input-icon fas fa-user"></i>
-                    <input type="text" th:field="*{username}" class="form-input" placeholder="example@email.com hoặc 0912345678" required>
+                    <input type="text" name="username" class="form-input" placeholder="example@email.com hoặc 0912345678" required>
                 </div>
-                <span class="error-message" th:if="${loginError}" th:text="${loginError}"></span>
             </div>
 
             <!-- Password -->
@@ -720,26 +738,31 @@
                 <label class="form-label">Mật khẩu <span class="required">*</span></label>
                 <div class="input-wrapper">
                     <i class="input-icon fas fa-lock"></i>
-                    <input type="password" th:field="*{password}" class="form-input" placeholder="••••••••" required>
+                    <input id="passwordField" type="password" name="password" class="form-input" placeholder="••••••••" required>
                     <button type="button" class="toggle-password" onclick="togglePassword()">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Lỗi đăng nhập sai -->
-            <div th:if="${loginError}" class="error-message show" style="margin-bottom:15px;">
-                <i class="fas fa-exclamation-circle"></i>
-                <span th:text="${loginError}">Đăng nhập thất bại</span>
-            </div>
-
             <!-- Remember & Forgot -->
             <div class="form-options">
                 <label class="remember-me">
-                    <input type="checkbox" id="rememberMe">
+                    <input type="checkbox" name="remember-me" id="rememberMe">
                     <span>Ghi nhớ đăng nhập</span>
                 </label>
                 <a href="#" class="forgot-password">Quên mật khẩu?</a>
+            </div>
+
+            <!-- Thông báo lỗi từ Spring Security -->
+            <div th:if="${param.error}" class="alert alert-danger" style="margin-bottom: 20px;">
+                <i class="fas fa-exclamation-circle"></i>
+                Tài khoản hoặc mật khẩu không đúng!
+            </div>
+
+            <div th:if="${param.logout}" class="alert alert-success" style="margin-bottom: 20px;">
+                <i class="fas fa-check-circle"></i>
+                Đã đăng xuất thành công!
             </div>
 
             <!-- Submit Button -->
@@ -765,7 +788,6 @@
         </form>
     </div>
 </div>
-
 <script>
     // ===== TOAST NOTIFICATION =====
     function showToast(type, title, message) {
@@ -775,13 +797,13 @@
         const iconMap = { success: '✓', error: '✕', info: 'ℹ' };
 
         toast.innerHTML = `
-            <div class="toast-icon">${iconMap[type]}</div>
-            <div class="toast-content">
-                <div class="toast-title">${title}</div>
-                <div class="toast-message">${message}</div>
-            </div>
-            <button class="toast-close">×</button>
-        `;
+    <div class="toast-icon">${iconMap[type]}</div>
+    <div class="toast-content">
+        <div class="toast-title">${title}</div>
+        <div class="toast-message">${message}</div>
+    </div>
+    <button class="toast-close">×</button>
+`;
 
         toast.querySelector('.toast-close').addEventListener('click', () => removeToast(toast));
         toastContainer.appendChild(toast);
@@ -795,119 +817,217 @@
 
     // ===== PASSWORD TOGGLE =====
     function togglePassword() {
-        const input = document.getElementById('password');
+        const passwordInput = document.getElementById('passwordField');
         const icon = document.querySelector('.toggle-password i');
-        input.type = input.type === 'password' ? 'text' : 'password';
-        icon.classList.toggle('fa-eye');
-        icon.classList.toggle('fa-eye-slash');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
     }
 
-    // ===== VALIDATION =====
-    const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('password');
-    const rememberCheckbox = document.getElementById('rememberMe');
-    const loginForm = document.getElementById('loginForm');
-    const loginBtn = document.getElementById('loginBtn');
-
+    // ===== VALIDATION FUNCTIONS =====
     function validateUsername(value) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const phoneRegex = /^[0-9]{10,11}$/;
         return emailRegex.test(value) || phoneRegex.test(value.replace(/\s/g, ''));
     }
 
-    usernameInput.addEventListener('blur', () => {
-        const err = document.getElementById('usernameError');
-        if (!usernameInput.value.trim()) {
-            usernameInput.classList.add('error');
-            err.textContent = 'Vui lòng nhập email hoặc số điện thoại';
-            err.classList.add('show');
-        } else if (!validateUsername(usernameInput.value)) {
-            usernameInput.classList.add('error');
-            err.textContent = 'Email hoặc số điện thoại không hợp lệ';
-            err.classList.add('show');
-        } else {
-            usernameInput.classList.remove('error');
-            err.classList.remove('show');
-        }
-    });
+    // ===== REAL-TIME VALIDATION =====
+    document.addEventListener('DOMContentLoaded', function() {
+        const usernameInput = document.querySelector('input[name="username"], input[placeholder*="email"], input[placeholder*="phone"]');
+        const passwordInput = document.getElementById('passwordField');
+        const rememberCheckbox = document.getElementById('rememberMe');
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
 
-    passwordInput.addEventListener('blur', () => {
-        const err = document.getElementById('passwordError');
-        if (!passwordInput.value.trim()) {
-            passwordInput.classList.add('error');
-            err.classList.add('show');
-        } else {
-            passwordInput.classList.remove('error');
-            err.classList.remove('show');
-        }
-    });
+        console.log('Debug - Found elements:', {
+            usernameInput: !!usernameInput,
+            passwordInput: !!passwordInput,
+            loginForm: !!loginForm
+        });
 
-    usernameInput.addEventListener('input', () => {
-        usernameInput.classList.remove('error');
-        document.getElementById('usernameError').classList.remove('show');
-    });
+        // ===== HIỂN THỊ TOAST TỪ SERVER (RedirectAttributes) =====
+        const toastType = /*[[${toastType}]]*/ null;
+        const toastTitle = /*[[${toastTitle}]]*/ null;
+        const toastMessage = /*[[${toastMessage}]]*/ null;
 
-    passwordInput.addEventListener('input', () => {
-        passwordInput.classList.remove('error');
-        document.getElementById('passwordError').classList.remove('show');
-    });
-
-    // ===== FORM SUBMIT =====
-    loginForm.addEventListener('submit', function (e) {
-        let valid = true;
-
-        if (!validateUsername(usernameInput.value)) {
-            usernameInput.classList.add('error');
-            document.getElementById('usernameError').classList.add('show');
-            valid = false;
-        }
-        if (!passwordInput.value.trim()) {
-            passwordInput.classList.add('error');
-            document.getElementById('passwordError').classList.add('show');
-            valid = false;
+        if (toastType && toastMessage) {
+            showToast(toastType, toastTitle || '', toastMessage);
         }
 
-        if (!valid) {
+        // Username validation - BLUR
+        usernameInput.addEventListener('blur', function() {
+            const value = this.value.trim();
+            console.log('Username blur:', value);
+
+            if (!value) {
+                // Không hiển thị viền đỏ
+            } else if (!validateUsername(value)) {
+                // Không hiển thị viền đỏ, chỉ hiển thị toast
+                showToast('error', 'Lỗi', 'Email hoặc số điện thoại không hợp lệ');
+            } else {
+                // Không hiển thị viền xanh
+            }
+        });
+
+        // Password validation - BLUR
+        passwordInput.addEventListener('blur', function() {
+            const value = this.value.trim();
+            console.log('Password blur:', value);
+
+            if (!value) {
+                // Không hiển thị viền đỏ
+            } else {
+                // Không hiển thị viền xanh
+            }
+        });
+
+        // ===== FORM SUBMIT =====
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            showToast('error', 'Lỗi đăng nhập', 'Vui lòng kiểm tra lại thông tin!');
-            return;
+            console.log('Form submitted');
+
+            const usernameValue = usernameInput.value.trim();
+            const passwordValue = passwordInput.value.trim();
+            let isValid = true;
+            let isUsernameValid = true;
+
+            // Validate username
+            if (!usernameValue) {
+                isValid = false;
+                isUsernameValid = false;
+            } else if (!validateUsername(usernameValue)) {
+                isValid = false;
+                isUsernameValid = false;
+                showToast('error', 'Lỗi', 'Email hoặc số điện thoại không hợp lệ');
+            }
+
+            if (!passwordValue) {
+                isValid = false;
+            }
+
+            if (!isValid) {
+                if (isUsernameValid) {
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+                return;
+            }
+
+            // 🌀 Hiệu ứng loading
+            loginBtn.disabled = true;
+            const icon = loginBtn.querySelector('i');
+            const text = loginBtn.querySelector('span');
+            if (icon) {
+                icon.classList.remove('fa-sign-in-alt');
+                icon.classList.add('fa-spinner', 'fa-spin');
+            }
+            if (text) {
+                text.textContent = 'Đang đăng nhập...';
+            }
+
+            // Gửi request với CSRF token
+            try {
+                const csrfToken = document.querySelector('input[name="_csrf"]').value;
+
+                const response = await fetch(loginForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        username: usernameValue,
+                        password: passwordValue,
+                        _csrf: csrfToken
+                    })
+                });
+
+                if (response.redirected) {
+                    if (response.url.includes('/login?error')) {
+                        showToast('error', 'Lỗi đăng nhập', 'Tài khoản hoặc mật khẩu không đúng!');
+                        resetLoginButton();
+                    } else {
+                        window.location.href = response.url;
+                    }
+                } else if (response.ok) {
+                    // Nếu response OK nhưng không redirect
+                    const html = await response.text();
+                    if (html.includes('Invalid credentials') || html.includes('Bad credentials') || html.includes('error')) {
+                        showToast('error', 'Lỗi đăng nhập', 'Tài khoản hoặc mật khẩu không đúng!');
+                    } else {
+                        window.location.reload();
+                    }
+                    resetLoginButton();
+                } else {
+                    showToast('error', 'Lỗi đăng nhập', 'Tài khoản hoặc mật khẩu không đúng!');
+                    resetLoginButton();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('error', 'Lỗi hệ thống', 'Có lỗi xảy ra, vui lòng thử lại');
+                resetLoginButton();
+            }
+        });
+
+        // Hàm reset button
+        function resetLoginButton() {
+            loginBtn.disabled = false;
+            const icon = loginBtn.querySelector('i');
+            const text = loginBtn.querySelector('span');
+            if (icon) {
+                icon.classList.remove('fa-spinner', 'fa-spin');
+                icon.classList.add('fa-sign-in-alt');
+            }
+            if (text) {
+                text.textContent = 'Đăng nhập';
+            }
+            passwordInput.focus();
         }
 
-        // 🌀 Hiệu ứng loading
-        loginBtn.disabled = true;
-        const icon = loginBtn.querySelector('i');
-        const text = loginBtn.querySelector('span');
-        icon.classList.remove('fa-sign-in-alt');
-        icon.classList.add('fa-spinner', 'fa-spin');
-        text.textContent = 'Đang đăng nhập...';
+        // ===== REMEMBER ME =====
+        window.addEventListener('load', () => {
+            const savedUsername = localStorage.getItem('rememberedUsername');
+            if (savedUsername) {
+                usernameInput.value = savedUsername;
+            }
+        });
 
-        // Gửi form thật về controller
-        setTimeout(() => loginForm.submit(), 800);
+        loginForm.addEventListener('submit', () => {
+            if (rememberCheckbox.checked) {
+                localStorage.setItem('rememberedUsername', usernameInput.value);
+            } else {
+                localStorage.removeItem('rememberedUsername');
+            }
+        });
+
+        // ===== FORGOT PASSWORD =====
+        document.querySelector('.forgot-password').addEventListener('click', e => {
+            e.preventDefault();
+            const currentEmail = usernameInput.value.trim();
+            const email = prompt('Nhập email của bạn để đặt lại mật khẩu:', currentEmail);
+            if (email) {
+                if (validateUsername(email)) {
+                    showToast('success', 'Đã gửi link!', 'Vui lòng kiểm tra email: ' + email);
+                } else {
+                    showToast('error', 'Lỗi', 'Email không hợp lệ');
+                }
+            }
+        });
     });
 
-    // ===== REMEMBER ME =====
-    window.addEventListener('load', () => {
-        const savedUsername = localStorage.getItem('rememberedUsername');
-        if (savedUsername) {
-            usernameInput.value = savedUsername;
-            rememberCheckbox.checked = true;
-        }
-    });
+    // ===== SOCIAL LOGIN =====
+    function loginWithGoogle() {
+        showToast('info', 'Google Login', 'Đang chuyển hướng đến Google...');
+    }
 
-    loginForm.addEventListener('submit', () => {
-        if (rememberCheckbox.checked) {
-            localStorage.setItem('rememberedUsername', usernameInput.value);
-        } else {
-            localStorage.removeItem('rememberedUsername');
-        }
-    });
-
-    // ===== FORGOT PASSWORD =====
-    document.querySelector('.forgot-password').addEventListener('click', e => {
-        e.preventDefault();
-        const email = prompt('Nhập email của bạn để đặt lại mật khẩu:');
-        if (email) showToast('success', 'Đã gửi link!', 'Vui lòng kiểm tra email: ' + email);
-    });
+    function loginWithFacebook() {
+        showToast('info', 'Facebook Login', 'Đang chuyển hướng đến Facebook...');
+    }
 </script>
 </body>
 </html>

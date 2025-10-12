@@ -50,7 +50,6 @@ public class RegisterController {
         return "client_1/homepage/register";
     }
 
-
     @PostMapping("/request-otp")
     @ResponseBody
     public String requestOtp(@RequestParam("email") String email) {
@@ -59,7 +58,8 @@ public class RegisterController {
 
     @Transactional
     @PostMapping
-    public String postRegisterPage(@Valid @ModelAttribute("form") RegisterDto form, BindingResult br, Model model, RedirectAttributes ra) {
+    public String postRegisterPage(@Valid @ModelAttribute("form") RegisterDto form,
+                                   BindingResult br, Model model, RedirectAttributes ra) {
         return logForm(form, br, model, ra, log, userService, passwordEncoder, cartService);
     }
 
@@ -83,32 +83,48 @@ public class RegisterController {
         }
     }
 
-    public String logForm(@ModelAttribute("form") @Valid RegisterDto form, BindingResult br, Model model, RedirectAttributes ra, Logger log, UserService userService, PasswordEncoder passwordEncoder, CartService cartService) {
+    public String logForm(@ModelAttribute("form") @Valid RegisterDto form,
+                          BindingResult br, Model model, RedirectAttributes ra, Logger log,
+                          UserService userService, PasswordEncoder passwordEncoder, CartService cartService) {
         log.info("POST /register -> form: {}", form);
 
         if (br.hasErrors()) {
             log.warn("Validation error: {}", br);
-            return "client_1/homepage/register";
+            ra.addFlashAttribute("form", br);
+            ra.addFlashAttribute("form", form);
+            return "redirect:/register";
         }
 
         if (!form.getPassword().equals(form.getConfirmPassword())) {
-            br.rejectValue("confirmPassword", "Mismatch", "Mật khẩu xác nhận không khớp.");
-            return "client_1/homepage/register";
+            ra.addFlashAttribute("toastType", "error");
+            ra.addFlashAttribute("toastTitle", "Lỗi mật khẩu");
+            ra.addFlashAttribute("toastMessage", "Mật khẩu xác nhận không khớp.");
+            ra.addFlashAttribute("form", form);
+            return "redirect:/register";
         }
 
         if (userService.existsByEmail(form.getEmail())) {
-            br.rejectValue("email", "Duplicated", "Email đã được sử dụng.");
-            return "client_1/homepage/register";
+            ra.addFlashAttribute("toastType", "error");
+            ra.addFlashAttribute("toastTitle", "Lỗi email");
+            ra.addFlashAttribute("toastMessage", "Email đã được sử dụng.");
+            ra.addFlashAttribute("form", form);
+            return "redirect:/register";
         }
 
         if (StringUtils.hasText(form.getPhone()) && userService.existsByPhone(form.getPhone())) {
-            br.rejectValue("phone", "Duplicated", "Số điện thoại đã được sử dụng.");
-            return "client_1/homepage/register";
+            ra.addFlashAttribute("toastType", "error");
+            ra.addFlashAttribute("toastTitle", "Lỗi số điện thoại");
+            ra.addFlashAttribute("toastMessage", "Số điện thoại đã được sử dụng.");
+            ra.addFlashAttribute("form", form);
+            return "redirect:/register";
         }
 
         if (!otpService.verify(form.getEmail(), form.getOtp())) {
-            br.rejectValue("otp", "Invalid", "Mã OTP không đúng hoặc đã hết hạn.");
-            return "client_1/homepage/register";
+            ra.addFlashAttribute("toastType", "error");
+            ra.addFlashAttribute("toastTitle", "Lỗi OTP");
+            ra.addFlashAttribute("toastMessage", "Mã OTP không đúng hoặc đã hết hạn.");
+            ra.addFlashAttribute("form", form);
+            return "redirect:/register";
         }
 
         try {
@@ -134,13 +150,19 @@ public class RegisterController {
 
             log.info("User {} created successfully with cart {}", u.getEmail(), cart.getCartId());
 
+            // THÀNH CÔNG: Hiển thị toast ở trang login
+            ra.addFlashAttribute("toastType", "success");
+            ra.addFlashAttribute("toastTitle", "Thành công");
+            ra.addFlashAttribute("toastMessage", "Đăng ký thành công! Vui lòng đăng nhập.");
+            return "redirect:/login";
+
         } catch (Exception e) {
             log.error("Save user failed", e);
-            model.addAttribute("error", "Không thể lưu người dùng: " + e.getMessage());
-            return "client_1/homepage/register";
+            ra.addFlashAttribute("toastType", "error");
+            ra.addFlashAttribute("toastTitle", "Lỗi hệ thống");
+            ra.addFlashAttribute("toastMessage", "Không thể lưu người dùng. Vui lòng thử lại.");
+            ra.addFlashAttribute("form", form);
+            return "redirect:/register";
         }
-
-        ra.addFlashAttribute("registered", "Đăng ký thành công. Hãy đăng nhập.");
-        return "redirect:/login";
     }
 }

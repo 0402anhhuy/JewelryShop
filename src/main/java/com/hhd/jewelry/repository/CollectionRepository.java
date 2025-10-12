@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface CollectionRepository extends JpaRepository<Collection, Long> {
+public interface CollectionRepository extends JpaRepository<Collection, Integer> {
     Optional<Collection> findByName(String collectionName);
     List<Collection> findAllBy();
 }

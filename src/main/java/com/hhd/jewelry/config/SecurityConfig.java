@@ -12,10 +12,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
-import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
-
 
 @Configuration
 @EnableWebSecurity
@@ -42,24 +38,20 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        HttpSessionCsrfTokenRepository csrfRepo = new HttpSessionCsrfTokenRepository();
-        csrfRepo.setSessionAttributeName("_csrf");
-
-        CsrfTokenRequestAttributeHandler handler = new CsrfTokenRequestAttributeHandler();
-        handler.setCsrfRequestAttributeName(CsrfToken.class.getName());
-
         http
                 .authorizeHttpRequests(a -> a
                         .requestMatchers(
-                                "/", "/login",
-                                "/register", "/register/**", "/forgot-password",
-                                "/css/**", "/js/**", "/images/**", "/cart/**"
+                                "/", "/login", "/register", "/register/**",
+                                "/forgot-password", "/css/**", "/js/**",
+                                "/images/**", "/cart/**"
                         ).permitAll()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated() // Thay permitAll() bằng authenticated()
                 )
                 .formLogin(f -> f
                         .loginPage("/login")
-                        .defaultSuccessUrl("/", false)
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/", true)
+                        .failureUrl("/login?error=true")
                         .permitAll()
                 )
                 .logout(l -> l
@@ -67,7 +59,6 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/login?logout")
                         .permitAll()
                 )
-                // ✅ Cấu hình CSRF
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 );

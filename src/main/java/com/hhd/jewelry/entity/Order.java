@@ -31,11 +31,24 @@ public class Order {
     @ToString.Exclude @EqualsAndHashCode.Exclude
     private List<OrderItem> items;
 
-    public enum ShippingMethod {
-        DELIVERY, STORE_PICKUP
-    }
-
     public enum Status {
         PENDING, PAID, SHIPPING, COMPLETED, CANCELLED
+    }
+
+    public String getStatusDisplay() {
+        return switch (this.status) {
+            case PENDING -> "Chờ xác nhận";
+            case PAID -> "Đã thanh toán";
+            case SHIPPING -> "Đang giao hàng";
+            case COMPLETED -> "Hoàn thành";
+            case CANCELLED -> "Đã hủy";
+            default -> this.status.name();
+        };
+    }
+
+    public BigDecimal getTotalAmount() {
+        return items.stream()
+                .map(OrderItem::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

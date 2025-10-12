@@ -1,0 +1,39 @@
+package com.hhd.jewelry.service.impl;
+
+import com.hhd.jewelry.entity.Address;
+import com.hhd.jewelry.entity.User;
+import com.hhd.jewelry.repository.AddressRepository;
+import com.hhd.jewelry.service.AddressService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class AddressServiceImpl implements AddressService {
+
+    private final AddressRepository addressRepository;
+
+    @Override
+    public Page<Address> getAddressByUserId(int userId, Pageable pageable) {
+        return addressRepository.findByUserId(userId, pageable);
+    }
+
+    @Override
+    public Address getAddressById(int id) {
+        return addressRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public void save(Address address) {
+        addressRepository.save(address);
+    }
+
+    @Override
+    public void delete(Address address) {
+        addressRepository.delete(address);
+    }
+}
