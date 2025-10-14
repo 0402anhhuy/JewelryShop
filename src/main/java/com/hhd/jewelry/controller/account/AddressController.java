@@ -7,33 +7,51 @@ import com.hhd.jewelry.service.AddressService;
 import com.hhd.jewelry.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/account/address")
+@RequestMapping("/account")
 @RequiredArgsConstructor
 public class AddressController {
 
     private final AddressService addressService;
     private final UserService userService;
 
-    @PostMapping("/add")
-    public String addAddress(
+    @PostMapping("/address/add-ajax")
+    @ResponseBody
+    public Map<String, Object> addAddressAjax(
             Authentication auth,
             @Valid @ModelAttribute("addressForm") AddressDto dto,
-            BindingResult br, RedirectAttributes ra) {
+            BindingResult br) {
+
+        Map<String, Object> response = new HashMap<>();
 
         if (br.hasErrors()) {
-            ra.addFlashAttribute("toastType", "error");
-            ra.addFlashAttribute("toastTitle", "Lỗi validation");
-            ra.addFlashAttribute("toastMessage", "Vui lòng kiểm tra lại thông tin địa chỉ!");
-            ra.addFlashAttribute("org.springframework.validation.BindingResult.addressForm", br);
-            ra.addFlashAttribute("addressForm", dto);
-            return "redirect:/account#addresses";
+            response.put("success", false);
+            response.put("toastType", "error");
+            response.put("toastTitle", "Lỗi validation");
+
+            String errorMessage = br.getAllErrors().stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .collect(Collectors.joining(", "));
+
+            response.put("toastMessage", errorMessage);
+            response.put("errors", br.getFieldErrors().stream()
+                    .collect(Collectors.toMap(
+                            FieldError::getField,
+                            FieldError::getDefaultMessage
+                    )));
+            return response;
         }
 
         try {
@@ -49,37 +67,57 @@ public class AddressController {
             address.setWard(dto.getWard());
             address.setAddressLine(dto.getAddressLine());
             address.setIsDefault(dto.getIsDefault() != null ? dto.getIsDefault() : false);
+            address.setAddressType(dto.getAddressType());
 
-            addressService.save(address);
+            Address savedAddress = addressService.save(address);
 
-            ra.addFlashAttribute("toastType", "success");
-            ra.addFlashAttribute("toastTitle", "Thành công");
-            ra.addFlashAttribute("toastMessage", "Thêm địa chỉ mới thành công!");
+            response.put("success", true);
+            response.put("toastType", "success");
+            response.put("toastTitle", "Thành công");
+            response.put("toastMessage", "Thêm địa chỉ mới thành công!");
+            response.put("data", Map.of(
+                    "id", savedAddress.getId(),
+                    "receiverName", savedAddress.getReceiverName(),
+                    "phone", savedAddress.getPhone(),
+                    "city", savedAddress.getCity(),
+                    "district", savedAddress.getDistrict(),
+                    "ward", savedAddress.getWard(),
+                    "addressLine", savedAddress.getAddressLine(),
+                    "addressType", savedAddress.getAddressType(),
+                    "isDefault", savedAddress.getIsDefault()
+            ));
 
         } catch (Exception e) {
-            ra.addFlashAttribute("toastType", "error");
-            ra.addFlashAttribute("toastTitle", "Lỗi hệ thống");
-            ra.addFlashAttribute("toastMessage", "Không thể lưu địa chỉ. Vui lòng thử lại!");
+            response.put("success", false);
+            response.put("toastType", "error");
+            response.put("toastTitle", "Lỗi hệ thống");
+            response.put("toastMessage", "Không thể lưu địa chỉ: " + e.getMessage());
         }
 
-        return "redirect:/account#addresses";
+        return response;
     }
 
-    @PostMapping("/edit/{id}")
-    public String editAddress(
+    @PostMapping("/address/edit/{id}")
+    @ResponseBody
+    public Map<String, Object> editAddress(
             Authentication auth,
             @PathVariable Integer id,
-            @Valid @ModelAttribute("addressForm") AddressDto dto,
-            BindingResult br,
-            RedirectAttributes ra) {
+            @Valid @ModelAttribute AddressDto dto,
+            BindingResult br) {
+
+        Map<String, Object> response = new HashMap<>();
 
         if (br.hasErrors()) {
-            ra.addFlashAttribute("toastType", "error");
-            ra.addFlashAttribute("toastTitle", "Lỗi validation");
-            ra.addFlashAttribute("toastMessage", "Vui lòng kiểm tra lại thông tin địa chỉ!");
-            ra.addFlashAttribute("org.springframework.validation.BindingResult.addressForm", br);
-            ra.addFlashAttribute("addressForm", dto);
-            return "redirect:/account#addresses";
+            response.put("success", false);
+            response.put("toastType", "error");
+            response.put("toastTitle", "Lỗi validation");
+            response.put("toastMessage", "Vui lòng kiểm tra lại thông tin địa chỉ!");
+            response.put("errors", br.getFieldErrors().stream()
+                    .collect(Collectors.toMap(
+                            FieldError::getField,
+                            FieldError::getDefaultMessage
+                    )));
+            return response;
         }
 
         try {
@@ -90,41 +128,75 @@ public class AddressController {
 
             // Kiểm tra quyền sở hữu
             if (!address.getUser().getId().equals(user.getId())) {
-                ra.addFlashAttribute("toastType", "error");
-                ra.addFlashAttribute("toastTitle", "Lỗi quyền truy cập");
-                ra.addFlashAttribute("toastMessage", "Bạn không có quyền chỉnh sửa địa chỉ này!");
-                return "redirect:/account#addresses";
+                response.put("success", false);
+                response.put("toastType", "error");
+                response.put("toastTitle", "Lỗi quyền truy cập");
+                response.put("toastMessage", "Bạn không có quyền chỉnh sửa địa chỉ này!");
+                return response;
             }
 
-            // Cập nhật thông tin từ DTO
+            // Lưu trạng thái mặc định cũ
+            boolean wasDefault = address.getIsDefault();
+
+            // Cập nhật thông tin
             address.setReceiverName(dto.getReceiverName());
             address.setPhone(dto.getPhone());
             address.setCity(dto.getCity());
             address.setDistrict(dto.getDistrict());
             address.setWard(dto.getWard());
             address.setAddressLine(dto.getAddressLine());
-            address.setIsDefault(dto.getIsDefault() != null ? dto.getIsDefault() : false);
+            address.setAddressType(dto.getAddressType());
 
-            addressService.save(address);
+            // Xử lý đặt làm mặc định
+            boolean newDefaultStatus = dto.getIsDefault() != null ? dto.getIsDefault() : false;
 
-            ra.addFlashAttribute("toastType", "success");
-            ra.addFlashAttribute("toastTitle", "Thành công");
-            ra.addFlashAttribute("toastMessage", "Cập nhật địa chỉ thành công!");
+            if (newDefaultStatus && !wasDefault) {
+                // Bỏ mặc định các địa chỉ khác
+                List<Address> userAddresses = addressService.getAddressesByUser(user);
+                for (Address addr : userAddresses) {
+                    if (addr.getIsDefault() && !addr.getId().equals(address.getId())) {
+                        addr.setIsDefault(false);
+                        addressService.save(addr);
+                    }
+                }
+            }
+
+            address.setIsDefault(newDefaultStatus);
+
+            Address updatedAddress = addressService.save(address);
+
+            response.put("success", true);
+            response.put("toastType", "success");
+            response.put("toastTitle", "Thành công");
+            response.put("toastMessage", "Cập nhật địa chỉ thành công!");
+
+            // QUAN TRỌNG: Trả về đầy đủ data để cập nhật UI
+            response.put("data", Map.of(
+                    "id", updatedAddress.getId(),
+                    "receiverName", updatedAddress.getReceiverName(),
+                    "phone", updatedAddress.getPhone(),
+                    "city", updatedAddress.getCity(),
+                    "district", updatedAddress.getDistrict(),
+                    "ward", updatedAddress.getWard(),
+                    "addressLine", updatedAddress.getAddressLine(),
+                    "addressType", updatedAddress.getAddressType(),
+                    "isDefault", updatedAddress.getIsDefault()
+            ));
 
         } catch (Exception e) {
-            ra.addFlashAttribute("toastType", "error");
-            ra.addFlashAttribute("toastTitle", "Lỗi hệ thống");
-            ra.addFlashAttribute("toastMessage", "Không thể cập nhật địa chỉ. Vui lòng thử lại!");
+            response.put("success", false);
+            response.put("toastType", "error");
+            response.put("toastTitle", "Lỗi hệ thống");
+            response.put("toastMessage", "Không thể cập nhật địa chỉ. Vui lòng thử lại!");
         }
 
-        return "redirect:/account#addresses";
+        return response;
     }
 
-    @PostMapping("/delete/{id}")
-    public String deleteAddress(
-            Authentication auth,
-            @PathVariable Integer id,
-            RedirectAttributes ra) {
+    @GetMapping("/address/get/{id}")
+    @ResponseBody
+    public Map<String, Object> getAddress(Authentication auth, @PathVariable Integer id) {
+        Map<String, Object> response = new HashMap<>();
 
         try {
             User user = userService.findByEmail(auth.getName())
@@ -134,24 +206,137 @@ public class AddressController {
 
             // Kiểm tra quyền sở hữu
             if (!address.getUser().getId().equals(user.getId())) {
-                ra.addFlashAttribute("toastType", "error");
-                ra.addFlashAttribute("toastTitle", "Lỗi quyền truy cập");
-                ra.addFlashAttribute("toastMessage", "Bạn không có quyền xóa địa chỉ này!");
-                return "redirect:/account#addresses";
+                response.put("success", false);
+                response.put("message", "Không có quyền truy cập");
+                return response;
             }
 
-            addressService.delete(address);
-
-            ra.addFlashAttribute("toastType", "success");
-            ra.addFlashAttribute("toastTitle", "Thành công");
-            ra.addFlashAttribute("toastMessage", "Đã xóa địa chỉ thành công!");
+            response.put("success", true);
+            response.put("receiverName", address.getReceiverName());
+            response.put("phone", address.getPhone());
+            response.put("city", address.getCity());
+            response.put("district", address.getDistrict());
+            response.put("ward", address.getWard());
+            response.put("addressLine", address.getAddressLine());
+            response.put("addressType", address.getAddressType());
+            response.put("isDefault", address.getIsDefault());
 
         } catch (Exception e) {
-            ra.addFlashAttribute("toastType", "error");
-            ra.addFlashAttribute("toastTitle", "Lỗi hệ thống");
-            ra.addFlashAttribute("toastMessage", "Không thể xóa địa chỉ. Vui lòng thử lại!");
+            response.put("success", false);
+            response.put("message", "Không thể tải thông tin địa chỉ");
         }
 
-        return "redirect:/account#addresses";
+        return response;
+    }
+
+    @PostMapping("/address/set-default/{id}")
+    @ResponseBody
+    public Map<String, Object> setDefaultAddress(
+            Authentication auth,
+            @PathVariable Integer id) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            User user = userService.findByEmail(auth.getName())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+            Address address = addressService.getAddressById(id);
+
+            // Kiểm tra quyền sở hữu
+            if (!address.getUser().getId().equals(user.getId())) {
+                response.put("success", false);
+                response.put("toastType", "error");
+                response.put("toastTitle", "Lỗi quyền truy cập");
+                response.put("toastMessage", "Bạn không có quyền thay đổi địa chỉ này!");
+                return response;
+            }
+
+            // Bỏ đặt mặc định tất cả các địa chỉ của user
+            List<Address> userAddresses = addressService.getAddressesByUser(user);
+            for (Address addr : userAddresses) {
+                if (addr.getIsDefault()) {
+                    addr.setIsDefault(false);
+                    addressService.save(addr);
+                }
+            }
+
+            // Đặt địa chỉ này làm mặc định
+            address.setIsDefault(true);
+            addressService.save(address);
+
+            response.put("success", true);
+            response.put("toastType", "success");
+            response.put("toastTitle", "Thành công");
+            response.put("toastMessage", "Đã đặt địa chỉ làm mặc định!");
+
+            // FIX: Thêm data trả về với ID
+            response.put("data", Map.of("id", address.getId()));
+
+            return response;
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("toastType", "error");
+            response.put("toastTitle", "Lỗi hệ thống");
+            response.put("toastMessage", "Không thể đặt địa chỉ mặc định. Vui lòng thử lại!");
+            return response;
+        }
+    }
+
+    @PostMapping("/address/delete/{id}")
+    @ResponseBody
+    public Map<String, Object> deleteAddress(
+            Authentication auth,
+            @PathVariable Integer id) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            User user = userService.findByEmail(auth.getName())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+            Address address = addressService.getAddressById(id);
+
+            if (!address.getUser().getId().equals(user.getId())) {
+                response.put("success", false);
+                response.put("toastType", "error");
+                response.put("toastTitle", "Lỗi quyền truy cập");
+                response.put("toastMessage", "Bạn không có quyền xóa địa chỉ này!");
+                return response;
+            }
+
+            // FIX: Kiểm tra nếu đây là địa chỉ mặc định
+            boolean wasDefault = address.getIsDefault();
+
+            // Xóa địa chỉ
+            addressService.delete(address);
+
+            response.put("success", true);
+            response.put("toastType", "success");
+            response.put("toastTitle", "Thành công");
+            response.put("toastMessage", "Đã xóa địa chỉ thành công!");
+
+            // FIX: Nếu xóa địa chỉ mặc định, tự động đặt địa chỉ đầu tiên làm mặc định
+            if (wasDefault) {
+                List<Address> remainingAddresses = addressService.getAddressesByUser(user);
+                if (!remainingAddresses.isEmpty()) {
+                    Address firstAddress = remainingAddresses.get(0);
+                    firstAddress.setIsDefault(true);
+                    addressService.save(firstAddress);
+
+                    // Trả về ID của địa chỉ mặc định mới
+                    response.put("data", Map.of("newDefaultId", firstAddress.getId()));
+                }
+            }
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("toastType", "error");
+            response.put("toastTitle", "Lỗi hệ thống");
+            response.put("toastMessage", "Không thể xóa địa chỉ. Vui lòng thử lại!");
+        }
+
+        return response;
     }
 }

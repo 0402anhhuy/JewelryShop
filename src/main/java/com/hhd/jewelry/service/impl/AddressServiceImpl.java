@@ -23,13 +23,24 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    public Address getAddressById(int id) {
-        return addressRepository.findById(id).orElse(null);
+    public List<Address> getAddressByUserId(int userId) {
+        return addressRepository.findByUserId(userId);
     }
 
     @Override
-    public void save(Address address) {
-        addressRepository.save(address);
+    public List<Address> getAddressesByUser(User user) {
+        return addressRepository.findAddressesByUser(user);
+    }
+
+
+    @Override
+    public Address getAddressById(int id) {
+        return addressRepository.findById(id);
+    }
+
+    @Override
+    public Address save(Address address) {
+        return addressRepository.save(address);
     }
 
     @Override

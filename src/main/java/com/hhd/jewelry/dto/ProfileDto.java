@@ -10,15 +10,13 @@ import java.time.LocalDate;
 
 @Data
 public class ProfileDto {
-    @NotBlank
     private String fullname;
 
-    @Email @NotBlank
+    @Email
     private String email;
 
     private String phone;
 
-    @NotBlank
     private String gender;
 
     @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

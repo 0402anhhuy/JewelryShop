@@ -7,6 +7,7 @@
     <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Tài Khoản Của Tôi - LuxuryGems</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
     <style>
         * {
             margin: 0;
@@ -34,6 +35,7 @@
             color: var(--text-color);
             line-height: 1.6;
             min-height: 100vh;
+            padding-top: 120px;
         }
 
         /* Header */
@@ -42,6 +44,11 @@
             padding: 20px 0;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             margin-bottom: 30px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
         }
 
         .header-content {
@@ -65,20 +72,85 @@
             color: var(--primary-color);
         }
 
+        /* Header Icons Container */
         .header-icons {
             display: flex;
-            gap: 25px;
-            font-size: 20px;
+            gap: 15px;
+            align-items: center;
         }
 
-        .header-icons i {
-            cursor: pointer;
-            transition: color 0.3s;
-            color: #000;
+        /* Nav Link with Hover Effect */
+        .nav-link {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-color);
+            background: #f5f1f1;
+            overflow: hidden;
+            width: 48px;
+            transition: width 0.5s ease, color 0.3s ease;
+            will-change: width;
         }
 
-        .header-icons i:hover {
+        .nav-link:hover {
+            width: 120px;
             color: var(--primary-color);
+        }
+
+        /* Icon */
+        .nav-link i {
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+            transition: transform 0.5s ease;
+            will-change: transform;
+        }
+
+        .nav-link:hover i {
+            transform: translateX(-8px);
+        }
+
+        /* Text Label */
+        .nav-link .nav-text {
+            font-size: 0.95rem;
+            font-weight: 600;
+            white-space: nowrap;
+            margin-left: 0.75rem;
+            opacity: 0;
+            transform: translateX(-5px);
+            transition: opacity 0.4s ease 0.15s, transform 0.5s ease 0.15s;
+            will-change: opacity, transform;
+        }
+
+        .nav-link:hover .nav-text {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Badge for Cart */
+        .nav-link .badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #e74c3c;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            transition: all 0.5s ease;
+            will-change: top, left, right;
+        }
+
+        .nav-link:hover .badge {
+            top: 6px;
+            right: auto;
+            left: calc(100% - 28px);
         }
 
         /* Main Container */
@@ -265,7 +337,7 @@
             font-size: 14px;
         }
 
-        /* Profile Form */
+        /* Form Groups */
         .form-row {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -275,6 +347,7 @@
 
         .form-group {
             margin-bottom: 20px;
+            position: relative;
         }
 
         .form-label {
@@ -285,6 +358,23 @@
             margin-bottom: 8px;
         }
 
+        /* Input wrapper với icon */
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            color: #999;
+            font-size: 16px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Default style cho tất cả input */
         .form-input,
         .form-select {
             width: 100%;
@@ -294,6 +384,13 @@
             font-size: 15px;
             transition: all 0.3s;
             outline: none;
+            background: #fff;
+        }
+
+        /* Padding đặc biệt cho input có icon */
+        .input-wrapper .form-input,
+        .input-wrapper .form-select {
+            padding-left: 45px !important;
         }
 
         .form-input:focus,
@@ -302,9 +399,138 @@
             box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
         }
 
-        .form-input:disabled {
-            background: #f5f5f5;
+        .form-input::placeholder {
+            color: #999;
+        }
+
+        /* Bỏ mũi tên dropdown */
+        .form-select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: none;
+            cursor: pointer;
+        }
+
+        .form-select::-ms-expand {
+            display: none;
+        }
+
+        .form-select:disabled {
+            background-color: #f8f9fa;
+            border-color: #e9ecef;
+            color: #6c757d;
             cursor: not-allowed;
+        }
+
+        /* Input readonly */
+        .form-input:read-only {
+            background-color: #f8f9fa;
+            border-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .form-input:not(:read-only) {
+            background-color: #fff;
+            border-color: #e0e0e0;
+        }
+
+        /* Checkbox */
+        .form-group.checkbox label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--dark-color);
+            font-weight: 400;
+        }
+
+        .form-group.checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        /* Modal Overlay */
+        .address-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .address-modal.show {
+            display: flex;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Modal Content */
+        .address-modal-content {
+            background: #fff;
+            border-radius: 16px;
+            padding: 40px 30px 40px 40px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+        }
+
+        .address-modal-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .address-modal-content::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .address-modal-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        /* Modal Header */
+        .address-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .address-modal-header h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .address-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+            transition: color 0.3s;
+        }
+
+        .address-modal-close:hover {
+            color: var(--danger-color);
         }
 
         .btn {
@@ -338,6 +564,11 @@
 
         .btn-secondary:hover {
             background: #5a6268;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         /* Orders List */
@@ -492,7 +723,7 @@
         /* Address Cards */
         .address-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(305px, 1fr));
             gap: 20px;
         }
 
@@ -583,27 +814,6 @@
             flex-wrap: wrap;
         }
 
-        .form-input:read-only {
-            background-color: #f8f9fa;
-            cursor: not-allowed;
-            border-color: #e9ecef;
-        }
-
-        .form-input:not(:read-only) {
-            background-color: #fff;
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
-        }
-
-        .btn {
-            transition: all 0.3s ease;
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
         /* Wishlist Grid */
         .wishlist-grid {
             display: grid;
@@ -641,23 +851,6 @@
 
         .wishlist-item:hover .wishlist-image img {
             transform: scale(1.1);
-        }
-
-        .form-input:read-only, .form-select:disabled {
-            background-color: #f8f9fa;
-            border-color: #e9ecef;
-            color: #6c757d;
-            cursor: not-allowed;
-        }
-
-        .form-input:not(:read-only) {
-            background-color: #fff;
-            border-color: #007bff;
-        }
-
-        .form-group label small {
-            font-size: 0.8em;
-            font-weight: normal;
         }
 
         .remove-wishlist {
@@ -704,101 +897,14 @@
             gap: 8px;
         }
 
-        /* Modal Overlay */
-        .address-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s ease;
+        /* Trong phần style, thêm */
+        .form-group.checkbox[style*="display: none"] {
+            display: none !important;
         }
 
-        /* Modal Content */
-        .address-modal-content {
-            background: #fff;
-            border-radius: 16px; /* Bo đều 4 góc */
-            padding: 40px 30px 40px 40px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-            animation: slideUp 0.3s ease;
-
-            /* Thêm để tránh scrollbar phá bo góc */
-            scrollbar-width: thin; /* Firefox */
-            scrollbar-color: transparent transparent;
-        }
-
-        .address-modal-content::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .address-modal-content::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-
-        .address-modal-content::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        /* Modal Header */
-        .address-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .address-modal-header h3 {
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--dark-color);
-        }
-
-        .address-modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #888;
-            transition: color 0.3s;
-        }
-
-        .address-modal-close:hover {
-            color: var(--danger-color);
-        }
-
-        /* Checkbox */
-        .form-group.checkbox label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            color: var(--dark-color);
-        }
-
-        /* Actions */
-        .form-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 30px;
-        }
-
-        /* Animation */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(40px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        /* Đảm bảo checkbox hiển thị khi cần */
+        .form-group.checkbox {
+            transition: all 0.3s ease;
         }
 
         /* Toast Notification */
@@ -873,6 +979,10 @@
             background: #17a2b8;
         }
 
+        .toast.warning::before {
+            background: #ffc107;
+        }
+
         .toast-icon {
             width: 24px;
             height: 24px;
@@ -895,6 +1005,10 @@
 
         .toast.info .toast-icon {
             background: #17a2b8;
+        }
+
+        .toast.warning .toast-icon {
+            background: #ffc107;
         }
 
         .toast-content {
@@ -932,6 +1046,41 @@
             color: #333;
         }
 
+        /* Toast với actions (confirm/cancel) */
+        .toast-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .toast-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toast-btn.confirm {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .toast-btn.confirm:hover {
+            background: #c19b2a;
+        }
+
+        .toast-btn.cancel {
+            background: #6c757d;
+            color: white;
+        }
+
+        .toast-btn.cancel:hover {
+            background: #5a6268;
+        }
+
         /* Empty State */
         .empty-state {
             text-align: center;
@@ -953,6 +1102,46 @@
         .empty-state p {
             color: #666;
             margin-bottom: 25px;
+        }
+
+        #fullAddress {
+            resize: none;
+            min-height: 50px;
+            height: 50px;
+            overflow-y: auto;
+            cursor: not-allowed;
+            transition: height 0.2s ease;
+        }
+
+        .form-grid-2x2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-grid-2x2 .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-grid-2x2 .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-grid-2x2 .form-input {
+            width: 100%;
+        }
+
+        .set-default-btn {
+            transition: all 0.3s ease;
+        }
+
+        .set-default-btn:hover {
+            background: var(--primary-color) !important;
+            color: white !important;
+            border-color: var(--primary-color) !important;
         }
 
         /* Responsive */
@@ -977,8 +1166,15 @@
 
         @media (max-width: 768px) {
             .header-content {
-                flex-direction: column;
-                gap: 15px;
+                padding: 1rem;
+            }
+
+            .brand {
+                font-size: 1.2rem;
+            }
+
+            .nav-link:hover {
+                width: 120px;
             }
 
             .account-content {
@@ -1012,6 +1208,16 @@
             .wishlist-grid {
                 grid-template-columns: 1fr;
             }
+
+            .form-grid-2x2 {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .address-modal-content {
+                width: 95%;
+                padding: 30px 20px;
+            }
         }
     </style>
 </head>
@@ -1021,8 +1227,15 @@
     <div class="header-content">
         <a th:href="@{/}" class="brand">LUXURY<span>GEMS</span></a>
         <div class="header-icons">
-            <a th:href="@{/products}" aria-label="Products" title="Products"><i class="fas fa-box-open"></i></a>
-            <a th:href="@{/cart}" aria-label="Cart" title="Cart"><i class="fas fa-shopping-bag"></i></a>
+            <a th:href="@{/products}" class="nav-link">
+                <i class="fas fa-box-open"></i>
+                <span class="nav-text">Products</span>
+            </a>
+            <a th:href="@{/cart}" class="nav-link">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="nav-text">Cart</span>
+                <span class="badge" th:if="${cartItemCount > 0}" th:text="${cartItemCount}">3</span>
+            </a>
         </div>
     </div>
 </header>
@@ -1091,44 +1304,44 @@
             <div class="section-header">
                 <h2 class="section-title">Thông Tin Cá Nhân</h2>
             </div>
-            <form th:action="@{/account}" th:object="${form}" method="post" id="profileForm">
+            <form th:action="@{/account}" th:object="${form}" method="POST" id="profileForm">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <!-- Hàng 1: Họ và tên -->
                 <div class="form-group">
                     <label class="form-label">Họ và tên</label>
                     <input type="text" th:field="*{fullname}" class="form-input" placeholder="Họ và tên" readonly id="fullnameInput">
                 </div>
 
+                <!-- Hàng 2: Email -->
                 <div class="form-group">
                     <label class="form-label">Email</label>
                     <input type="email" th:field="*{email}" class="form-input" placeholder="Email" readonly id="emailInput">
-                    <!-- Hiển thị lỗi cụ thể nếu có -->
-                    <div th:if="${param.emailError != null}" class="error-message" th:text="${param.emailError}"></div>
                 </div>
 
-                <div class="form-row">
+                <!-- Grid 2x2: Số điện thoại, Ngày sinh, Giới tính, Thành viên từ -->
+                <div class="form-grid-2x2">
+                    <!-- Hàng 1 cột 1: Số điện thoại -->
                     <div class="form-group">
                         <label class="form-label">Số điện thoại</label>
                         <input type="tel" th:field="*{phone}" class="form-input" placeholder="Nhập số điện thoại" readonly id="phoneInput">
-                        <div th:if="${param.phoneError != null}" class="error-message" th:text="${param.phoneError}"></div>
                     </div>
 
+                    <!-- Hàng 1 cột 2: Ngày sinh -->
                     <div class="form-group">
                         <label class="form-label">Ngày sinh</label>
                         <input type="date" th:field="*{dateOfBirth}" class="form-input" readonly id="dobInput">
                     </div>
-                </div>
 
-                <div class="form-row">
+                    <!-- Hàng 2 cột 1: Giới tính -->
                     <div class="form-group">
                         <label class="form-label">Giới tính</label>
-                        <select th:field="*{gender}" class="form-input" readonly id="genderSelect" style="appearance: none; background-color: #f8f9fa;">
-                            <option value="">Chưa cập nhật</option>
-                            <option value="MALE">Nam</option>
-                            <option value="FEMALE">Nữ</option>
-                            <option value="OTHER">Khác</option>
-                        </select>
+                        <input type="hidden" name="gender" th:value="${user.gender}" />
+                        <input class="form-input" readonly id="genderSelect"
+                               th:value="*{gender} == 'MALE' ? 'Nam' : (*{gender} == 'FEMALE' ? 'Nữ' : *{gender})">
                     </div>
 
+                    <!-- Hàng 2 cột 2: Thành viên từ -->
                     <div class="form-group">
                         <label class="form-label">Thành viên từ</label>
                         <input type="text" class="form-input" th:value="${user?.createdAt != null ? #temporals.format(user.createdAt, 'dd/MM/yyyy') : 'N/A'}" readonly>
@@ -1223,18 +1436,19 @@
             </div>
         </section>
 
-        <!-- Addresses Section - Thay thế phần cũ -->
+        <!-- Addresses Section -->
         <section class="content-section" id="addresses">
             <div class="section-header">
                 <h2 class="section-title">Địa Chỉ Giao Hàng</h2>
             </div>
 
             <div class="address-grid">
-                <!-- Loop through addresses -->
-                <div class="address-card" th:each="address : ${addresses}" th:classappend="${address.isDefault} ? 'default' : ''">
-                <span class="default-badge" th:if="${address.isDefault}">
-                    <i class="fas fa-check"></i> Mặc định
-                </span>
+                <div class="address-card" th:each="address : ${addresses}"
+                     th:classappend="${address.isDefault} ? 'default' : ''"
+                     th:attr="data-address-id=${address.id}">
+                    <span class="default-badge" th:if="${address.isDefault}">
+                <i class="fas fa-check"></i> Mặc định
+            </span>
                     <div class="address-name" th:text="${address.receiverName}">Nguyễn Văn A</div>
                     <div class="address-phone">
                         <i class="fas fa-phone"></i>
@@ -1245,23 +1459,15 @@
                         <span th:if="${address.ward}" th:text="', ' + ${address.ward}">, Phường Tân Bình</span>
                         <span th:if="${address.district}" th:text="', ' + ${address.district}">, Quận 1</span>
                         <span th:if="${address.city}" th:text="', ' + ${address.city}">, TP. Hồ Chí Minh</span>
-                    </div>.addressType == 'office'} ? 'fa-building' : 'fa-map-marker-alt')">
-                    <span th:text="${address.addressType == 'home'} ? 'Nhà riêng' :
-                              (${address.addressType == 'office'} ? 'Văn phòng' : 'Khác')">Nhà riêng
-                    </span>
+                    </div>
+                    <span th:text="${address.addressType == 'home'} ? 'Nhà riêng' : (${address.addressType == 'office'} ? 'Văn phòng' : 'Khác')">Nhà riêng</span>
                     <div class="address-actions">
-                        <button class="btn btn-sm"
-                                th:if="${!address.isDefault}"
-                                style="background: white; border: 1px solid var(--border-color); color: var(--primary-color);"
-                                th:onclick="'setDefaultAddress(' + ${address.id} + ')'">
-                            <i class="fas fa-star"></i> Đặt mặc định
-                        </button>
                         <button class="btn btn-sm btn-primary"
                                 th:onclick="'editAddress(' + ${address.id} + ')'">
                             <i class="fas fa-edit"></i> Sửa
                         </button>
                         <button class="btn btn-sm btn-secondary"
-                                th:onclick="'deleteAddress(' + ${address.id} + ')'">
+                                th:onclick="'confirmDeleteAddress(' + ${address.id} + ')'">
                             <i class="fas fa-trash"></i> Xóa
                         </button>
                     </div>
@@ -1279,7 +1485,6 @@
         <section class="content-section" id="wishlist">
             <div class="section-header">
                 <h2 class="section-title">Sản Phẩm Yêu Thích</h2>
-                <p class="section-subtitle">Danh sách những món trang sức bạn đã lưu lại</p>
                 <div th:if="${wishlistItems.hasContent}" class="wishlist-count">
                     Tổng cộng: <span th:text="${wishlistItems.totalElements}"></span> sản phẩm
                 </div>
@@ -1353,67 +1558,97 @@
                 </button>
             </div>
 
-            <form id="addressForm" th:action="@{/account/address/add}" method="post" onsubmit="saveAddress(event)">
-                <!-- CSRF Token -->
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <form id="addressForm" action="/account/address/add-ajax" method="POST" onsubmit="saveAddress(event)">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
 
                 <div class="form-group">
                     <label class="form-label">Họ và tên <span style="color: var(--danger-color);">*</span></label>
-                    <input type="text" name="receiverName" class="form-input" placeholder="Nhập họ và tên" required>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" name="receiverName" class="form-input" placeholder="Nhập họ và tên" required>
+                    </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Số điện thoại <span style="color: var(--danger-color);">*</span></label>
-                        <input type="tel" name="phone" class="form-input" placeholder="Nhập số điện thoại"
-                               pattern="[0-9]{10,11}" required>
+                        <div class="input-wrapper">
+                            <i class="fas fa-phone input-icon"></i>
+                            <input type="tel" name="phone" class="form-input" placeholder="Nhập số điện thoại"
+                                   pattern="[0-9]{10,11}" required>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Loại địa chỉ</label>
-                        <select name="addressType" class="form-select">
-                            <option value="home" selected>Nhà riêng</option>
-                            <option value="office">Văn phòng</option>
-                            <option value="other">Khác</option>
-                        </select>
+                        <div class="input-wrapper">
+                            <i class="fas fa-tag input-icon"></i>
+                            <select name="addressType" class="form-select">
+                                <option value="home" selected>Nhà riêng</option>
+                                <option value="office">Văn phòng</option>
+                                <option value="other">Khác</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grid 2x2: Tỉnh, Huyện, Xã, Số nhà -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Tỉnh/Thành phố <span style="color: var(--danger-color);">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-map-marker-alt input-icon"></i>
+                            <select id="city" name="city" class="form-select" required>
+                                <option value="">- Chọn Tỉnh/Thành -</option>
+                                <option value="hanoi">Hà Nội</option>
+                                <option value="hcm">Hồ Chí Minh</option>
+                                <option value="danang">Đà Nẵng</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quận/Huyện <span style="color: var(--danger-color);">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-map-marker-alt input-icon"></i>
+                            <select id="district" name="district" class="form-select" required disabled>
+                                <option value="">- Chọn Quận/Huyện -</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">Tỉnh/Thành phố <span style="color: var(--danger-color);">*</span></label>
-                        <select id="city" name="city" class="form-select" required>
-                            <option value="">- Chọn Tỉnh/Thành -</option>
-                        </select>
+                        <label class="form-label">Phường/Xã <span style="color: var(--danger-color);">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-map-marker-alt input-icon"></i>
+                            <select id="ward" name="ward" class="form-select" required disabled>
+                                <option value="">- Chọn Phường/Xã -</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Quận/Huyện <span style="color: var(--danger-color);">*</span></label>
-                        <select id="district" name="district" class="form-select" required disabled>
-                            <option value="">- Chọn Quận/Huyện -</option>
-                        </select>
+                        <label class="form-label">Số nhà/Tên đường <span style="color: var(--danger-color);">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-home input-icon"></i>
+                            <input type="text" id="addressLine" name="addressLine" class="form-input"
+                                   placeholder="Số nhà/Tên đường" required>
+                        </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Phường/Xã <span style="color: var(--danger-color);">*</span></label>
-                    <select id="ward" name="ward" class="form-select" required disabled>
-                        <option value="">- Chọn Phường/Xã -</option>
-                    </select>
+                    <label class="form-label">Địa chỉ</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-map-marked-alt input-icon"></i>
+                        <textarea id="fullAddress" name="fullAddress" class="form-input" readonly></textarea>
+                    </div>
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label">Địa chỉ cụ thể <span style="color: var(--danger-color);">*</span></label>
-                    <textarea id="addressLine" name="addressLine" class="form-input" rows="3"
-                              placeholder="Số nhà, tên đường..." required></textarea>
-                </div>
-
                 <div class="form-group checkbox">
                     <label>
-                        <input type="checkbox" name="isDefault" value="true"
-                               style="width: 18px; height: 18px; accent-color: var(--primary-color);">
+                        <input type="checkbox" name="isDefault" value="true">
                         <span>Đặt làm địa chỉ mặc định</span>
                     </label>
                 </div>
-
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Lưu địa chỉ
@@ -1426,12 +1661,15 @@
         </div>
     </div>
 </div>
+<footer th:replace="client_1/layout/footer :: footer"></footer>
 <script>
     // ===== TOAST FUNCTIONS =====
     function showToast(type, title, message, showConfirm = false, confirmCallback = null) {
         const toastContainer = document.getElementById('toastContainer');
+        if (!toastContainer) return;
+
         const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
+        toast.className = `toast ${type || 'info'}`;
 
         const iconMap = {
             success: '✓',
@@ -1440,35 +1678,44 @@
             warning: '⚠'
         };
 
+        const icon = iconMap[type] || iconMap.info;
+
         let buttonsHtml = '';
         if (showConfirm && confirmCallback) {
             buttonsHtml = `
-        <div class="toast-actions">
-            <button class="toast-btn confirm" onclick="this.closest('.toast').remove(); ${confirmCallback.name}()">Xác nhận</button>
-            <button class="toast-btn cancel" onclick="this.closest('.toast').remove()">Hủy</button>
-        </div>
-    `;
+            <div class="toast-actions">
+                <button class="toast-btn confirm">Xác nhận</button>
+                <button class="toast-btn cancel">Hủy</button>
+            </div>
+        `;
         }
 
         toast.innerHTML = `
-    <div class="toast-icon">${iconMap[type]}</div>
-    <div class="toast-content">
-        <div class="toast-title">${title}</div>
-        <div class="toast-message">${message}</div>
-        ${buttonsHtml}
-    </div>
-    ${!showConfirm ? '<button class="toast-close">×</button>' : ''}
-`;
-
-        if (!showConfirm) {
-            toast.querySelector('.toast-close').addEventListener('click', () => removeToast(toast));
-        }
+            <div class="toast-icon">${icon}</div>
+            <div class="toast-content">
+                <div class="toast-title">${title || ''}</div>
+                <div class="toast-message">${message || ''}</div>
+                ${buttonsHtml}
+            </div>
+            ${!showConfirm ? '<button class="toast-close">×</button>' : ''}
+        `;
 
         toastContainer.appendChild(toast);
 
-        // Auto remove after 4 seconds if not a confirmation toast
         if (!showConfirm) {
+            const closeBtn = toast.querySelector('.toast-close');
+            if (closeBtn) closeBtn.addEventListener('click', () => removeToast(toast));
             setTimeout(() => removeToast(toast), 4000);
+        } else if (confirmCallback) {
+            const confirmBtn = toast.querySelector('.toast-btn.confirm');
+            const cancelBtn = toast.querySelector('.toast-btn.cancel');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', () => {
+                    try { confirmCallback(); } catch (e) { console.error('Confirm callback error:', e); }
+                    finally { removeToast(toast); }
+                });
+            }
+            if (cancelBtn) cancelBtn.addEventListener('click', () => removeToast(toast));
         }
     }
 
@@ -1483,25 +1730,111 @@
         }
     }
 
-    // Enhanced toast with actions
-    function showConfirmToast(title, message, confirmText, cancelText, confirmCallback) {
-        const toastContainer = document.getElementById('toastContainer');
-        const toast = document.createElement('div');
-        toast.className = 'toast warning';
+    // Helper: lấy CSRF token an toàn (meta or hidden inputs)
+    function getCsrfToken() {
+        const meta = document.querySelector('meta[name="_csrf"]');
+        if (meta) return meta.getAttribute('content') || '';
+        const input = document.querySelector('input[name="_csrf"]');
+        if (input) return input.value || '';
+        // Fallback: tìm hidden input có tên chứa 'csrf'
+        const hidden = document.querySelector('input[type="hidden"][name]');
+        if (hidden && /csrf/i.test(hidden.name)) return hidden.value || '';
+        return '';
+    }
 
-        toast.innerHTML = `
-    <div class="toast-icon">⚠</div>
-    <div class="toast-content">
-        <div class="toast-title">${title}</div>
-        <div class="toast-message">${message}</div>
-        <div class="toast-actions">
-            <button class="toast-btn confirm" onclick="this.closest('.toast').remove(); (${confirmCallback})()">${confirmText}</button>
-            <button class="toast-btn cancel" onclick="this.closest('.toast').remove()">${cancelText}</button>
-        </div>
-    </div>
-`;
+    // Hàm thực hiện đặt địa chỉ mặc định - SỬA LẠI
+    function performSetDefaultAddress(id) {
+        const csrfToken = getCsrfToken();
 
-        toastContainer.appendChild(toast);
+        // Hiển thị loading
+        showToast('info', 'Đang xử lý', 'Đang đặt địa chỉ mặc định...');
+
+        fetch(`/account/address/set-default/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `_csrf=${encodeURIComponent(csrfToken)}`
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(result => {
+                console.log('Set default result:', result); // Debug
+
+                if (result.success) {
+                    showToast(result.toastType || 'success', result.toastTitle || 'Thành công', result.message || result.toastMessage);
+                    // Prefer server-returned id if available
+                    const newDefaultId = result.data && result.data.id ? result.data.id : id;
+                    updateDefaultAddressUI(newDefaultId);
+                } else {
+                    showToast(result.toastType || 'error', result.toastTitle || 'Lỗi', result.message || result.toastMessage);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('error', 'Lỗi', 'Không thể đặt địa chỉ mặc định. Vui lòng thử lại!');
+            });
+    }
+
+    // Hàm xóa card địa chỉ khỏi grid
+    function removeAddressCardFromGrid(addressId) {
+        const addressCard = document.querySelector(`.address-card[data-address-id="${String(addressId)}"]`);
+        if (addressCard) {
+            // Animation xóa
+            addressCard.style.transform = 'scale(0.9)';
+            addressCard.style.opacity = '0';
+
+            setTimeout(() => {
+                addressCard.remove();
+            }, 300);
+        }
+    }
+
+    // Hàm thực hiện xóa địa chỉ
+    function performDeleteAddress(id) {
+        const csrfToken = getCsrfToken();
+
+        showToast('info', 'Đang xử lý', 'Đang xóa địa chỉ...');
+
+        fetch(`/account/address/delete/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `_csrf=${encodeURIComponent(csrfToken)}`
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(result => {
+                console.log('Delete result:', result);
+
+                if (result.success) {
+                    // Xóa card khỏi grid
+                    removeAddressCardFromGrid(id);
+                    showToast('success', 'Thành công', result.toastMessage || 'Đã xóa địa chỉ thành công!');
+
+                    // Cập nhật địa chỉ mặc định nếu cần
+                    if (result.data && result.data.newDefaultId) {
+                        updateDefaultAddressUI(result.data.newDefaultId);
+                    }
+                } else {
+                    showToast('error', 'Lỗi', result.toastMessage || 'Không thể xóa địa chỉ!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('error', 'Lỗi', 'Không thể xóa địa chỉ. Vui lòng thử lại!');
+            });
     }
 
     // ===== PROFILE EDIT FUNCTIONS =====
@@ -1514,16 +1847,12 @@
         // Lưu dữ liệu gốc
         originalData = {
             email: document.getElementById('emailInput').value,
-            phone: document.getElementById('phoneInput').value,
-            gender: document.getElementById('genderSelect').value
+            phone: document.getElementById('phoneInput').value
         };
 
         // Enable các trường input
         document.getElementById('emailInput').readOnly = false;
         document.getElementById('phoneInput').readOnly = false;
-        document.getElementById('genderSelect').readOnly = false;
-        document.getElementById('genderSelect').style.backgroundColor = '#fff';
-        document.getElementById('genderSelect').style.appearance = 'auto';
 
         // Ẩn nút chỉnh sửa, hiển thị nút lưu và hủy
         document.getElementById('editProfileBtn').style.display = 'none';
@@ -1543,9 +1872,6 @@
         // Disable các trường input
         document.getElementById('emailInput').readOnly = true;
         document.getElementById('phoneInput').readOnly = true;
-        document.getElementById('genderSelect').readOnly = true;
-        document.getElementById('genderSelect').style.backgroundColor = '#f8f9fa';
-        document.getElementById('genderSelect').style.appearance = 'none';
 
         // Hiển thị nút chỉnh sửa, ẩn nút lưu và hủy
         document.getElementById('editProfileBtn').style.display = 'inline-block';
@@ -1560,7 +1886,6 @@
         // Khôi phục dữ liệu gốc
         document.getElementById('emailInput').value = originalData.email;
         document.getElementById('phoneInput').value = originalData.phone;
-        document.getElementById('genderSelect').value = originalData.gender;
 
         disableEditMode();
         showToast('info', 'Đã hủy', 'Hủy chỉnh sửa thông tin');
@@ -1572,14 +1897,12 @@
 
         const currentData = {
             email: document.getElementById('emailInput').value,
-            phone: document.getElementById('phoneInput').value,
-            gender: document.getElementById('genderSelect').value
+            phone: document.getElementById('phoneInput').value
         };
 
         const hasChanges =
             currentData.email !== originalData.email ||
-            currentData.phone !== originalData.phone ||
-            currentData.gender !== originalData.gender;
+            currentData.phone !== originalData.phone;
 
         document.getElementById('saveBtn').disabled = !hasChanges;
     }
@@ -1589,7 +1912,6 @@
         // Thêm event listeners cho các input
         document.getElementById('emailInput').addEventListener('input', checkFormChanges);
         document.getElementById('phoneInput').addEventListener('input', checkFormChanges);
-        document.getElementById('genderSelect').addEventListener('change', checkFormChanges);
 
         // Nút chỉnh sửa
         document.getElementById('editProfileBtn').addEventListener('click', enableEditMode);
@@ -1648,39 +1970,17 @@
                     showToast(result.toastType, result.toastTitle, result.toastMessage);
 
                     if (result.success) {
-                        // Cập nhật originalData để tracking thay đổi
                         originalData = {
                             email: result.data.email,
-                            phone: result.data.phone,
-                            gender: result.data.gender
+                            phone: result.data.phone
                         };
 
-                        // Tắt chế độ edit
                         disableEditMode();
 
-                        // Reset button
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalText;
-                    } else {
-                        // Nếu có lỗi validation, hiển thị lỗi cụ thể
-                        if (result.errors) {
-                            Object.keys(result.errors).forEach(field => {
-                                const input = document.querySelector(`[name="${field}"]`);
-                                if (input) {
-                                    input.classList.add('error');
-                                    // Tạo hoặc cập nhật error message
-                                    let errorDiv = input.parentElement.querySelector('.error-message');
-                                    if (!errorDiv) {
-                                        errorDiv = document.createElement('div');
-                                        errorDiv.className = 'error-message';
-                                        input.parentElement.appendChild(errorDiv);
-                                    }
-                                    errorDiv.textContent = result.errors[field];
-                                }
-                            });
-                        }
-
-                        // Reset button
+                    }
+                    else {
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalText;
                     }
@@ -1728,16 +2028,139 @@
     });
 
     // ========================================
-    // ADDRESS MANAGEMENT
+    // ADDRESS MANAGEMENT - CẬP NHẬT KHÔNG RELOAD
     // ========================================
-    function showAddAddressModal() {
+
+    // Hàm đóng modal
+    function closeAddressModal() {
         const modal = document.getElementById('addressModal');
         const form = document.getElementById('addressForm');
 
+        modal.style.display = 'none';
+
+        // Reset form về trạng thái ban đầu
+        if (form) {
+            form.reset();
+            form.action = '/account/address/add-ajax';
+            document.getElementById('addressModalTitle').textContent = 'Thêm địa chỉ mới';
+
+            // Xóa error styles
+            form.querySelectorAll('.error').forEach(input => {
+                input.classList.remove('error');
+                input.style.borderColor = '';
+            });
+        }
+    }
+
+    // Hàm khởi tạo address picker với dữ liệu có sẵn (cho edit)
+    function initAddressPickerForEdit(address) {
+        const cityEl = document.getElementById('city');
+        const districtEl = document.getElementById('district');
+        const wardEl = document.getElementById('ward');
+
+        if (!cityEl || !districtEl || !wardEl) return;
+
+        // Remove old listeners
+        const newCityEl = cityEl.cloneNode(true);
+        const newDistrictEl = districtEl.cloneNode(true);
+        const newWardEl = wardEl.cloneNode(true);
+
+        cityEl.parentNode.replaceChild(newCityEl, cityEl);
+        districtEl.parentNode.replaceChild(newDistrictEl, districtEl);
+        wardEl.parentNode.replaceChild(newWardEl, wardEl);
+
+        // Add event listeners
+        document.getElementById('city').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const provinceCode = selectedOption?.dataset.code;
+            loadDistricts(provinceCode);
+        });
+
+        document.getElementById('district').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const districtCode = selectedOption?.dataset.code;
+            loadWards(districtCode);
+        });
+
+        document.getElementById('ward').addEventListener('change', updateFullAddress);
+
+        const addressLineEl = document.getElementById('addressLine');
+        if (addressLineEl) {
+            const newAddressLineEl = addressLineEl.cloneNode(true);
+            addressLineEl.parentNode.replaceChild(newAddressLineEl, addressLineEl);
+            document.getElementById('addressLine').addEventListener('input', updateFullAddress);
+        }
+
+        // Load cities và chọn giá trị từ address
+        loadCities().then(() => {
+            // Chọn thành phố
+            if (address.city) {
+                const citySelect = document.getElementById('city');
+                for (let i = 0; i < citySelect.options.length; i++) {
+                    if (citySelect.options[i].text === address.city) {
+                        citySelect.selectedIndex = i;
+                        const provinceCode = citySelect.options[i].dataset.code;
+
+                        // Load districts và chọn giá trị
+                        loadDistricts(provinceCode).then(() => {
+                            if (address.district) {
+                                const districtSelect = document.getElementById('district');
+                                for (let j = 0; j < districtSelect.options.length; j++) {
+                                    if (districtSelect.options[j].text === address.district) {
+                                        districtSelect.selectedIndex = j;
+                                        const districtCode = districtSelect.options[j].dataset.code;
+
+                                        // Load wards và chọn giá trị
+                                        loadWards(districtCode).then(() => {
+                                            if (address.ward) {
+                                                const wardSelect = document.getElementById('ward');
+                                                for (let k = 0; k < wardSelect.options.length; k++) {
+                                                    if (wardSelect.options[k].text === address.ward) {
+                                                        wardSelect.selectedIndex = k;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            updateFullAddress();
+                                        });
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+                        break;
+                    }
+                }
+            }
+            updateFullAddress();
+        });
+    }
+
+    // Hàm mở modal thêm địa chỉ - ĐÃ CẬP NHẬT
+    function showAddAddressModal() {
+        const modal = document.getElementById('addressModal');
+
+        const form = document.getElementById('addressForm');
+
         // Reset form
-        if (form) form.reset();
-        form.action = '/account/address/add';
+        if (form) {
+            form.reset();
+            form.querySelectorAll('.error').forEach(input => {
+                input.classList.remove('error');
+                input.style.borderColor = '';
+            });
+        }
+
+        // Reset về action add và title
+        form.action = '/account/address/add-ajax';
         document.getElementById('addressModalTitle').textContent = 'Thêm địa chỉ mới';
+
+        // Ẩn checkbox đặt làm mặc định khi thêm mới
+        const defaultCheckbox = form.querySelector('[name="isDefault"]');
+        if (defaultCheckbox) {
+            defaultCheckbox.checked = false;
+            defaultCheckbox.closest('.form-group').style.display = 'none';
+        }
 
         // Load provinces và khởi tạo address picker
         initAddressPickerForModal();
@@ -1745,10 +2168,7 @@
         modal.style.display = 'flex';
     }
 
-    function closeAddressModal() {
-        document.getElementById('addressModal').style.display = 'none';
-    }
-
+    // Hàm submit form (dùng cho cả Add và Edit)
     function saveAddress(event) {
         event.preventDefault();
 
@@ -1761,17 +2181,83 @@
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
 
-        // Gửi request
+        // Lấy CSRF token
+        const csrfToken = document.querySelector('input[name="_csrf"]').value;
+
+        // Kiểm tra là Add hay Edit
+        const isEdit = form.action.includes('/edit/');
+        const addressId = isEdit ? form.action.match(/\/edit\/(\d+)/)?.[1] : null;
+
+        console.log('Saving address:', { isEdit, addressId, formData: Object.fromEntries(formData) });
+
+        // Gửi AJAX request
         fetch(form.action, {
             method: 'POST',
-            body: formData
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams(formData).toString()
         })
             .then(response => {
-                if (response.redirected) {
-                    window.location.href = response.url;
-                } else {
-                    return response.text();
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
                 }
+                return response.json();
+            })
+            .then(result => {
+                console.log('Save address response:', result);
+
+                // Hiển thị toast
+                showToast(result.toastType, result.toastTitle, result.toastMessage);
+
+                if (result.success) {
+                    // Đóng modal
+                    closeAddressModal();
+
+                    // Reset form
+                    form.reset();
+
+                    // Cập nhật UI mà KHÔNG RELOAD
+                    if (isEdit && addressId) {
+                        console.log('Updating existing address card:', addressId);
+                        // Nếu là edit, cập nhật card hiện có
+                        if (result.data) {
+                            updateAddressCardInGrid(addressId, result.data);
+                        }
+
+                        // Cập nhật badge mặc định nếu cần
+                        if (result.data && result.data.isDefault) {
+                            updateDefaultAddressUI(result.data.id);
+                        }
+                    } else {
+                        console.log('Adding new address card');
+                        // Nếu là add, thêm card mới
+                        if (result.data) {
+                            addAddressCardToGrid(result.data);
+
+                            // Cập nhật badge mặc định nếu cần
+                            if (result.data.isDefault) {
+                                updateDefaultAddressUI(result.data.id);
+                            }
+                        }
+                    }
+                } else {
+                    // Nếu có lỗi validation
+                    if (result.errors) {
+                        Object.keys(result.errors).forEach(field => {
+                            const input = form.querySelector(`[name="${field}"]`);
+                            if (input) {
+                                input.classList.add('error');
+                                input.style.borderColor = 'var(--danger-color)';
+                            }
+                        });
+                    }
+                }
+
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -1781,44 +2267,225 @@
             });
     }
 
-    function editAddress(id) {
-        showAddAddressModal();
-        showToast('info', 'Chỉnh sửa địa chỉ', `Đang chỉnh sửa địa chỉ ID: ${id}`);
-    }
+    // Hàm thêm địa chỉ mới vào grid - ĐÃ CẬP NHẬT
+    function addAddressCardToGrid(address) {
+        const addressGrid = document.querySelector('.address-grid');
+        if (!addressGrid) return;
 
-    function deleteAddress(id) {
-        if (confirm('Bạn có chắc muốn xóa địa chỉ này?')) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/account/address/delete/${id}`;
+        console.log('Adding address to grid:', address);
 
-            const csrfToken = document.querySelector('input[name="_csrf"]').value;
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = '_csrf';
-            csrfInput.value = csrfToken;
-            form.appendChild(csrfInput);
+        const isDefault = address.isDefault !== undefined ? address.isDefault : false;
 
-            document.body.appendChild(form);
-            form.submit();
+        // Tạo card mới
+        const addressCard = document.createElement('div');
+        addressCard.className = 'address-card';
+        addressCard.setAttribute('data-address-id', String(address.id));
+
+        if (isDefault) {
+            addressCard.classList.add('default');
+            // Cập nhật tất cả các card khác
+            updateDefaultAddressUI(address.id);
         }
+
+        const addressTypeText = address.addressType === 'home' ? 'Nhà riêng' :
+            (address.addressType === 'office' ? 'Văn phòng' : 'Khác');
+
+        addressCard.innerHTML = `
+        ${isDefault ? '<span class="default-badge"><i class="fas fa-check"></i> Mặc định</span>' : ''}
+        <div class="address-name">${address.receiverName || ''}</div>
+        <div class="address-phone">
+            <i class="fas fa-phone"></i>
+            <span>${address.phone || ''}</span>
+        </div>
+        <div class="address-detail">
+            <span>${address.addressLine || ''}</span>
+            ${address.ward ? ', ' + address.ward : ''}
+            ${address.district ? ', ' + address.district : ''}
+            ${address.city ? ', ' + address.city : ''}
+        </div>
+        <span>${addressTypeText}</span>
+        <div class="address-actions">
+            <button class="btn btn-sm btn-primary" onclick="editAddress(${address.id})">
+                <i class="fas fa-edit"></i> Sửa
+            </button>
+            <button class="btn btn-sm btn-secondary" onclick="confirmDeleteAddress(${address.id})">
+                <i class="fas fa-trash"></i> Xóa
+            </button>
+        </div>
+    `;
+
+        // Thêm vào trước nút "Thêm địa chỉ mới"
+        const addButton = addressGrid.querySelector('.add-address-card');
+        if (addButton) {
+            addressGrid.insertBefore(addressCard, addButton);
+        } else {
+            addressGrid.appendChild(addressCard);
+        }
+
+        // Animation xuất hiện
+        addressCard.style.opacity = '0';
+        addressCard.style.transform = 'scale(0.9)';
+        setTimeout(() => {
+            addressCard.style.transition = 'all 0.3s ease';
+            addressCard.style.opacity = '1';
+            addressCard.style.transform = 'scale(1)';
+        }, 10);
     }
 
-    function setDefaultAddress(id) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/account/address/set-default/${id}`;
+    // Hàm cập nhật card địa chỉ trong grid (dùng khi edit) - ĐÃ CẬP NHẬT
+    function updateAddressCardInGrid(addressId, addressData) {
+        const addressCard = document.querySelector(`.address-card[data-address-id="${String(addressId)}"]`);
+        if (!addressCard) {
+            console.error('Address card not found:', addressId);
+            return;
+        }
 
-        const csrfToken = document.querySelector('input[name="_csrf"]').value;
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = '_csrf';
-        csrfInput.value = csrfToken;
-        form.appendChild(csrfInput);
+        console.log('Updating address card:', addressId, addressData);
 
-        document.body.appendChild(form);
-        form.submit();
+        const isDefault = addressData.isDefault !== undefined ? addressData.isDefault : false;
+
+        // Cập nhật class và badge
+        if (isDefault) {
+            addressCard.classList.add('default');
+            if (!addressCard.querySelector('.default-badge')) {
+                const defaultBadge = document.createElement('span');
+                defaultBadge.className = 'default-badge';
+                defaultBadge.innerHTML = '<i class="fas fa-check"></i> Mặc định';
+                addressCard.insertBefore(defaultBadge, addressCard.firstChild);
+            }
+            // Nếu card này trở thành mặc định, đảm bảo các card khác bị xóa badge
+            updateDefaultAddressUI(addressId);
+        } else {
+            addressCard.classList.remove('default');
+            const defaultBadge = addressCard.querySelector('.default-badge');
+            if (defaultBadge) {
+                defaultBadge.remove();
+            }
+        }
+
+        const addressTypeText = addressData.addressType === 'home' ? 'Nhà riêng' :
+            (addressData.addressType === 'office' ? 'Văn phòng' : 'Khác');
+
+        // Cập nhật nội dung (giữ nguyên phần còn lại)
+        const addressName = addressCard.querySelector('.address-name');
+        const addressPhone = addressCard.querySelector('.address-phone span');
+        const addressDetail = addressCard.querySelector('.address-detail');
+        const addressType = addressCard.querySelector('.address-detail + span');
+
+        if (addressName) addressName.textContent = addressData.receiverName || '';
+        if (addressPhone) addressPhone.textContent = addressData.phone || '';
+        if (addressDetail) {
+            addressDetail.innerHTML = `
+            <span>${addressData.addressLine || ''}</span>
+            ${addressData.ward ? ', ' + addressData.ward : ''}
+            ${addressData.district ? ', ' + addressData.district : ''}
+            ${addressData.city ? ', ' + addressData.city : ''}
+        `;
+        }
+        if (addressType) addressType.textContent = addressTypeText;
+
+        // Animation cập nhật
+        addressCard.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            addressCard.style.transition = 'all 0.3s ease';
+            addressCard.style.transform = 'scale(1)';
+        }, 10);
     }
+
+    // Cập nhật UI khi đặt mặc định: ép kiểu ID về string trước so sánh
+    // Hàm cập nhật giao diện khi đặt địa chỉ mặc định
+    function updateDefaultAddressUI(newDefaultId) {
+        const addressGrid = document.querySelector('.address-grid');
+        if (!addressGrid) return;
+
+        const addressCards = addressGrid.querySelectorAll('.address-card');
+
+        const targetId = String(newDefaultId);
+        addressCards.forEach(card => {
+            const addressId = String(card.getAttribute('data-address-id') || '');
+            if (addressId === targetId) {
+                card.classList.add('default');
+                if (!card.querySelector('.default-badge')) {
+                    const defaultBadge = document.createElement('span');
+                    defaultBadge.className = 'default-badge';
+                    defaultBadge.innerHTML = '<i class="fas fa-check"></i> Mặc định';
+                    card.insertBefore(defaultBadge, card.firstChild);
+                }
+            } else {
+                card.classList.remove('default');
+                const defaultBadge = card.querySelector('.default-badge');
+                if (defaultBadge) defaultBadge.remove();
+            }
+        });
+    }
+
+    function editAddress(id) {
+        console.log('Editing address:', id);
+
+        // Hiển thị loading
+        showToast('info', 'Đang tải', 'Đang tải thông tin địa chỉ...');
+
+        // Gọi API để lấy thông tin địa chỉ
+        fetch(`/account/address/get/${id}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Không thể tải thông tin địa chỉ');
+                }
+                return response.json();
+            })
+            .then(address => {
+                console.log('Address data:', address);
+
+                // Mở modal
+                const modal = document.getElementById('addressModal');
+                const form = document.getElementById('addressForm');
+
+                if (!form || !modal) {
+                    throw new Error('Không tìm thấy form hoặc modal');
+                }
+
+                // Cập nhật form cho chế độ edit
+                form.action = `/account/address/edit/${id}`;
+                document.getElementById('addressModalTitle').textContent = 'Chỉnh sửa địa chỉ';
+
+                // Điền dữ liệu vào form
+                form.querySelector('[name="receiverName"]').value = address.receiverName || '';
+                form.querySelector('[name="phone"]').value = address.phone || '';
+                form.querySelector('[name="addressType"]').value = address.addressType || 'home';
+                form.querySelector('[name="addressLine"]').value = address.addressLine || '';
+
+                // Hiển thị checkbox đặt làm mặc định khi edit
+                const defaultCheckbox = form.querySelector('[name="isDefault"]');
+                if (defaultCheckbox) {
+                    defaultCheckbox.checked = address.isDefault || false;
+                    defaultCheckbox.closest('.form-group').style.display = 'block';
+                }
+
+                // Khởi tạo address picker với dữ liệu có sẵn
+                initAddressPickerForEdit(address);
+
+                // Hiển thị modal
+                modal.style.display = 'flex';
+
+            })
+            .catch(error => {
+                console.error('Error loading address:', error);
+                showToast('error', 'Lỗi', 'Không thể tải thông tin địa chỉ. Vui lòng thử lại!');
+            });
+    }
+
+    // Hàm xác nhận xóa địa chỉ
+    function confirmDeleteAddress(id) {
+        console.log('Confirming delete for address:', id);
+
+        showToast('warning', 'Xác nhận xóa',
+            'Bạn có chắc muốn xóa địa chỉ này? Hành động này không thể hoàn tác.',
+            true,
+            () => performDeleteAddress(id)
+        );
+    }
+
+
 
     // ========================================
     // ADDRESS PICKER API
@@ -1831,41 +2498,80 @@
         select.disabled = true;
     }
 
-    async function loadProvincesForAddress() {
-        const provinceEl = document.getElementById('province');
+    // Hàm tự động điều chỉnh chiều cao textarea
+    function autoResizeAddress() {
+        const fullAddressInput = document.getElementById('fullAddress');
+        if (!fullAddressInput) return;
+
+        fullAddressInput.style.height = '50px';
+
+        const scrollHeight = fullAddressInput.scrollHeight;
+
+        if (scrollHeight > 50) {
+            fullAddressInput.style.height = scrollHeight + 'px';
+        }
+    }
+
+    // Cập nhật hàm updateFullAddress để gọi autoResizeAddress
+    function updateFullAddress() {
+        const addressLine = document.getElementById('addressLine')?.value || '';
+        const wardSelect = document.getElementById('ward');
+        const districtSelect = document.getElementById('district');
+        const citySelect = document.getElementById('city');
+
+        const ward = wardSelect?.options[wardSelect.selectedIndex]?.text;
+        const district = districtSelect?.options[districtSelect.selectedIndex]?.text;
+        const city = citySelect?.options[citySelect.selectedIndex]?.text;
+
+        let fullAddress = '';
+        if (addressLine) fullAddress += addressLine;
+        if (ward && ward !== '- Chọn Phường/Xã -') fullAddress += (fullAddress ? ', ' : '') + ward;
+        if (district && district !== '- Chọn Quận/Huyện -') fullAddress += (fullAddress ? ', ' : '') + district;
+        if (city && city !== '- Chọn Tỉnh/Thành -') fullAddress += (fullAddress ? ', ' : '') + city;
+
+        const fullAddressInput = document.getElementById('fullAddress');
+        if (fullAddressInput) {
+            fullAddressInput.value = fullAddress;
+            // Gọi hàm resize sau khi cập nhật nội dung
+            autoResizeAddress();
+        }
+    }
+
+    async function loadCities() {
+        const cityEl = document.getElementById('city');
         const districtEl = document.getElementById('district');
         const wardEl = document.getElementById('ward');
 
-        if (!provinceEl) return;
+        if (!cityEl) return;
 
         try {
-            resetSelect(provinceEl, '- Đang tải... -');
+            resetSelect(cityEl, '- Đang tải... -');
             resetSelect(districtEl, '- Chọn Quận/Huyện -');
             resetSelect(wardEl, '- Chọn Phường/Xã -');
 
             const response = await fetch(`${apiUrl}/?depth=1`);
             const provinces = await response.json();
 
-            provinceEl.innerHTML = '<option value="">- Chọn Tỉnh/Thành -</option>';
+            cityEl.innerHTML = '<option value="">- Chọn Tỉnh/Thành -</option>';
 
             provinces.forEach(province => {
                 const option = document.createElement('option');
                 option.value = province.name;
                 option.textContent = province.name;
                 option.dataset.code = province.code;
-                provinceEl.appendChild(option);
+                cityEl.appendChild(option);
             });
 
-            provinceEl.disabled = false;
+            cityEl.disabled = false;
         } catch (error) {
             console.error('Lỗi khi load tỉnh/thành:', error);
-            if (provinceEl) {
-                provinceEl.innerHTML = '<option value="">- Lỗi tải dữ liệu -</option>';
+            if (cityEl) {
+                cityEl.innerHTML = '<option value="">- Lỗi tải dữ liệu -</option>';
             }
         }
     }
 
-    async function loadDistrictsForAddress(provinceCode) {
+    async function loadDistricts(provinceCode) {
         const districtEl = document.getElementById('district');
         const wardEl = document.getElementById('ward');
 
@@ -1873,10 +2579,11 @@
 
         try {
             resetSelect(districtEl, '- Đang tải... -');
-            resetSelect(wardEl, '- Chọn Quận/Huyện trước -');
+            resetSelect(wardEl, '- Chọn Phường/Xã -');
 
             if (!provinceCode) {
                 resetSelect(districtEl, '- Chọn Quận/Huyện -');
+                updateFullAddress();
                 return;
             }
 
@@ -1894,6 +2601,7 @@
             });
 
             districtEl.disabled = false;
+            updateFullAddress();
         } catch (error) {
             console.error('Lỗi khi load quận/huyện:', error);
             if (districtEl) {
@@ -1902,7 +2610,7 @@
         }
     }
 
-    async function loadWardsForAddress(districtCode) {
+    async function loadWards(districtCode) {
         const wardEl = document.getElementById('ward');
 
         if (!wardEl) return;
@@ -1912,6 +2620,7 @@
 
             if (!districtCode) {
                 resetSelect(wardEl, '- Chọn Phường/Xã -');
+                updateFullAddress();
                 return;
             }
 
@@ -1928,6 +2637,7 @@
             });
 
             wardEl.disabled = false;
+            updateFullAddress();
         } catch (error) {
             console.error('Lỗi khi load phường/xã:', error);
             if (wardEl) {
@@ -1937,37 +2647,53 @@
     }
 
     // Khởi tạo address picker cho modal
+    // Khởi tạo address picker cho modal thêm mới
     function initAddressPickerForModal() {
-        const provinceEl = document.getElementById('province');
+        const cityEl = document.getElementById('city');
         const districtEl = document.getElementById('district');
         const wardEl = document.getElementById('ward');
+        const addressLineEl = document.getElementById('addressLine');
 
-        if (!provinceEl || !districtEl || !wardEl) return;
+        if (!cityEl || !districtEl || !wardEl) return;
 
         // Remove old listeners bằng cách clone
-        const newProvinceEl = provinceEl.cloneNode(true);
+        const newCityEl = cityEl.cloneNode(true);
         const newDistrictEl = districtEl.cloneNode(true);
         const newWardEl = wardEl.cloneNode(true);
 
-        provinceEl.parentNode.replaceChild(newProvinceEl, provinceEl);
+        cityEl.parentNode.replaceChild(newCityEl, cityEl);
         districtEl.parentNode.replaceChild(newDistrictEl, districtEl);
         wardEl.parentNode.replaceChild(newWardEl, wardEl);
 
         // Add event listeners
-        document.getElementById('province').addEventListener('change', function() {
+        document.getElementById('city').addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
             const provinceCode = selectedOption?.dataset.code;
-            loadDistrictsForAddress(provinceCode);
+            loadDistricts(provinceCode);
         });
 
         document.getElementById('district').addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
             const districtCode = selectedOption?.dataset.code;
-            loadWardsForAddress(districtCode);
+            loadWards(districtCode);
         });
 
-        // Load provinces
-        loadProvincesForAddress();
+        document.getElementById('ward').addEventListener('change', updateFullAddress);
+
+        if (addressLineEl) {
+            const newAddressLineEl = addressLineEl.cloneNode(true);
+            addressLineEl.parentNode.replaceChild(newAddressLineEl, addressLineEl);
+            document.getElementById('addressLine').addEventListener('input', updateFullAddress);
+        }
+
+        // Ẩn checkbox đặt làm mặc định khi thêm mới
+        const defaultCheckbox = document.querySelector('[name="isDefault"]');
+        if (defaultCheckbox) {
+            defaultCheckbox.closest('.form-group').style.display = 'none';
+        }
+
+        // Load cities khi mở modal
+        loadCities();
     }
 
     // ========================================

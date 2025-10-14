@@ -10,4 +10,7 @@ import java.util.List;
 
 public interface AddressRepository extends JpaRepository<Address, Integer> {
     Page<Address> findByUserId(int userId, Pageable pageable);
+    List<Address> findByUserId(int userId);
+    List<Address> findAddressesByUser(User user);
+    Address findById(int id);
 }

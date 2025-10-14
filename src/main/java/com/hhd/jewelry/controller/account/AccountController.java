@@ -7,21 +7,27 @@ import com.hhd.jewelry.entity.Wishlist;
 import com.hhd.jewelry.service.AddressService;
 import com.hhd.jewelry.service.UserService;
 import com.hhd.jewelry.service.WishlistService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -36,12 +42,19 @@ public class AccountController {
     public String getAccountPage(
             Authentication auth,
             Model model,
-            @RequestParam(defaultValue = "0") int addressPage,
-            @RequestParam(defaultValue = "5") int addressSize,
             @RequestParam(defaultValue = "0") int wishlistPage,
             @RequestParam(defaultValue = "8") int wishlistSize) {
 
-        User user = userService.findByEmail(auth.getName()).orElseThrow();
+        // SỬA: Kiểm tra Optional trước khi dùng orElseThrow()
+        Optional<User> userOpt = userService.findByEmail(auth.getName());
+
+        if (userOpt.isEmpty()) {
+            // Xử lý khi không tìm thấy user - có thể do email đã đổi
+            SecurityContextHolder.clearContext();
+            return "redirect:/login?error=session_expired";
+        }
+
+        User user = userOpt.get();
         model.addAttribute("user", user);
 
         if (!model.containsAttribute("form")) {
@@ -54,12 +67,8 @@ public class AccountController {
             model.addAttribute("form", form);
         }
 
-        Page<Address> addresses = addressService.getAddressByUserId(
-                user.getId(), PageRequest.of(addressPage, addressSize, Sort.by("isDefault").descending())
-        );
+        List<Address> addresses = addressService.getAddressByUserId(user.getId());
         model.addAttribute("addresses", addresses);
-        model.addAttribute("addressPage", addressPage);
-        model.addAttribute("addressTotalPages", addresses.getTotalPages());
 
         Page<Wishlist> wishlistItems = wishlistService.getWishlistByUserId(
                 user.getId(), PageRequest.of(wishlistPage, wishlistSize, Sort.by("id").descending())
@@ -72,22 +81,32 @@ public class AccountController {
     }
 
     // Thêm vào AccountController
-
     @PostMapping("/account/update-ajax")
     @ResponseBody
     public Map<String, Object> updateProfileAjax(
             Authentication auth,
             @Valid @ModelAttribute("form") ProfileDto form,
-            BindingResult br) {
+            BindingResult br,
+            HttpServletRequest request) { // Thêm HttpServletRequest
 
         Map<String, Object> response = new HashMap<>();
 
-        User currentUser = userService.findByEmail(auth.getName()).orElseThrow();
+        // SỬA: Kiểm tra Optional
+        Optional<User> userOpt = userService.findByEmail(auth.getName());
+        if (userOpt.isEmpty()) {
+            response.put("success", false);
+            response.put("toastType", "error");
+            response.put("toastTitle", "Lỗi phiên làm việc");
+            response.put("toastMessage", "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
+            return response;
+        }
+
+        User currentUser = userOpt.get();
 
         // Validation checks
         if (!form.getEmail().equals(currentUser.getEmail()) &&
                 userService.existsByEmailAndIdNot(form.getEmail(), currentUser.getId())) {
-            br.rejectValue("email", "Duplicated", "Email đã được dùng bởi tài khoản khác.");
+            br.rejectValue("email", "Duplicated", "Email đã được dùng bởi tài khoản khác");
         }
 
         if (form.getPhone() != null && !form.getPhone().equals(currentUser.getPhone()) &&
@@ -98,15 +117,20 @@ public class AccountController {
         if (br.hasErrors()) {
             response.put("success", false);
             response.put("toastType", "error");
-            response.put("toastTitle", "Lỗi validation");
+            response.put("toastTitle", "Lỗi cập nhật");
 
-            // Lấy message từ BindingResult
-            String errorMessage = br.getAllErrors().stream()
-                    .map(error -> error.getDefaultMessage())
+            String errorMessage = br.getFieldErrors().stream()
+                    .filter(error -> "email".equals(error.getField()) || "phone".equals(error.getField()))
+                    .map(FieldError::getDefaultMessage)
                     .collect(Collectors.joining(", "));
+
+            if (errorMessage.isEmpty()) {
+                errorMessage = "Vui lòng kiểm tra lại thông tin!";
+            }
 
             response.put("toastMessage", errorMessage);
             response.put("errors", br.getFieldErrors().stream()
+                    .filter(error -> "email".equals(error.getField()) || "phone".equals(error.getField()))
                     .collect(Collectors.toMap(
                             FieldError::getField,
                             FieldError::getDefaultMessage
@@ -115,11 +139,24 @@ public class AccountController {
         }
 
         try {
+            String oldEmail = currentUser.getEmail();
+            boolean emailChanged = !form.getEmail().equals(oldEmail);
+
+            // Cập nhật thông tin
             currentUser.setEmail(form.getEmail());
-            currentUser.setPhone(form.getPhone());
-            currentUser.setGender(form.getGender());
+
+            if (form.getPhone() != null && !form.getPhone().trim().isEmpty()) {
+                currentUser.setPhone(form.getPhone());
+            }
 
             userService.save(currentUser);
+
+            // Nếu email thay đổi, cập nhật authentication
+            if (emailChanged) {
+                updateAuthentication(currentUser.getEmail(), auth, request);
+                response.put("emailChanged", true);
+                response.put("redirectUrl", "/account");
+            }
 
             response.put("success", true);
             response.put("toastType", "success");
@@ -127,8 +164,8 @@ public class AccountController {
             response.put("toastMessage", "Cập nhật thông tin thành công!");
             response.put("data", Map.of(
                     "email", currentUser.getEmail(),
-                    "phone", currentUser.getPhone(),
-                    "gender", currentUser.getGender() != null ? currentUser.getGender().toString() : ""
+                    "phone", currentUser.getPhone() != null ? currentUser.getPhone() : "",
+                    "gender", currentUser.getGender() != null ? currentUser.getGender() : ""
             ));
 
         } catch (Exception e) {
@@ -139,5 +176,22 @@ public class AccountController {
         }
 
         return response;
+    }
+
+    private void updateAuthentication(String newEmail, Authentication oldAuth, HttpServletRequest request) {
+        // Tạo authentication mới với email mới
+        UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(
+                newEmail,
+                oldAuth.getCredentials(),
+                oldAuth.getAuthorities()
+        );
+        SecurityContextHolder.getContext().setAuthentication(newAuth);
+
+        // Tạo session mới để tránh session fixation
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        request.getSession(true);
     }
 }
