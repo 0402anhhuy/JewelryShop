@@ -1,14 +1,17 @@
 package com.hhd.jewelry.config;
 
-import com.hhd.jewelry.entity.Category;
-import com.hhd.jewelry.entity.Collection;
-import com.hhd.jewelry.entity.Product;
+import com.hhd.jewelry.entity.*;
+import com.hhd.jewelry.repository.CartRepository;
+import com.hhd.jewelry.repository.UserRepository;
 import com.hhd.jewelry.service.CategoryService;
 import com.hhd.jewelry.service.CollectionService;
 import com.hhd.jewelry.service.ProductService;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -18,18 +21,50 @@ public class DataSeeder implements CommandLineRunner {
     private final CategoryService categoryService;
     private final ProductService productService;
     private final CollectionService collectionService;
+    private final UserRepository userRepo;
+    private final CartRepository cartRepo;
+    private final PasswordEncoder encoder;
 
-    public DataSeeder(CategoryService categoryService, ProductService productService, CollectionService collectionService) {
+    public DataSeeder(CategoryService categoryService, ProductService productService, CollectionService collectionService, UserRepository userRepo, CartRepository cartRepo, PasswordEncoder encoder) {
         this.categoryService = categoryService;
         this.productService = productService;
         this.collectionService = collectionService;
+        this.userRepo = userRepo;
+        this.cartRepo = cartRepo;
+        this.encoder = encoder;
     }
 
     @Override
     public void run(String... args) {
         // Delete
         // removeAllProducts();
+        if (userRepo.count() == 0) {
+            System.out.println("🚀 Chưa có dữ liệu, tạo tài khoản admin mặc định...");
 
+            User admin = new User();
+            admin.setFullName("Administrator");
+            admin.setEmail("admin@gmail.com");
+            admin.setPhone("0123456789");
+            admin.setGender("Nam");
+            admin.setDateOfBirth(LocalDate.of(1990, 1, 1));
+
+            admin.setAddress("Hồ Chí Minh");
+            admin.setRole(User.Role.ADMIN);
+            admin.setPasswordHash(encoder.encode("admin123"));
+            admin.setCreatedAt(LocalDateTime.now());
+
+            // ✅ Lưu admin
+            userRepo.save(admin);
+
+            // ✅ Tự động tạo giỏ hàng cho admin
+            Cart cart = new Cart();
+            cart.setUser(admin);
+            cartRepo.save(cart);
+
+            System.out.println("✅ Đã tạo tài khoản admin mặc định: admin@gmail.com / admin123");
+        } else {
+            System.out.println("✅ Dữ liệu đã có, bỏ qua seeding admin.");
+        }
         // Insert
         seedCategories();
         seedProducts();
@@ -37,7 +72,7 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     void seedCategories() {
-        createOrUpdateCategory("Vòng tay", "/images/categories/bracelets/category/Lac.jpg");
+        createOrUpdateCategory("Lắc tay", "/images/categories/bracelets/category/Lac.jpg");
         createOrUpdateCategory("Trang sức vàng", "/images/categories/charms/category/TrangSucVang.jpg");
         createOrUpdateCategory("Bông tai", "/images/categories/earrings/category/BongTai.jpg");
         createOrUpdateCategory("Dây chuyền", "/images/categories/necklaces/category/DayChuyen.jpg");
@@ -56,7 +91,7 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     void seedProducts() {
-        Category bracelet = categoryService.getCategoryByName("Vòng tay");
+        Category bracelet = categoryService.getCategoryByName("Lắc tay");
         Category charm = categoryService.getCategoryByName("Trang sức vàng");
         Category earring = categoryService.getCategoryByName("Bông tai");
         Category necklace = categoryService.getCategoryByName("Dây chuyền");
