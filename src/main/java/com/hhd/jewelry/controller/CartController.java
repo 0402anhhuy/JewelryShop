@@ -47,7 +47,7 @@ public class CartController {
         return "client_1/product/cart";
     }
 
-    @PostMapping(value="/cart/add/{serialnumber}", params="ajax=1")
+    @PostMapping(value="/cart/add/{serialnumber}")
     @ResponseBody
     public Map<String, Object> addToCartAjax(@PathVariable String serialnumber, Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) {

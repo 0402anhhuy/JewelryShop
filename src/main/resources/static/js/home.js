@@ -1,52 +1,72 @@
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("Trang chủ PNJ demo loaded ✔️");
-
-    document.querySelectorAll(".btn-add").forEach(btn => {
-        btn.addEventListener("click", () => {
-            alert("Sản phẩm đã được thêm vào giỏ hàng 🛒");
-        });
-    });
-});
-document.addEventListener('click', function(e){
-    const btn = e.target.closest('form[action^="/cart/add/"] button[type="submit"]');
-    if(!btn) return;
+document.addEventListener('click', async function (e) {
+    const btn = e.target.closest('.add-to-cart-btn');
+    if (!btn) return;
 
     const form = btn.closest('form');
+    if (!form) return;
+
     e.preventDefault();
+    if (btn.dataset.loading === '1') return;
+    btn.dataset.loading = '1';
+    const originalHTML = btn.innerHTML;
 
-    // Lấy URL add + thêm ajax = 1
-    const url = form.getAttribute('action') + '?ajax=1';
-    const csrfName = form.querySelector('input[type="hidden"]').getAttribute('name');
-    const csrfVal  = form.querySelector('input[type="hidden"]').value;
+    // CSRF từ <meta>
+    const tokenEl = document.querySelector('meta[name="_csrf"]');
+    const headerEl = document.querySelector('meta[name="_csrf_header"]');
+    const CSRF_TOKEN = tokenEl?.content || null;
+    const CSRF_HEADER = headerEl?.content || 'X-CSRF-TOKEN';
 
-    fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ [csrfName]: csrfVal })
-    })
-        .then(r => r.json())
-        .then(data => {
-            if(data.ok){
-                // cập nhật badge trên header
-                let badge = document.querySelector('.cart-count');
-                if(!badge){
-                    const link = document.querySelector('a[href="/cart"], a[th\\:href="@{/cart}"]') || document.querySelector('.cart-link');
-                    if(link){
-                        badge = document.createElement('span');
-                        badge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-count';
-                        link.classList.add('position-relative');
-                        link.appendChild(badge);
-                    }
-                }
-                if(badge){
-                    badge.textContent = data.count;
-                    badge.style.display = (data.count > 0) ? '' : 'none';
-                }
-            } else {
-                window.location.href = '/login';
-            }
-        })
-        .catch(() => window.location.reload());
+    // Tạo URL và ép thêm ?ajax=1
+    const url = new URL(form.action, window.location.origin);
+    url.searchParams.set('ajax', '1');
+
+    // Gom body form-encoded + đảm bảo ajax=1, quantity mặc định
+    const fd = new FormData(form);
+    fd.set('ajax', '1');                 // <<< QUAN TRỌNG cho params="ajax=1"
+    if (!fd.has('quantity') || !fd.get('quantity')) fd.set('quantity', '1');
+
+    const body = new URLSearchParams(fd);
+
+    try {
+        const res = await fetch(url.toString(), {
+            method: 'POST',
+            headers: Object.assign(
+                { 'X-Requested-With': 'XMLHttpRequest' },
+                CSRF_TOKEN ? { [CSRF_HEADER]: CSRF_TOKEN } : {}
+            ),
+            body
+        });
+
+        let data = {};
+        try { data = await res.json(); } catch (_) {}
+
+        if (res.ok && data.ok) {
+            // Cập nhật UI
+            btn.innerHTML = '<i class="fas fa-check"></i> Đã thêm!';
+            btn.style.background = '#28a745';
+            // cập nhật badge giỏ hàng nếu có
+            const badge = document.querySelector('.cart-count, #cart-count');
+            if (badge && typeof data.count === 'number') badge.textContent = data.count;
+
+            setTimeout(() => { btn.innerHTML = originalHTML; btn.style.background = '' }, 1500);
+        } else if (data.reason === 'unauthenticated') {
+            // chuyển hướng login nếu chưa đăng nhập
+            const ret = encodeURIComponent(location.pathname + location.search);
+            location.href = `/login?returnUrl=${ret}`;
+        } else {
+            btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Lỗi';
+            btn.style.background = '#dc3545';
+            setTimeout(() => { btn.innerHTML = originalHTML; btn.style.background = '' }, 2000);
+            console.error('Add to cart failed:', data);
+        }
+    } catch (err) {
+        btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Lỗi mạng';
+        btn.style.background = '#dc3545';
+        setTimeout(() => { btn.innerHTML = originalHTML; btn.style.background = '' }, 2000);
+        console.error(err);
+    } finally {
+        btn.dataset.loading = '0';
+    }
 });
 
 // ===== Countdown (giữ bản gọn) =====
@@ -229,4 +249,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // chạy ngay khi load để chia đều trái/phải
     setActive(3);
 });
-
