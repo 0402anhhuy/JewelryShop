@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "viewed_products")
 @Data
@@ -22,4 +24,6 @@ public class ViewedProduct {
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
+
+    private LocalDateTime viewedAt;
 }

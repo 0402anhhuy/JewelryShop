@@ -3,7 +3,8 @@ package com.hhd.jewelry.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -47,6 +48,11 @@ public class Product {
     @ToString.Exclude
     private Category category;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supplier_id")
+    @ToString.Exclude
+    private Supplier supplier;
+
     @ManyToOne
     @JoinColumn(name = "collection_id")
     @ToString.Exclude
@@ -61,16 +67,33 @@ public class Product {
     @Column(name = "image_url")
     private List<String> imageUrls = new ArrayList<>();
 
+    // 🔹 Đơn hàng liên quan
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
-    private List<OrderItem> orderItems;
+    private List<OrderItem> orderItems = new ArrayList<>();
+
+    // 🔹 Sản phẩm đã xem
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<ViewedProduct> viewedProducts = new ArrayList<>();
+
+    // 🔹 Danh sách đánh giá (bắt buộc thêm dòng này)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<ProductReview> reviews = new ArrayList<>();
+
+    // 🔹 Danh sách wishlist nếu có
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<Wishlist> wishlists = new ArrayList<>();
 
     @PrePersist
     private void prePersist() {
         if (discount == null) discount = 0;
         if (order == null) order = 0;
     }
-    public String getDisplayName(){
+
+    public String getDisplayName() {
         return name + " " + (gemstone != null ? gemstone : "") + " " + material + " " + brand + " " + serialNumber;
     }
 }

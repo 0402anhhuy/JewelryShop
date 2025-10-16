@@ -24,16 +24,12 @@ public class Address {
     @Column(nullable = false)
     private String phone;
 
-    private String city;
-
-    private String district;
-
-    private String ward;
-
     @Column(nullable = false)
     private String addressLine;
 
-    private String addressType;
+    private String city;
+    private String district;
+    private String ward;
 
     private Boolean isDefault = false;
 }

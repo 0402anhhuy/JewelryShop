@@ -35,7 +35,7 @@ public class User {
     @Column(columnDefinition = "TEXT")
     private String address;
 
-    @Column(nullable = false)
+    @Column(unique = true)
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
@@ -61,4 +61,5 @@ public class User {
     public enum Role {
         USER, ADMIN, MANAGER, GUEST
     }
+
 }
