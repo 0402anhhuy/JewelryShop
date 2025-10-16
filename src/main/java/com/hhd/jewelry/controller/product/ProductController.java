@@ -32,10 +32,9 @@ public class ProductController {
             @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
             @RequestParam(value = "sort", defaultValue = "") String sort,
             @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "12") int size,
+            @RequestParam(value = "size", defaultValue = "9") int size,
             Model model)
     {
-        boolean initial = isInitialLoad(q, category, categoryName, priceRange, minPrice, maxPrice, sort, page);
 
         // 1) LUÔN chuẩn bị params để view không lỗi
         Map<String, Object> params = new LinkedHashMap<>();
@@ -47,14 +46,6 @@ public class ProductController {
         if (maxPrice != null) params.put("maxPrice", maxPrice);
         if (!sort.isBlank()) params.put("sort", sort);
         model.addAttribute("params", params);
-
-        if (initial) {
-            // 2) Lần đầu: load toàn bộ (không phân trang)
-            List<Product> products = productService.getAllProducts();
-            model.addAttribute("products", products);
-            model.addAttribute("pageData", Page.empty());
-            return "client_1/product/show";
-        }
 
         // 3) Có filter → Specification + Pageable
         Specification<Product> priceSpec = Optional
@@ -73,21 +64,7 @@ public class ProductController {
 
         model.addAttribute("products", result.getContent());
         model.addAttribute("pageData", result);
-        return "client/product/show";
-    }
-
-    private boolean isInitialLoad(
-            String q, List<Long> cat, List<String> catName, String priceRange,
-            BigDecimal minPrice, BigDecimal maxPrice, String sort, int page)
-    {
-        return (q == null || q.isBlank())
-                && (cat == null || cat.isEmpty())
-                && (catName == null || catName.isEmpty())
-                && (priceRange == null || priceRange.isBlank())
-                && minPrice == null
-                && maxPrice == null
-                && (sort == null || sort.isBlank())
-                && page == 0;
+        return "client_1/product/show";
     }
 
     private Sort parseSort(String sort) {
