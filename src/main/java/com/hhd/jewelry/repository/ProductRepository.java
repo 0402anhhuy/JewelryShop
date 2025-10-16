@@ -2,6 +2,8 @@ package com.hhd.jewelry.repository;
 
 import com.hhd.jewelry.entity.Product;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -10,7 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 
-public interface ProductRepository extends JpaRepository<Product, Integer>, JpaSpecificationExecutor<Product> {
+public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
     Optional<Product> findByName(String productName);
     List<Product> findAllBy();
     List<Product> findAllByCategory_Name(String categoryName);
@@ -24,6 +26,15 @@ public interface ProductRepository extends JpaRepository<Product, Integer>, JpaS
     @Transactional
     @Query(value = "ALTER TABLE products AUTO_INCREMENT = 1", nativeQuery = true)
     void resetAutoIncrement();
+    @Query("""
+        SELECT p FROM Product p 
+        WHERE LOWER(p.name) LIKE %:keyword% 
+           OR LOWER(p.serialNumber) LIKE %:keyword% 
+           OR LOWER(p.category.name) LIKE %:keyword%
+    """)
+    Page<Product> findByKeyword(String keyword, Pageable pageable);
 
+    int countBySupplierId(Long id);
+    List<Product> findTop5ByStockQuantityLessThanOrderByStockQuantityAsc(int threshold);
 }
 

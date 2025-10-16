@@ -1,0 +1,174 @@
+package com.hhd.jewelry.controller.admin;
+
+import com.hhd.jewelry.entity.Order;
+import com.hhd.jewelry.repository.OrderRepository;
+import com.hhd.jewelry.repository.ShipperRepository;
+import com.hhd.jewelry.service.OrderExportService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.ByteArrayInputStream;
+
+@Controller
+@RequestMapping("/admin/orders")
+@RequiredArgsConstructor
+public class AdminOrderController {
+
+    private final OrderRepository orderRepo;
+    private final ShipperRepository shipperRepo;
+    private final OrderExportService orderExportService;
+
+    @GetMapping({""})
+    public String listOrders(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "fromDate", required = false) String fromDate,
+            @RequestParam(value = "toDate", required = false) String toDate,
+            @RequestParam(value = "month", required = false) Integer month,
+            @RequestParam(value = "year", required = false) Integer year,
+            Model model
+    ) {
+        int pageSize = 5;
+        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "id"));
+        var allOrders = orderRepo.findAll(pageable);
+
+        // ✅ Lọc theo từ khóa
+        var filtered = allOrders.getContent().stream()
+                .filter(o -> {
+                    boolean match = true;
+
+                    // Lọc keyword (tên, sđt)
+                    if (keyword != null && !keyword.isBlank()) {
+                        String lower = keyword.toLowerCase();
+                        match &= o.getUser() != null && (
+                                (o.getUser().getFullName() != null && o.getUser().getFullName().toLowerCase().contains(lower)) ||
+                                        (o.getUser().getPhone() != null && o.getUser().getPhone().toLowerCase().contains(lower))
+                        );
+                    }
+
+                    // Lọc theo ngày cụ thể
+                    if (fromDate != null && !fromDate.isBlank()) {
+                        var start = java.time.LocalDate.parse(fromDate);
+                        match &= !o.getCreatedAt().toLocalDate().isBefore(start);
+                    }
+                    if (toDate != null && !toDate.isBlank()) {
+                        var end = java.time.LocalDate.parse(toDate);
+                        match &= !o.getCreatedAt().toLocalDate().isAfter(end);
+                    }
+
+                    // Lọc theo tháng/năm
+                    if (month != null) {
+                        match &= o.getCreatedAt().getMonthValue() == month;
+                    }
+                    if (year != null) {
+                        match &= o.getCreatedAt().getYear() == year;
+                    }
+
+                    return match;
+                })
+                .toList();
+
+        Page<Order> orderPage = new PageImpl<>(filtered, pageable, filtered.size());
+
+        model.addAttribute("orders", orderPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", orderPage.getTotalPages());
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        model.addAttribute("month", month);
+        model.addAttribute("year", year);
+        model.addAttribute("page", "orders");
+
+        return "admin/orders/list";
+    }
+
+
+    // ✅ Chi tiết đơn hàng (modal hiển thị trong list.html)
+    @GetMapping("/detail/{id}")
+    public String getOrderDetail(@PathVariable Integer id, Model model) {
+        Order order = orderRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+        model.addAttribute("order", order);
+        model.addAttribute("items", order.getItems());
+        return "admin/orders/detail";
+    }
+
+    // ✅ Mở form chỉnh sửa đơn hàng
+    @GetMapping("/edit/{id}")
+    public String editOrder(@PathVariable Integer id, Model model) {
+        Order order = orderRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+
+        model.addAttribute("order", order);
+        model.addAttribute("shippers", shipperRepo.findAll());
+        model.addAttribute("page", "orders");
+        return "admin/orders/form";
+    }
+
+    // ✅ Cập nhật đơn hàng
+    @PostMapping("/update")
+    public String updateOrder(@ModelAttribute("order") Order order,
+                              @RequestParam(value = "paid", required = false) Boolean paid) {
+        Order existing = orderRepo.findById(order.getId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+
+        // 🟢 Chuyển status từ form
+        if (order.getStatus() != null) {
+            existing.setStatus(Order.Status.valueOf(order.getStatus().name().toUpperCase()));
+        }
+
+        existing.setShipper(order.getShipper());
+
+        // ✅ Xử lý checkbox paid đúng cách
+        existing.setPaid(paid != null && paid);
+
+        orderRepo.save(existing);
+        return "redirect:/admin/orders";
+    }
+
+    // ✅ Xóa đơn hàng (chưa thanh toán)
+    @GetMapping("/delete/{id}")
+    public String deleteOrder(@PathVariable Integer id) {
+        Order order = orderRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+
+        if (!order.isPaid()) {
+            orderRepo.delete(order);
+        } else {
+            throw new RuntimeException("Không thể xóa đơn hàng đã thanh toán!");
+        }
+
+        return "redirect:/admin/orders";
+    }
+
+    @GetMapping("/export/excel")
+    public ResponseEntity<InputStreamResource> exportExcel() throws Exception {
+        ByteArrayInputStream in = orderExportService.exportToExcel();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=orders.xlsx");
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(new InputStreamResource(in));
+    }
+
+    @GetMapping("/export/pdf")
+    public ResponseEntity<InputStreamResource> exportPdf() throws Exception {
+        ByteArrayInputStream in = orderExportService.exportToPdf();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=orders.pdf");
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(new InputStreamResource(in));
+    }
+
+}
