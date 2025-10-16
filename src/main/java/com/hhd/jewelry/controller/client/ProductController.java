@@ -1,4 +1,4 @@
-package com.hhd.jewelry.controller.product;
+package com.hhd.jewelry.controller.client;
 
 import com.hhd.jewelry.entity.Product;
 import com.hhd.jewelry.repository.ProductRepository;
