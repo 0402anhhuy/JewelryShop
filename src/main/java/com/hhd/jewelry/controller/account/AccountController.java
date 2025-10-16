@@ -59,7 +59,7 @@ public class AccountController {
 
         if (!model.containsAttribute("form")) {
             ProfileDto form = new ProfileDto();
-            form.setFullname(user.getFullName());
+            form.setFullName(user.getFullName());
             form.setEmail(user.getEmail());
             form.setPhone(user.getPhone());
             form.setGender(user.getGender());
