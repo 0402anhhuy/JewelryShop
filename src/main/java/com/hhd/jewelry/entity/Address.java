@@ -30,7 +30,7 @@ public class Address {
     private String city;
     private String district;
     private String ward;
-
+    private String addressType;
     private Boolean isDefault = false;
 }
 
