@@ -38,7 +38,11 @@ public class CheckoutDto {
 
     // Mã giảm giá (nếu có)
     private String coupon;
-
+    private Long subtotal;
+    private Long discount;
+    private Long shippingFee;
+    private Long tax;
+    private Long total;
     // COD | VNPAY | MOMO
     @NotBlank(message = "Vui lòng chọn phương thức thanh toán")
     private String paymentMethod;
