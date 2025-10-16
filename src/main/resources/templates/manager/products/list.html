@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách sản phẩm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/manager.css}">
+</head>
+
+<body>
+<div class="d-flex">
+    <!-- Sidebar -->
+    <div th:replace="~{manager/layout/sidebar :: sidebar}"></div>
+
+    <!-- Main content -->
+    <div class="main-content">
+        <div th:replace="~{manager/layout/header :: header}"></div>
+
+        <main class="p-4 flex-grow-1 bg-light">
+            <h3 class="mb-4 fw-bold text-primary">Danh sách sản phẩm</h3>
+
+            <!-- 🔍 Thanh tìm kiếm -->
+            <div class="d-flex justify-content-between mb-3">
+                <form class="d-flex gap-2" th:action="@{/manager/products}" method="get">
+                    <input type="text" name="keyword" class="form-control"
+                           th:value="${keyword}" placeholder="🔍 Tìm theo tên, mã hoặc thương hiệu...">
+                    <button type="submit" class="btn btn-primary">Tìm</button>
+                    <a th:href="@{/manager/products}" class="btn btn-outline-secondary">Reset</a>
+                </form>
+                <a th:href="@{/manager/products/form}" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> Thêm sản phẩm
+                </a>
+            </div>
+
+            <!-- 📋 Bảng danh sách -->
+            <div class="table-responsive bg-white shadow-sm rounded">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th style="width: 50px;">STT</th>
+                        <th>Tên sản phẩm</th>
+                        <th style="width: 80px;">Hình</th>
+                        <th>Giá</th>
+                        <th>Tồn kho</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="p, stat : ${products}">
+                        <td th:text="${stat.index + 1 + (currentPage - 1) * 5}"></td>
+
+                        <!-- 🧾 Tên sản phẩm (hiển thị displayName) -->
+                        <td>
+                            <strong th:text="${p.displayName}"></strong><br>
+                            <small class="text-muted" th:text="'Mã: ' + ${p.serialNumber}"></small>
+                        </td>
+
+                        <!-- 🖼️ Hình ảnh -->
+                        <td>
+                            <img th:if="${p.imageUrls != null and !p.imageUrls.isEmpty()}"
+                                 th:src="@{${p.imageUrls[0]}}"
+                                 alt="Product"
+                                 class="img-thumbnail"
+                                 style="width: 60px; height: 60px; object-fit: cover;">
+                            <div th:if="${p.imageUrls == null or p.imageUrls.isEmpty()}"
+                                 class="bg-light rounded d-flex align-items-center justify-content-center"
+                                 style="width: 60px; height: 60px;">
+                                <i class="bi bi-image text-muted"></i>
+                            </div>
+                        </td>
+
+                        <!-- 💰 Giá -->
+                        <td>
+                            <strong class="text-primary"
+                                    th:text="${#numbers.formatInteger(p.price, 0, 'POINT')} + ' ₫'"></strong>
+                        </td>
+
+                        <!-- 📦 Tồn kho -->
+                        <td>
+                            <span th:class="${p.stockQuantity > 10 ? 'badge bg-success' :
+                                (p.stockQuantity > 0 ? 'badge bg-warning text-dark' : 'badge bg-danger')}"
+                                  th:text="${p.stockQuantity}"></span>
+                        </td>
+
+                        <!-- ⚙️ Thao tác -->
+                        <td class="text-center">
+                            <button class="btn-action view"
+                                    data-bs-toggle="modal"
+                                    th:data-bs-target="'#detailModal' + ${p.id}"
+                                    title="Xem chi tiết">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <a th:href="@{'/manager/products/form/' + ${p.id}}"
+                               class="btn-action edit" title="Chỉnh sửa">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a th:href="@{'/manager/products/delete/' + ${p.id}}"
+                               class="btn-action delete"
+                               onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?')"
+                               title="Xóa sản phẩm">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${products == null or products.size() == 0}">
+                        <td colspan="6" class="text-center text-muted py-3">
+                            <i class="bi bi-inbox me-1"></i> Không có sản phẩm nào
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ✅ Phân trang -->
+            <div class="d-flex justify-content-center mt-4" th:if="${totalPages > 1}">
+                <ul class="pagination">
+                    <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/manager/products(page=${currentPage - 1}, keyword=${keyword})}">«</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}"
+                        th:classappend="${i == currentPage} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{/manager/products(page=${i}, keyword=${keyword})}"
+                           th:text="${i}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                        <a class="page-link" th:href="@{/manager/products(page=${currentPage + 1}, keyword=${keyword})}">»</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- ✅ Modal chi tiết -->
+            <div th:if="${products != null}" th:each="p : ${products}">
+                <div th:replace="manager/products/detail :: detailModal(p=${p})"></div>
+            </div>
+        </main>
+
+        <div th:replace="~{manager/layout/footer :: footer}"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${isEdit} ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'"></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/manager.css}">
+</head>
+<body>
+<div class="d-flex">
+    <div th:replace="~{manager/layout/sidebar :: sidebar}"></div>
+    <div class="main-content">
+        <div th:replace="~{manager/layout/header :: header}"></div>
+
+        <main class="p-4 flex-grow-1 bg-light">
+            <h3 class="mb-4 text-primary fw-bold" th:text="${isEdit} ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'"></h3>
+
+            <form th:action="@{/manager/products/save}" th:object="${product}"
+                  method="post" enctype="multipart/form-data"
+                  class="card p-4 shadow-sm bg-white border-0">
+
+                <input type="hidden" th:field="*{id}"/>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Tên sản phẩm</label>
+                        <input type="text" th:field="*{name}" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Mã serial</label>
+                        <input type="text" th:field="*{serialNumber}" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Chất liệu</label>
+                        <input type="text" th:field="*{material}" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Thương hiệu</label>
+                        <input type="text" th:field="*{brand}" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Loại đá</label>
+                        <input type="text" th:field="*{gemstone}" class="form-control">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Nhà cung cấp</label>
+                        <select th:field="*{supplier}" class="form-select">
+                            <option value="">-- Chọn nhà cung cấp --</option>
+                            <option th:each="s : ${suppliers}" th:value="${s.id}" th:text="${s.name}"
+                                    th:selected="${product.supplier != null and product.supplier.id == s.id}"></option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Giới tính</label>
+                        <select th:field="*{gender}" class="form-select" required>
+                            <option value="">-- Chọn giới tính --</option>
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                            <option value="Unisex">Unisex</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Giá (VNĐ)</label>
+                        <input type="number" th:field="*{price}" class="form-control" required min="0">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Giảm giá (%)</label>
+                        <input type="number" th:field="*{discount}" class="form-control" min="0" max="100">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Danh mục</label>
+                        <select th:field="*{category}" class="form-select" required>
+                            <option value="">-- Chọn danh mục --</option>
+                            <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"
+                                    th:selected="${product.category != null and product.category.id == c.id}"></option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Bộ sưu tập</label>
+                        <select th:field="*{collection}" class="form-select">
+                            <option value="">-- Chọn bộ sưu tập --</option>
+                            <option th:each="col : ${collections}" th:value="${col.id}" th:text="${col.name}"
+                                    th:selected="${product.collection != null and product.collection.id == col.id}"></option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Số lượng tồn</label>
+                        <input type="number" th:field="*{stockQuantity}" class="form-control" required min="0">
+                    </div>
+                </div>
+
+                <!-- Upload ảnh -->
+                <div class="border-top pt-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-images text-primary me-2"></i>Hình ảnh sản phẩm</h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-6 col-lg-3" th:each="i : ${#numbers.sequence(1,5)}">
+                            <label class="form-label fw-bold">Hình [[${i}]]</label>
+                            <div class="upload-box">
+                                <input type="file" name="images" accept="image/*"
+                                       class="form-control image-input"
+                                       th:required="${i == 1 and !isEdit}"
+                                       th:attr="onchange=|previewImage(this, 'preview' + ${i})|">
+
+                                <div class="preview-container mt-2" th:id="'preview' + ${i}">
+                                    <i class="bi bi-image text-muted fs-1"></i>
+                                    <small class="text-muted d-block"
+                                           th:text="${i == 1} ? 'Ảnh chính' : 'Không bắt buộc'"></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-end border-top pt-3">
+                    <a th:href="@{/manager/products}" class="btn btn-secondary me-2">Quay lại</a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-save"></i>
+                        <span th:text="${isEdit} ? 'Cập nhật' : 'Thêm mới'"></span>
+                    </button>
+                </div>
+            </form>
+        </main>
+
+        <div th:replace="~{manager/layout/footer :: footer}"></div>
+    </div>
+</div>
+
+<script>
+    function previewImage(input, previewId) {
+        const preview = document.getElementById(previewId);
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.innerHTML = `<i class="bi bi-image text-muted fs-1"></i>
+                                 <small class="text-muted d-block">Chưa có ảnh</small>`;
+        }
+    }
+</script>
+</body>
+</html>
