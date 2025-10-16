@@ -151,7 +151,7 @@ public class CartController {
         model.addAttribute("carts", cartItems);
         model.addAttribute("user", user);
         model.addAttribute("cartId", id);
-        return "client/product/checkout";
+        return "client_1/product/checkout";
     }
 
     @GetMapping("/checkout/{serialNumber}")
@@ -166,7 +166,7 @@ public class CartController {
         cartItems.add(item);
         model.addAttribute("carts", cartItems);
         model.addAttribute("serialNumber", serialNumber);
-        return "client/product/checkout";
+        return "client_1/product/checkout";
     }
 
     @PostMapping("/checkout/confirm")
@@ -178,7 +178,7 @@ public class CartController {
             model.addAttribute("coupon", form.getCoupon());
             model.addAttribute("paymentMethod", form.getPaymentMethod());
             model.addAttribute("receiver", form);
-            return "client/product/checkout";
+            return "client_1/product/checkout";
         }
         User user = userRepository.findByEmail(auth.getName()).orElse(null);
         Address address  = new Address();
