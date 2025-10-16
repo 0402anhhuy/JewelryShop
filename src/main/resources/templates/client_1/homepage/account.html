@@ -1254,7 +1254,7 @@
             </div>
             <div class="user-name" th:text="${user?.fullName ?: 'Người dùng'}">Nguyễn Văn A</div>
             <div class="user-email" th:text="${user?.email ?: 'Chưa có email'}">nguyenvana@email.com</div>
-            <span class="user-badge" th:if="${user?.role}">ADMIN</span>
+            <span class="user-badge" th:if="${user?.role}">USER</span>
         </div>
 
         <ul class="account-menu">
@@ -1310,7 +1310,7 @@
                 <!-- Hàng 1: Họ và tên -->
                 <div class="form-group">
                     <label class="form-label">Họ và tên</label>
-                    <input type="text" th:field="*{fullname}" class="form-input" placeholder="Họ và tên" readonly id="fullnameInput">
+                    <input type="text" th:field="*{fullName}" class="form-input" placeholder="Họ và tên" readonly id="fullnameInput">
                 </div>
 
                 <!-- Hàng 2: Email -->
