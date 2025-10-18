@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chi Tiết Sản Phẩm - Lắc Tay Vàng Trắng</title>
+    <title>Chi Tiết Sản Phẩm</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -450,6 +450,8 @@
         }
 
         .btn-buy {
+            display: inline-block; /* THÊM DÒNG NÀY */
+            text-align: center;
             width: 100%;
             padding: 18px;
             background: var(--red-btn);
@@ -462,6 +464,7 @@
             margin-bottom: 12px;
             text-transform: uppercase;
             transition: all 0.3s;
+            text-decoration: none;
         }
 
         .btn-buy:hover {
@@ -486,6 +489,8 @@
         }
 
         .btn-cart {
+            width: 100%;
+            min-height: 62px;
             padding: 14px;
             background: white;
             color: var(--blue-btn);
@@ -718,23 +723,8 @@
 
         <div class="thumbnail-list">
             <div class="thumbnail-track" id="thumbTrack">
-                <div class="thumbnail active">
-                    <img src="https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=200" alt="Thumb 1">
-                </div>
-                <div class="thumbnail">
-                    <img src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=200" alt="Thumb 2">
-                </div>
-                <div class="thumbnail">
-                    <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=200" alt="Thumb 3">
-                </div>
-                <div class="thumbnail">
-                    <img src="https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=200" alt="Thumb 4">
-                </div>
-                <div class="thumbnail">
-                    <img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=200" alt="Thumb 5">
-                </div>
-                <div class="thumbnail">
-                    <img src="https://images.unsplash.com/photo-1608042314453-ae338d80c427?w=200" alt="Thumb 6">
+                <div class="thumbnail" th:each="img, iterStat : ${product.imageUrls}">
+                    <img th:src="${img}" th:alt="'Ảnh ' + ${iterStat.index + 1}">
                 </div>
             </div>
         </div>
@@ -750,7 +740,7 @@
                 <span class="new-badge">
                     <i class="fas fa-star"></i> NEW
                 </span>
-            <img src="https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=800" alt="Lắc tay Vàng Trắng" id="mainImage">
+            <img th:src="${product.imageUrls[0]}" th:alt="${product.name}" id="mainImage">
             <button class="zoom-icon">
                 <i class="fas fa-search-plus"></i>
             </button>
@@ -759,10 +749,10 @@
 
     <!-- Product Info -->
     <div class="product-info">
-        <h1 class="product-title">Lắc tay Vàng Trắng Ý 18K PNJ 0000W061057</h1>
+        <h1 class="product-title" th:text="${product.displayName}">Lắc tay Vàng Trắng Ý 18K PNJ 0000W061057</h1>
 
         <div class="product-meta">
-            <span class="product-code">Mã: GL0000W061057</span>
+            <span class="product-code" th:text="'Mã: '+ ${product.serialNumber}">Mã: GL0000W061057</span>
             <div class="product-rating">
                 <span class="stars">⭐</span>
                 <span>(0)</span>
@@ -771,7 +761,13 @@
         </div>
 
         <div class="product-price">
-            <div class="current-price">7.500.000 ₫</div>
+            <div class="current-price"
+                 th:with="d=${product.discount != null ? product.discount : 0},
+              hasDiscount=${d > 0},
+              finalPrice=${hasDiscount ? (product.price * (100 - d)) / 100 : product.price}"
+                 th:text="|${#numbers.formatDecimal(finalPrice, 0, 'POINT', 0, 'COMMA')} ₫|">
+                7.500.000 ₫
+            </div>
             <div class="installment">Chỉ cần trả <strong>625.000 ₫/tháng</strong> <i class="fas fa-info-circle" style="color: #1e90ff;"></i></div>
             <div class="price-note">(Giá sản phẩm thay đổi tùy trọng lượng vàng và đá)</div>
         </div>
@@ -827,37 +823,23 @@
         </div>
 
         <div class="action-buttons">
-            <button class="btn-buy">
+            <a class="btn-buy"  th:href="@{/checkout/{serialNumber}(serialNumber=${product.serialNumber})}">
                 Mua ngay
                 <small>(Giao hàng miễn phí tận nhà hoặc nhận tại cửa hàng)</small>
-            </button>
+            </a>
 
             <div class="secondary-btns">
-                <button class="btn-cart">
-                    Thêm vào giỏ hàng
-                </button>
+                <form th:action="@{/cart/add/{serialNumber}(serialNumber=${product.serialNumber})}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button type="submit" class="btn-cart add-to-cart-btn">
+                        Thêm vào giỏ hàng
+                    </button>
+                </form>
+
                 <button class="btn-call">
                     Gọi ngay (miễn phí)
                     <small>(Nhận ngay ưu đãi)</small>
                 </button>
-            </div>
-        </div>
-
-        <div class="store-section">
-            <div class="store-title">Xem Cửa Hàng Còn Hàng</div>
-            <div class="store-list">
-                <div class="store-item">
-                    <span class="store-name">📍 Chi nhánh Quận 1 - Nguyễn Huệ</span>
-                    <span class="store-stock">Còn hàng</span>
-                </div>
-                <div class="store-item">
-                    <span class="store-name">📍 Chi nhánh Quận 3 - Võ Văn Tần</span>
-                    <span class="store-stock">Còn hàng</span>
-                </div>
-                <div class="store-item">
-                    <span class="store-name">📍 Chi nhánh Quận 7 - Crescent Mall</span>
-                    <span class="store-stock">Còn hàng</span>
-                </div>
             </div>
         </div>
     </div>
@@ -884,19 +866,15 @@
         <table class="spec-table">
             <tr>
                 <td>Mã sản phẩm</td>
-                <td>GL0000W061057</td>
+                <td th:text="${product.serialNumber}">GL0000W061057</td>
             </tr>
             <tr>
                 <td>Chất liệu</td>
-                <td>Vàng Trắng Ý 18K</td>
+                <td th:text="${product.material}">Vàng Trắng Ý 18K</td>
             </tr>
             <tr>
                 <td>Loại đá</td>
-                <td>Không đính đá</td>
-            </tr>
-            <tr>
-                <td>Trọng lượng vàng</td>
-                <td>Khoảng 4.8g (thay đổi theo size)</td>
+                <td th:text="${product.gemstone != null ? product.gemstone : 'Không đính đá'}">Không đính đá</td>
             </tr>
             <tr>
                 <td>Màu sắc</td>
@@ -928,7 +906,7 @@
         <p>Chưa có đánh giá nào cho sản phẩm này. Hãy là người đầu tiên đánh giá!</p>
     </div>
 </div>
-
+<script th:src="@{/js/home.js}"></script>
 <script>
     // Thumbnail navigation
     let currentThumbIndex = 0;
@@ -1013,11 +991,6 @@
         });
     });
 
-    // Buy Now
-    document.querySelector('.btn-buy').addEventListener('click', function() {
-        const selectedSize = document.querySelector('.size-btn.active').textContent;
-        alert('Đang xử lý đơn hàng...\nSize: ' + selectedSize);
-    });
 
     // Add to Cart
     document.querySelector('.btn-cart').addEventListener('click', function() {

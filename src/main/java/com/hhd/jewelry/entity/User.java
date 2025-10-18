@@ -2,6 +2,7 @@ package com.hhd.jewelry.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,6 +37,7 @@ public class User {
     private String address;
 
     @Column(unique = true)
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
