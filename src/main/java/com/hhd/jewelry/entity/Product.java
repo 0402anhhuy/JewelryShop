@@ -2,7 +2,9 @@ package com.hhd.jewelry.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +35,10 @@ public class Product {
 
     @Column(nullable = false)
     private Integer price;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
     @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
     private Integer discount;

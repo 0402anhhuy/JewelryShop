@@ -93,7 +93,7 @@
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.25rem; /* spacing between grid items */
+    gap: 1.25rem;
     align-items: start;
 }
 
@@ -129,7 +129,7 @@
     color: var(--primary-color);
     font-size: 1.25rem;
     font-weight: 700;
-    margin-right: 5px; /* the 5px gap requested */
+    margin-right: 5px;
     display: inline-block;
     width: 18px;
     text-align: center;
@@ -151,7 +151,6 @@
     max-height: 500px;
     padding-bottom: 1rem;
 }
-
 
 :root {
     --primary-color: #d4af37;
@@ -178,6 +177,7 @@ body {
 }
 
 /* Header Styles */
+/* Header Styles */
 header {
     padding: 15px 0;
     background-color: var(--light-color);
@@ -187,13 +187,14 @@ header {
 
 .top-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 25px; /* khoảng cách giữa Jewellery và thanh search */
     padding-bottom: 15px;
     border-bottom: 1px solid #eee;
     margin-bottom: 15px;
 }
 
+/* Thanh tìm kiếm */
 .search-bar {
     display: flex;
     align-items: center;
@@ -216,9 +217,11 @@ header {
     color: #777;
 }
 
+/* ✅ Đẩy icon qua phải */
 .header-icons {
     display: flex;
     gap: 20px;
+    margin-left: auto; /* căn phải */
 }
 
 .header-icons a {
@@ -231,12 +234,7 @@ header {
     color: var(--primary-color);
 }
 
-.main-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
+/* Logo */
 .nav-brand {
     font-size: 32px;
     font-weight: 700;
@@ -247,6 +245,8 @@ header {
 .nav-brand span {
     color: var(--primary-color);
 }
+
+
 
 .nav-menu {
     display: flex;
@@ -2041,3 +2041,6 @@ footer {
         display: none;
     }
 }
+
+
+

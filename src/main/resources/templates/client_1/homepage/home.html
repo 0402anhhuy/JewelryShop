@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Trang Chủ - Jewelry Store</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
@@ -63,40 +63,53 @@
     </div>
 </section>
 
-<!-- Categories Section -->
+<!-- Categories Section - CLICKABLE FILTER -->
 <section class="categories">
     <div class="container">
         <div class="category-list">
-            <a href="#" class="category"><i class="far fa-solid fa-ring"></i> Nhẫn</a>
-            <a href="#" class="category"><i class="far fa-circle"></i> Vòng tay</a>
-            <a href="#" class="category"><i class="fas fa-headphones"></i> Bông tai</a>
-            <a href="#" class="category"><i class="fas fa-link"></i> Dây chuyền</a>
-            <a href="#" class="category"><i class="far fa-solid fa-clock"></i> Đồng hồ</a>
-            <a href="#" class="category"><i class="fas fa-medal"></i> Phụ kiện</a>
-
+            <a th:href="@{/products(catName='Nhẫn')}" class="category">
+                <i class="far fa-solid fa-ring"></i> Nhẫn
+            </a>
+            <a th:href="@{/products(catName='Vòng tay')}" class="category">
+                <i class="far fa-circle"></i> Vòng tay
+            </a>
+            <a th:href="@{/products(catName='Bông tai')}" class="category">
+                <i class="fas fa-headphones"></i> Bông tai
+            </a>
+            <a th:href="@{/products(catName='Dây chuyền')}" class="category">
+                <i class="fas fa-link"></i> Dây chuyền
+            </a>
+            <a th:href="@{/products(catName='Đồng hồ')}" class="category">
+                <i class="far fa-solid fa-clock"></i> Đồng hồ
+            </a>
+            <a th:href="@{/products(catName='Phụ kiện')}" class="category">
+                <i class="fas fa-medal"></i> Phụ kiện
+            </a>
         </div>
     </div>
 </section>
 
-<!-- Collections Section -->
+<!-- Collections Section - CLICKABLE FILTER -->
 <section class="collections container my-4 text-center">
     <h2 class="section-title">Our Collections</h2>
     <div class="collection-wrap position-relative mt-3">
         <button class="carousel-btn prev-btn collection-prev"><i class="fas fa-chevron-left"></i></button>
         <div class="collection-track" id="collectionTrack">
-            <!-- each collection has data-collection-id -->
-            <div class="collection-item"
-                 th:each="col : ${collections}"
-                 th:attr="data-collection-id=${col.id}">
+            <a th:each="col : ${collections}"
+               th:href="@{/products(collectionName=${col.name})}"
+               class="collection-item"
+               th:attr="data-collection-id=${col.id}"
+               style="text-decoration: none; color: inherit; display: block;">
                 <img th:src="@{${col.imageUrl}}" th:alt="${col.name}" />
-            </div>
+                <div class="collection-name" th:text="${col.name}" style="margin-top: 10px; font-weight: 500; color: #333;"></div>
+            </a>
         </div>
         <button class="carousel-btn next-btn collection-next"><i class="fas fa-chevron-right"></i></button>
     </div>
     <div class="collection-dots mt-3" id="collectionDots"></div>
 </section>
 
-<!-- New Arrivals Section -->
+<!-- New Arrivals Section - WITH SORT FILTER -->
 <section class="new-arrivals">
     <div class="container">
         <div class="arrivals-container">
@@ -105,15 +118,12 @@
                     <h2 class="section-title">New Arrival</h2>
                     <div class="sort-filter">
                         <span class="filter-label">Sort by</span>
-                        <label>
-                            <select class="filter-select">
-                                <option>Featured</option>
-                                <option>Newest</option>
-                                <option>Price: Low to High</option>
-                                <option>Price: High to Low</option>
-                                <option>Best Selling</option>
-                            </select>
-                        </label>
+                        <select class="filter-select" onchange="applySortFilter(this.value)">
+                            <option value="newest">Newest</option>
+                            <option value="priceAsc">Price: Low to High</option>
+                            <option value="priceDesc">Price: High to Low</option>
+                            <option value="bestSelling">Best Selling</option>
+                        </select>
                     </div>
                 </div>
 
@@ -121,30 +131,27 @@
                 <div class="products-grid">
                     <div class="product-card" th:each="product : ${products}">
                         <div class="product-image">
-                            <!-- Badge NEW -->
                             <span class="product-badge">NEW</span>
                             <img th:src="@{${product.imageUrls[0]}}" class="arrivals-image" alt="Ảnh sản phẩm">
                         </div>
                         <div class="product-info">
-                            <h3 class="product-title"
-                                th:text="${product.name}">Lắc tay trẻ em Vàng 10K Doraemon | PNJ 0000Y004538</h3>
+                            <h3 class="product-title" th:text="${product.name}">
+                                Lắc tay trẻ em Vàng 10K Doraemon | PNJ 0000Y004538
+                            </h3>
                             <div class="product-price">
                                 <span class="current-price"
-                                      th:text="${#numbers.formatDecimal(product.price,0,'COMMA',0,'POINT')} + ' đ'">5.546.000 đ
+                                      th:text="${#numbers.formatDecimal(product.price,0,'COMMA',0,'POINT')} + ' đ'">
+                                    5.546.000 đ
                                 </span>
-                                <span class="original-price"
-                                      th:if="${product.price != null}"
-                                      th:text="${#numbers.formatDecimal(product.price,0,'COMMA',0,'POINT')} + ' đ'"></span>
                             </div>
-                            <!-- Số lượng đã bán -->
-                            <div class="product-sold" th:text="${product.id + ' đã bán'}">45 đã bán</div>
+                            <div class="product-sold" th:text="${product.order + ' đã bán'}">45 đã bán</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Pagination -->
                 <div class="pagination">
-                    <button class="page-btn">
+                    <button class="page-btn" onclick="window.location.href='#new-arrivals'">
                         <i class="fas fa-chevron-left"></i>
                     </button>
                     <button class="page-btn active">1</button>
@@ -152,7 +159,7 @@
                     <button class="page-btn">3</button>
                     <span class="page-dots">...</span>
                     <button class="page-btn">8</button>
-                    <button class="page-btn">
+                    <button class="page-btn" onclick="window.location.href='#new-arrivals'">
                         <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
@@ -165,7 +172,9 @@
                 <div class="banner-image">
                     <i class="fas fa-ring"></i>
                 </div>
-                <button class="banner-btn">Explore Collection</button>
+                <a th:href="@{/products(collectionName='Wedding')}" style="text-decoration: none;">
+                    <button class="banner-btn">Explore Collection</button>
+                </a>
             </div>
         </div>
     </div>
@@ -178,43 +187,27 @@
         <div class="carousel-container">
             <div class="carousel">
                 <div class="carousel-track" id="trending-carousel">
-                    <!-- Example Carousel Items - JavaScript will add these dynamically -->
-                    <div class="carousel-item">
+                    <div class="carousel-item" th:each="product : ${products}" th:if="${productStat.index < 6}">
                         <div class="product-card">
                             <div class="product-image">
-                                <img src="product-image-url.jpg" alt="Product Name">
+                                <img th:src="@{${product.imageUrls[0]}}" th:alt="${product.name}">
                             </div>
-                            <p class="product-category">Nhẫn</p>
-                            <h3 class="product-title">Nhẫn Kim cương Vàng trắng 14K</h3>
-                            <p class="product-price">15.750.000 đ</p>
-                            <button class="buy-now-btn">Buy Now</button>
+                            <p class="product-category" th:text="${product.category.name}">Nhẫn</p>
+                            <h3 class="product-title" th:text="${product.name}">Nhẫn Kim cương Vàng trắng 14K</h3>
+                            <p class="product-price" th:text="${#numbers.formatDecimal(product.price,0,'COMMA',0,'POINT')} + ' đ'">15.750.000 đ</p>
+                            <a th:href="@{/products/detail/{serialNumber}(serialNumber=${product.serialNumber})}" style="text-decoration: none;">
+                                <button class="buy-now-btn">Buy Now</button>
+                            </a>
                         </div>
                     </div>
-
-                    <div class="carousel-item">
-                        <div class="product-card">
-                            <div class="product-image">
-                                <img src="product-image-url.jpg" alt="Product Name">
-                            </div>
-                            <p class="product-category">Dây chuyền</p>
-                            <h3 class="product-title">Dây chuyền Vàng 18K</h3>
-                            <p class="product-price">8.950.000 đ</p>
-                            <button class="buy-now-btn">Buy Now</button>
-                        </div>
-                    </div>
-
-                    <!-- Add more items as needed -->
                 </div>
             </div>
             <button class="carousel-btn prev-btn" id="trending-prev"><i class="fas fa-chevron-left"></i></button>
             <button class="carousel-btn next-btn" id="trending-next"><i class="fas fa-chevron-right"></i></button>
-            <div class="carousel-indicators" id="trending-indicators">
-                <!-- JavaScript will add indicators dynamically -->
-            </div>
+            <div class="carousel-indicators" id="trending-indicators"></div>
         </div>
     </div>
 </section>
-
 
 <!-- Blog Section -->
 <section class="blog">
@@ -266,7 +259,7 @@
     </div>
 </section>
 
-<!-- Magazine / Featured Layout (from design attachment) -->
+<!-- Magazine Section -->
 <section class="magazine-section">
     <div class="container">
         <div class="magazine-grid">
@@ -307,10 +300,8 @@
     </div>
 </section>
 
-<!-- Footer -->
-<!-- Extra Blog + FAQ (inserted per user) -->
+<!-- FAQ Section -->
 <section class="extra-blog-faq container">
-    <!-- Phần FAQ mới thêm -->
     <section class="faq-section">
         <h2>Questions</h2>
         <div class="faq-container">
@@ -368,6 +359,95 @@
 </section>
 
 <footer th:replace="~{client_1/layout/footer :: footer}"></footer>
+
 <script th:src="@{/js/style.js}"></script>
+<script>
+    // Sort filter function
+    function applySortFilter(sortValue) {
+        window.location.href = '/products?sort=' + sortValue;
+    }
+
+    // FAQ accordion
+    document.querySelectorAll('.faq-question').forEach(question => {
+        question.addEventListener('click', function() {
+            const item = this.parentElement;
+            const answer = item.querySelector('.faq-answer');
+            const isActive = item.classList.contains('active');
+
+            // Close all other items
+            document.querySelectorAll('.faq-item').forEach(i => {
+                i.classList.remove('active');
+                i.querySelector('.faq-answer').style.maxHeight = null;
+            });
+
+            // Toggle current item
+            if (!isActive) {
+                item.classList.add('active');
+                answer.style.maxHeight = answer.scrollHeight + 'px';
+            }
+        });
+    });
+
+    // Collection carousel
+    const collectionTrack = document.getElementById('collectionTrack');
+    const collectionPrev = document.querySelector('.collection-prev');
+    const collectionNext = document.querySelector('.collection-next');
+
+    if (collectionTrack) {
+        let currentIndex = 0;
+        const itemsToShow = 4;
+        const items = collectionTrack.querySelectorAll('.collection-item');
+        const totalItems = items.length;
+
+        collectionNext?.addEventListener('click', () => {
+            if (currentIndex < totalItems - itemsToShow) {
+                currentIndex++;
+                updateCarousel();
+            }
+        });
+
+        collectionPrev?.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCarousel();
+            }
+        });
+
+        function updateCarousel() {
+            const offset = currentIndex * (100 / itemsToShow);
+            collectionTrack.style.transform = `translateX(-${offset}%)`;
+        }
+    }
+
+    // Trending carousel
+    const trendingTrack = document.getElementById('trending-carousel');
+    const trendingPrev = document.getElementById('trending-prev');
+    const trendingNext = document.getElementById('trending-next');
+
+    if (trendingTrack) {
+        let trendingIndex = 0;
+        const trendingItems = trendingTrack.querySelectorAll('.carousel-item');
+        const trendingTotal = trendingItems.length;
+
+        trendingNext?.addEventListener('click', () => {
+            if (trendingIndex < trendingTotal - 3) {
+                trendingIndex++;
+                updateTrendingCarousel();
+            }
+        });
+
+        trendingPrev?.addEventListener('click', () => {
+            if (trendingIndex > 0) {
+                trendingIndex--;
+                updateTrendingCarousel();
+            }
+        });
+
+        function updateTrendingCarousel() {
+            const offset = trendingIndex * (100 / 3);
+            trendingTrack.style.transform = `translateX(-${offset}%)`;
+        }
+    }
+</script>
 </body>
 </html>
