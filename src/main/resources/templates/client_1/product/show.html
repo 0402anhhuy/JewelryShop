@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -178,6 +178,7 @@
         .category-item input[type="checkbox"] {
             margin-right: 10px;
             cursor: pointer;
+            accent-color: var(--primary-color);
         }
 
         .category-label {
@@ -541,6 +542,7 @@
             transition: all 0.3s;
             font-weight: 600;
             color: #666;
+            text-decoration: none;
         }
 
         .page-btn:hover {
@@ -616,6 +618,20 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        .header-icons a,
+        .header-icons a:link,
+        .header-icons a:visited,
+        .header-icons a:active {
+            color: var(--dark-color) !important; /* ép về đen */
+            text-decoration: none !important;
+        }
+
+        .header-icons a:hover {
+            color: var(--primary-color) !important; /* vàng khi hover */
+            text-decoration: none !important;
+        }
+
     </style>
 </head>
 <body>
@@ -624,162 +640,149 @@
     <div class="header-content">
         <div class="brand">LUXURY<span>GEMS</span></div>
         <div class="search-box">
-            <input type="text" placeholder="Tìm kiếm sản phẩm...">
+            <form th:action="@{/products}" method="get">
+                <input type="text" name="q" placeholder="Tìm kiếm sản phẩm..." th:value="${keyword}">
+            </form>
         </div>
         <div class="header-icons">
-            <i class="far fa-heart"></i>
-            <i class="fas fa-shopping-cart"></i>
-            <i class="far fa-user"></i>
+            <a href="/" title="Trang chủ"><i class="fas fa-home"></i></a>
+            <a href="/wishlist" title="Yêu thích"><i class="far fa-heart"></i></a>
+            <a href="/cart" title="Giỏ hàng"><i class="fas fa-shopping-cart"></i></a>
+            <a href="/account" title="Tài khoản"><i class="far fa-user"></i></a>
         </div>
+
     </div>
 </header>
 
 <!-- Main Container -->
 <div class="main-container">
-    <!-- Sidebar Filter -->
+    <!-- ===== BỘ LỌC SIDEBAR ===== -->
     <aside class="sidebar">
-        <!-- Filter Header -->
-        <div class="filter-section">
-            <div class="filter-header">
-                <h3><i class="fas fa-filter"></i> Bộ Lọc</h3>
-                <span class="clear-filters">Xóa tất cả</span>
-            </div>
-        </div>
-
-        <!-- Categories -->
-        <div class="filter-section">
-            <div class="filter-title">
-                <i class="fas fa-list"></i>
-                Danh Mục
-            </div>
-            <ul class="category-list">
-                <li class="category-item">
-                    <label class="category-label">
-                        <input type="checkbox" checked>
-                        <span>Nhẫn</span>
-                    </label>
-                    <span class="category-count">156</span>
-                </li>
-                <li class="category-item">
-                    <label class="category-label">
-                        <input type="checkbox">
-                        <span>Vòng tay</span>
-                    </label>
-                    <span class="category-count">89</span>
-                </li>
-                <li class="category-item">
-                    <label class="category-label">
-                        <input type="checkbox">
-                        <span>Bông tai</span>
-                    </label>
-                    <span class="category-count">124</span>
-                </li>
-                <li class="category-item">
-                    <label class="category-label">
-                        <input type="checkbox">
-                        <span>Dây chuyền</span>
-                    </label>
-                    <span class="category-count">98</span>
-                </li>
-                <li class="category-item">
-                    <label class="category-label">
-                        <input type="checkbox">
-                        <span>Đồng hồ</span>
-                    </label>
-                    <span class="category-count">67</span>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Price Range -->
-        <div class="filter-section">
-            <div class="filter-title">
-                <i class="fas fa-dollar-sign"></i>
-                Khoảng Giá
-            </div>
-            <div class="price-range">
-                <div class="price-inputs">
-                    <label>
-                        <input type="text" class="price-input" placeholder="0 đ" value="0 đ">
-                    </label>
-                    <span class="price-separator">—</span>
-                    <label>
-                        <input type="text" class="price-input" placeholder="50tr" value="50.000.000 đ">
-                    </label>
+        <form id="filterForm" th:action="@{/products}" method="get">
+            <!-- Filter Header -->
+            <div class="filter-section">
+                <div class="filter-header">
+                    <h3><i class="fas fa-filter"></i> Bộ Lọc</h3>
+                    <a th:href="@{/products}" class="clear-filters">Xóa tất cả</a>
                 </div>
-                <label>
-                    <input type="range" class="price-slider" min="0" max="50000000" value="25000000">
-                </label>
             </div>
-        </div>
 
-        <!-- Material -->
-        <div class="filter-section">
-            <div class="filter-title">
-                <i class="fas fa-gem"></i>
-                Chất Liệu
+            <!-- Categories -->
+            <div class="filter-section">
+                <div class="filter-title">
+                    <i class="fas fa-list"></i>
+                    Danh Mục
+                </div>
+                <ul class="category-list">
+                    <li class="category-item" th:each="cat : ${allCategories}">
+                        <label class="category-label">
+                            <input type="checkbox"
+                                   name="catName"
+                                   th:value="${cat.name}"
+                                   th:checked="${selectedCategories.contains(cat.name)}"
+                                   onchange="this.form.submit()">
+                            <span th:text="${cat.name}">Nhẫn</span>
+                        </label>
+                        <span class="category-count" th:text="${cat.id}">156</span>
+                    </li>
+                </ul>
             </div>
-            <div class="filter-pills">
-                <span class="pill active">Vàng 18K</span>
-                <span class="pill">Vàng 14K</span>
-                <span class="pill">Vàng 10K</span>
-                <span class="pill">Bạc 925</span>
-                <span class="pill">Kim cương</span>
-                <span class="pill">Ngọc trai</span>
-            </div>
-        </div>
 
-        <!-- Brand/Collection -->
-        <div class="filter-section">
-            <div class="filter-title">
-                <i class="fas fa-crown"></i>
-                Bộ Sưu Tập
+            <!-- Price Range -->
+            <div class="filter-section">
+                <div class="filter-title">
+                    <i class="fas fa-dollar-sign"></i>
+                    Khoảng Giá (đ)
+                </div>
+                <div class="price-range">
+                    <div class="price-inputs">
+                        <input type="number"
+                               name="minPrice"
+                               class="price-input"
+                               placeholder="Từ"
+                               th:value="${minPrice}">
+                        <span class="price-separator">—</span>
+                        <input type="number"
+                               name="maxPrice"
+                               class="price-input"
+                               placeholder="Đến"
+                               th:value="${maxPrice}">
+                    </div>
+                </div>
             </div>
-            <div class="filter-pills">
-                <span class="pill">Wedding</span>
-                <span class="pill">Classic</span>
-                <span class="pill">Modern</span>
-                <span class="pill">Vintage</span>
-                <span class="pill">Limited</span>
-            </div>
-        </div>
 
-        <button class="apply-filter-btn">
-            <i class="fas fa-check"></i> Áp Dụng Bộ Lọc
-        </button>
+            <!-- Material -->
+            <div class="filter-section">
+                <div class="filter-title">
+                    <i class="fas fa-gem"></i>
+                    Chất Liệu
+                </div>
+                <ul class="category-list">
+                    <li class="category-item" th:each="mat : ${allMaterials}">
+                        <label class="category-label">
+                            <input type="checkbox"
+                                   name="material"
+                                   th:value="${mat}"
+                                   th:checked="${selectedMaterials.contains(mat)}"
+                                   onchange="this.form.submit()">
+                            <span th:text="${mat}">Vàng 18K</span>
+                        </label>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Brand/Collection -->
+            <div class="filter-section">
+                <div class="filter-title">
+                    <i class="fas fa-crown"></i>
+                    Bộ Sưu Tập
+                </div>
+                <select name="collectionName"
+                        class="sort-dropdown"
+                        style="width: 100%; margin-top: 10px;"
+                        onchange="this.form.submit()">
+                    <option value="">Tất cả</option>
+                    <option th:each="coll : ${allCollections}"
+                            th:value="${coll.name}"
+                            th:text="${coll.name}"
+                            th:selected="${selectedCollection == coll.name}">
+                        Wedding
+                    </option>
+                </select>
+            </div>
+
+            <button type="submit" class="apply-filter-btn">
+                <i class="fas fa-check"></i> Áp Dụng Bộ Lọc
+            </button>
+        </form>
     </aside>
 
-    <!-- Product Section -->
+    <!-- ===== DANH SÁCH SẢN PHẨM ===== -->
     <section class="product-section">
         <!-- Section Header -->
         <div class="section-header">
             <div>
                 <h2 class="section-title">Sản Phẩm</h2>
-                <p class="result-info">Hiển thị 1-12 trong 156 sản phẩm</p>
+                <p class="result-info" th:text="'Hiển thị ' + ${pageData.numberOfElements} + ' trong ' + ${pageData.totalElements} + ' sản phẩm'">
+                    Hiển thị 1-12 trong 156 sản phẩm
+                </p>
             </div>
-            <label>
-                <select class="sort-dropdown">
-                    <option>Mới nhất</option>
-                    <option>Giá: Thấp → Cao</option>
-                    <option>Giá: Cao → Thấp</option>
-                    <option>Bán chạy nhất</option>
-                    <option>Đánh giá cao</option>
-                </select>
-            </label>
+            <select class="sort-dropdown" onchange="updateSort(this.value)">
+                <option value="newest" th:selected="${currentSort == 'newest'}">Mới nhất</option>
+                <option value="priceAsc" th:selected="${currentSort == 'priceAsc'}">Giá: Thấp → Cao</option>
+                <option value="priceDesc" th:selected="${currentSort == 'priceDesc'}">Giá: Cao → Thấp</option>
+                <option value="bestSelling" th:selected="${currentSort == 'bestSelling'}">Bán chạy nhất</option>
+                <option value="nameAsc" th:selected="${currentSort == 'nameAsc'}">Tên: A-Z</option>
+            </select>
         </div>
 
         <!-- Products Grid -->
         <div class="products-grid">
-            <!-- Lặp qua danh sách sản phẩm -->
             <div class="product-card" th:each="product : ${products}">
                 <div class="product-image">
-                    <!-- Badge nếu có -->
-<!--                    <span class="product-badge" th:if="${product.isNew}" th:text="'NEW'"></span>-->
+                    <span class="product-badge">NEW</span>
+                    <img th:src="@{${product.imageUrls[0]}}" th:alt="${product.name}" alt="Product">
 
-                    <!-- Ảnh sản phẩm -->
-                    <img th:src="${product.imageUrls[0]}" th:alt="${product.name}" alt="Product">
-
-                    <!-- Nút hành động -->
                     <div class="quick-actions">
                         <a th:href="@{/products/detail/{serialNumber}(serialNumber=${product.serialNumber})}"
                            class="action-btn" title="Chi tiết">
@@ -789,42 +792,32 @@
                             <i class="far fa-heart"></i>
                         </button>
                     </div>
-
                 </div>
 
                 <div class="product-info">
-                    <!-- Danh mục -->
                     <p class="product-category" th:text="${product.category.name}">Danh mục</p>
-
-                    <!-- Tên sản phẩm -->
                     <h3 class="product-title" th:text="${product.name}">Tên sản phẩm</h3>
 
-                    <!-- Đánh giá -->
                     <div class="product-rating">
-                        <!-- Dưới đây là ví dụ: hiển thị số sao tĩnh. Nếu muốn render sao động thì mình có thể viết JS hoặc template riêng -->
-                        <i class="fas fa-star" th:each="i : ${#numbers.sequence(1, T(java.lang.Math).floor(product.id))}"></i>
-                        <i class="far fa-star" th:each="i : ${#numbers.sequence(T(java.lang.Math).floor(product.id) + 1, 5)}"></i>
-                        <span th:text="'(' + ${product.id} + ')'">(4.5)</span>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                        <span>(4.5)</span>
                     </div>
 
-                    <!-- Giá -->
                     <div class="product-price">
-                <span class="current-price" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">
-                    6.750.000 đ
-                </span>
-                        <span class="original-price" th:if="${product.price != null}"
-                              th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">
-                    8.000.000 đ
-                </span>
+                        <span class="current-price" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                            6.750.000 đ
+                        </span>
                     </div>
 
-                    <!-- Số lượng đã bán -->
                     <p class="product-sold" th:text="${product.order} + ' đã bán'">56 đã bán</p>
 
-                    <!-- Nút thêm giỏ hàng -->
                     <form th:action="@{/cart/add/{serialnumber}(serialnumber=${product.serialNumber})}" method="post">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                        <button class="add-to-cart-btn">
+                        <button class="add-to-cart-btn" type="submit">
                             <i class="fas fa-shopping-cart"></i>
                             <span>Thêm vào giỏ</span>
                         </button>
@@ -833,32 +826,30 @@
             </div>
         </div>
 
-        <!-- Pagination (Thymeleaf) -->
+        <!-- Pagination -->
         <div class="pagination" th:if="${pageData.totalPages > 1}">
-            <!-- Prev -->
             <a class="page-btn"
-               th:classappend="${pageData.first} ? ' disabled'"
-               th:href="@{/products( ${params}, page=${pageData.number-1}, size=${pageData.size} )}">
+               th:classappend="${pageData.first} ? 'disabled'"
+               th:href="@{/products(catName=${selectedCategories}, material=${selectedMaterials}, collectionName=${selectedCollection}, minPrice=${minPrice}, maxPrice=${maxPrice}, sort=${currentSort}, page=${pageData.number - 1})}">
                 <i class="fas fa-chevron-left"></i>
             </a>
 
-            <!-- Page numbers -->
-            <a class="page-btn"
-               th:each="i : ${#numbers.sequence(0, pageData.totalPages-1)}"
-               th:classappend="${i == pageData.number} ? ' active'"
-               th:text="${i + 1}"
-               th:href="@{/products( ${params}, page=${i}, size=${pageData.size} )}">
-                1
-            </a>
+            <th:block th:each="i : ${#numbers.sequence(0, pageData.totalPages - 1)}">
+                <a class="page-btn"
+                   th:if="${i >= pageData.number - 2 && i <= pageData.number + 2}"
+                   th:classappend="${i == pageData.number} ? 'active'"
+                   th:text="${i + 1}"
+                   th:href="@{/products(catName=${selectedCategories}, material=${selectedMaterials}, collectionName=${selectedCollection}, minPrice=${minPrice}, maxPrice=${maxPrice}, sort=${currentSort}, page=${i})}">
+                    1
+                </a>
+            </th:block>
 
-            <!-- Next -->
             <a class="page-btn"
-               th:classappend="${pageData.last} ? ' disabled'"
-               th:href="@{/products( ${params}, page=${pageData.number+1}, size=${pageData.size} )}">
+               th:classappend="${pageData.last} ? 'disabled'"
+               th:href="@{/products(catName=${selectedCategories}, material=${selectedMaterials}, collectionName=${selectedCollection}, minPrice=${minPrice}, maxPrice=${maxPrice}, sort=${currentSort}, page=${pageData.number + 1})}">
                 <i class="fas fa-chevron-right"></i>
             </a>
         </div>
-
     </section>
 </div>
 
@@ -880,25 +871,10 @@
         });
     });
 
-    // Clear All Filters
-    document.querySelector('.clear-filters').addEventListener('click', function() {
-        document.querySelectorAll('.category-item input[type="checkbox"]').forEach(cb => {
-            cb.checked = false;
-        });
-        document.querySelectorAll('.pill.active').forEach(pill => {
-            pill.classList.remove('active');
-        });
-        document.querySelectorAll('.price-input').forEach(input => {
-            input.value = input.placeholder;
-        });
-    });
-
     // Pagination
     document.querySelectorAll('.page-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            if(!this.querySelector('i')) {
-                document.querySelector('.page-btn.active').classList.remove('active');
-                this.classList.add('active');
+            if(!this.querySelector('i') && !this.classList.contains('disabled')) {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         });
@@ -906,9 +882,10 @@
 
     // Quick View & Wishlist Buttons
     document.querySelectorAll('.action-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
             const icon = this.querySelector('i');
-            if(icon.classList.contains('fa-heart')) {
+            if(icon && icon.classList.contains('fa-heart')) {
+                e.preventDefault();
                 icon.classList.toggle('far');
                 icon.classList.toggle('fas');
 
@@ -921,31 +898,19 @@
         });
     });
 
-    // Price Range Slider
-    const priceSlider = document.querySelector('.price-slider');
-    const maxPriceInput = document.querySelectorAll('.price-input')[1];
-
-    priceSlider.addEventListener('input', function() {
-        const value = parseInt(this.value).toLocaleString('vi-VN');
-        maxPriceInput.value = value;
-    });
-
-    // Sort Dropdown
-    document.querySelector('.sort-dropdown').addEventListener('change', function() {
-        console.log('Sắp xếp theo:', this.value);
-        // Add your sorting logic here
-    });
+    // Update sort function
+    function updateSort(sortValue) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('sort', sortValue);
+        url.searchParams.set('page', '0');
+        window.location.href = url.toString();
+    }
 
     // Apply Filter Button
-    document.querySelector('.apply-filter-btn').addEventListener('click', function() {
+    document.querySelector('.apply-filter-btn')?.addEventListener('click', function(e) {
         this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lọc...';
-
-        setTimeout(() => {
-            this.innerHTML = '<i class="fas fa-check"></i> Áp Dụng Bộ Lọc';
-            window.scrollTo({ top: 300, behavior: 'smooth' });
-        }, 800);
+        window.scrollTo({ top: 300, behavior: 'smooth' });
     });
 </script>
-<script th:src="@{/js/home.js}"></script>
 </body>
 </html>

@@ -12,20 +12,22 @@ import java.util.List;
 public final class ProductSpecs {
     private ProductSpecs() {}
 
-    /** Tìm theo tên (hỗ trợ cả displayName nếu tồn tại field này) */
-    public static Specification<Product> keyword(String q) {
+    /**
+     * Tìm theo tên (hỗ trợ cả displayName nếu tồn tại field này)
+     * An toàn với các field không tồn tại
+     */
+    public static Specification<Product> keywordSafe(String q) {
         if (q == null || q.isBlank()) return null;
         final String like = "%" + q.trim().toLowerCase() + "%";
         return (root, cq, cb) -> {
-            Expression<String> nameExp = cb.lower(root.get("name"));
-            // Nếu có field displayName thì OR thêm
-            boolean hasDisplayName = root.getModel().getAttributes().stream()
-                    .anyMatch(a -> a.getName().equals("displayName"));
-            if (hasDisplayName) {
-                Expression<String> dNameExp = cb.lower(root.get("displayName"));
-                return cb.or(cb.like(nameExp, like), cb.like(dNameExp, like));
-            }
-            return cb.like(nameExp, like);
+            List<Predicate> ors = new ArrayList<>();
+            try {
+                ors.add(cb.like(cb.lower(root.get("name")), like));
+            } catch (IllegalArgumentException ignore) {}
+            try {
+                ors.add(cb.like(cb.lower(root.get("displayName")), like));
+            } catch (IllegalArgumentException ignore) {}
+            return ors.isEmpty() ? cb.conjunction() : cb.or(ors.toArray(new Predicate[0]));
         };
     }
 
@@ -38,7 +40,7 @@ public final class ProductSpecs {
         };
     }
 
-    /** Lọc theo danh sách tên danh mục (khi bên UI gửi ?catName=...) */
+    /** Lọc theo danh sách tên danh mục */
     public static Specification<Product> categoryNames(List<String> names) {
         if (names == null || names.isEmpty()) return null;
         return (root, cq, cb) -> {
@@ -49,7 +51,40 @@ public final class ProductSpecs {
         };
     }
 
-    /** Khoảng giá tự nhập (min/max) – dùng giá gốc */
+    /**
+     * Lọc theo chất liệu (Material)
+     * Hỗ trợ nhiều chất liệu cùng lúc với OR logic
+     */
+    public static Specification<Product> materials(List<String> materials) {
+        if (materials == null || materials.isEmpty()) return null;
+        return (root, cq, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            Path<String> materialPath = root.get("material");
+
+            for (String mat : materials) {
+                predicates.add(cb.like(cb.lower(materialPath), "%" + mat.toLowerCase() + "%"));
+            }
+
+            return cb.or(predicates.toArray(new Predicate[0]));
+        };
+    }
+
+    /**
+     * Lọc theo tên bộ sưu tập (Collection)
+     */
+    public static Specification<Product> collectionName(String collectionName) {
+        if (collectionName == null || collectionName.isBlank()) return null;
+        return (root, cq, cb) -> {
+            try {
+                Path<String> collPath = root.join("collection", JoinType.LEFT).get("name");
+                return cb.equal(cb.lower(collPath), collectionName.toLowerCase());
+            } catch (IllegalArgumentException e) {
+                return cb.conjunction(); // Nếu không có field collection
+            }
+        };
+    }
+
+    /** Khoảng giá tự nhập (min/max) */
     public static Specification<Product> priceBetween(BigDecimal min, BigDecimal max) {
         if (min == null && max == null) return null;
         return (root, cq, cb) -> {
@@ -77,15 +112,30 @@ public final class ProductSpecs {
             default      -> null;
         };
     }
-    public static Specification<Product> keywordSafe(String q) {
-        if (q == null || q.isBlank()) return null;
-        final String like = "%" + q.trim().toLowerCase() + "%";
+
+    /**
+     * Lọc sản phẩm đang active/available
+     */
+    public static Specification<Product> isAvailable() {
         return (root, cq, cb) -> {
-            List<Predicate> ors = new ArrayList<>();
-            try { ors.add(cb.like(cb.lower(root.get("name")), like)); } catch (IllegalArgumentException ignore) {}
-            try { ors.add(cb.like(cb.lower(root.get("displayName")), like)); } catch (IllegalArgumentException ignore) {}
-            return ors.isEmpty() ? cb.conjunction() : cb.or(ors.toArray(new Predicate[0]));
+            try {
+                return cb.equal(root.get("status"), "AVAILABLE");
+            } catch (IllegalArgumentException e) {
+                return cb.conjunction();
+            }
         };
     }
 
+    /**
+     * Lọc theo stock > 0
+     */
+    public static Specification<Product> inStock() {
+        return (root, cq, cb) -> {
+            try {
+                return cb.greaterThan(root.get("stockQuantity"), 0);
+            } catch (IllegalArgumentException e) {
+                return cb.conjunction();
+            }
+        };
+    }
 }

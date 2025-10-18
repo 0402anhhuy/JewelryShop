@@ -679,7 +679,22 @@
             }
 
             .tabs { overflow-x: auto; }
+            /* === FIX ICON MÀU BỊ TÍM === */
+
         }
+        .header-icons a,
+        .header-icons a:link,
+        .header-icons a:visited,
+        .header-icons a:active {
+            color: var(--dark-color) !important; /* ép về đen */
+            text-decoration: none !important;
+        }
+
+        .header-icons a:hover {
+            color: var(--primary-color) !important; /* vàng khi hover */
+            text-decoration: none !important;
+        }
+
     </style>
 </head>
 <body>
@@ -688,11 +703,12 @@
     <div class="header-content">
         <div class="brand">LUXURY<span>GEMS</span></div>
         <div class="header-icons">
-            <i class="fas fa-search"></i>
-            <i class="far fa-heart"></i>
-            <i class="fas fa-shopping-cart"></i>
-            <i class="far fa-user"></i>
+            <a href="/" title="Trang chủ"><i class="fas fa-home"></i></a>
+            <a href="/wishlist" title="Yêu thích"><i class="far fa-heart"></i></a>
+            <a href="/cart" title="Giỏ hàng"><i class="fas fa-shopping-cart"></i></a>
+            <a href="/account" title="Tài khoản"><i class="far fa-user"></i></a>
         </div>
+
     </div>
 </header>
 
