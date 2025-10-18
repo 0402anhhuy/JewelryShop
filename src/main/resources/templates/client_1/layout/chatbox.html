@@ -1,0 +1,195 @@
+<!-- client/layout/chatbox.html -->
+<div th:fragment="none">
+    <div id="chat-toggle" class="chat-toggle">💬</div>
+
+    <div id="chat-box" class="chat-box hidden">
+        <div class="chat-header">
+            💎 Tư vấn khách hàng
+            <span id="chat-close" class="chat-close">−</span>
+        </div>
+
+        <!-- Gợi ý nhanh -->
+        <div class="chat-quick">
+            <button class="chat-faq">Sản phẩm khuyến mãi</button>
+            <button class="chat-faq">Chính sách đổi trả</button>
+            <button class="chat-faq">Phí giao hàng</button>
+            <button class="chat-faq">Hướng dẫn chọn size</button>
+            <button class="chat-faq">Chat Zalo</button>
+        </div>
+
+        <div id="chat-messages" class="chat-messages"></div>
+
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Nhập tin nhắn..." />
+            <button id="sendBtn">Gửi</button>
+        </div>
+    </div>
+
+    <!-- WebSocket -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+    <script>
+        let stompClient = null;
+
+        // === Kết nối WebSocket ===
+        function connectChat() {
+            const socket = new SockJS('/ws-chat');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function () {
+                stompClient.subscribe('/topic/messages', function (msg) {
+                    const m = JSON.parse(msg.body);
+                    appendMessage(m.sender, m.content);
+                });
+            });
+        }
+
+        // === Hiển thị tin nhắn ===
+        function appendMessage(sender, content) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('msg', sender === 'Khách hàng' ? 'user' : 'admin');
+            msgDiv.innerHTML = `<strong>${sender}:</strong> ${content}`;
+            document.getElementById('chat-messages').appendChild(msgDiv);
+            msgDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // === Gửi tin nhắn ===
+        function sendMessage(text) {
+            if (stompClient && text.trim() !== '') {
+                stompClient.send("/app/sendMessage", {}, JSON.stringify({
+                    sender: "Khách hàng",
+                    content: text
+                }));
+                appendMessage("Khách hàng", text);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            connectChat();
+
+            // Gửi khi bấm nút
+            document.getElementById('sendBtn').onclick = () => {
+                const input = document.getElementById('chatInput');
+                sendMessage(input.value);
+                input.value = '';
+            };
+
+            // Gửi nhanh khi chọn câu hỏi
+            document.querySelectorAll('.chat-faq').forEach(btn => {
+                btn.onclick = () => {
+                    sendMessage(btn.innerText);
+                };
+            });
+
+            // Ẩn / hiện boxchat
+            const box = document.getElementById('chat-box');
+            document.getElementById('chat-toggle').onclick = () => {
+                box.classList.remove('hidden');
+            };
+            document.getElementById('chat-close').onclick = () => {
+                box.classList.add('hidden');
+            };
+        });
+    </script>
+
+    <style>
+        .chat-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 25px;
+            background: #d4af37;
+            color: white;
+            font-size: 22px;
+            border-radius: 50%;
+            padding: 14px 16px;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .chat-box {
+            position: fixed;
+            bottom: 85px;
+            right: 25px;
+            width: 320px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .hidden { display: none; }
+
+        .chat-header {
+            background: #d4af37;
+            color: white;
+            padding: 10px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-close { cursor: pointer; }
+
+        .chat-quick {
+            background: #fff8e6;
+            padding: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .chat-faq {
+            border: 1px solid #d4af37;
+            border-radius: 20px;
+            background: white;
+            padding: 5px 10px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .chat-faq:hover {
+            background: #d4af37;
+            color: white;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background: #fafafa;
+            font-size: 14px;
+        }
+
+        .msg { margin-bottom: 8px; }
+        .msg.user { text-align: right; color: #007bff; }
+        .msg.admin { text-align: left; color: #333; }
+
+        .chat-input {
+            display: flex;
+            border-top: 1px solid #ddd;
+        }
+
+        .chat-input input {
+            flex: 1;
+            border: none;
+            padding: 10px;
+            outline: none;
+        }
+
+        .chat-input button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+    </style>
+
+</div>
