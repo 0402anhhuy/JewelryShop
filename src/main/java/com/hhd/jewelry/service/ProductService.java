@@ -1,6 +1,8 @@
 package com.hhd.jewelry.service;
 
+import com.hhd.jewelry.entity.Order;
 import com.hhd.jewelry.entity.Product;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,4 +22,6 @@ public interface ProductService {
     void resetAutoIncrement();
     void AddProductToCart(String email, String serialNumber);
     void RemoveProductToCart(Integer cart_id, Integer product_id);
+    @Transactional(rollbackFor = Exception.class)
+    void updateStockForOrder(Order order);
 }
