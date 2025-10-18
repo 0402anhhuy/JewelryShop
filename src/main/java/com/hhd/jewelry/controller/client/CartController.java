@@ -3,10 +3,7 @@ package com.hhd.jewelry.controller.client;
 import com.hhd.jewelry.dto.CheckoutDto;
 import com.hhd.jewelry.entity.*;
 import com.hhd.jewelry.repository.*;
-import com.hhd.jewelry.service.CartItemService;
-import com.hhd.jewelry.service.MomoService;
-import com.hhd.jewelry.service.ProductService;
-import com.hhd.jewelry.service.VNPayService;
+import com.hhd.jewelry.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,9 +27,9 @@ public class CartController {
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
     private final AddressRepository addressRepository;
-    private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final CartItemRepository cartItemRepository;
+    private final OrderService orderService;
     private final CartItemService cartItemService;
     private final VNPayService vnPayService;
     private final MomoService momoService;
@@ -60,7 +57,7 @@ public class CartController {
         }
 
         List<CartItem> cartItems = cart.getItems() != null ? cart.getItems() : new ArrayList<>();
-
+        boolean isNotNewMember = orderService.existsOrderByUser(user);
         int subtotal = cartItems.stream()
                 .filter(item -> item != null && item.getProduct() != null && item.isSelected())
                 .mapToInt(item -> {
@@ -82,7 +79,7 @@ public class CartController {
         model.addAttribute("subtotal", subtotal);
         model.addAttribute("discount", discountValue);
         model.addAttribute("total", total);
-
+        model.addAttribute("isNotNewMember", isNotNewMember);
         return "client_1/product/cart";
     }
 
@@ -377,7 +374,7 @@ public class CartController {
         order.setCreatedAt(LocalDateTime.now());
         order.setPaid(false);
         order.setMethodPay(form.getPaymentMethod());
-        orderRepository.save(order);
+        orderService.save(order);
 
         // --- BẮT ĐẦU TÍNH TOÁN PHÍA SERVER ---
 
@@ -459,7 +456,7 @@ public class CartController {
 
         // Bước 3: Cập nhật tổng tiền chính xác vào đơn hàng
         order.setTotalAmount(totalAmount);
-        orderRepository.save(order);
+        orderService.save(order);
 
         // --- KẾT THÚC TÍNH TOÁN PHÍA SERVER ---
 
@@ -480,7 +477,7 @@ public class CartController {
         } else {
             // COD - Thanh toán khi nhận hàng
             order.setStatus(Order.Status.PENDING);
-            orderRepository.save(order);
+            orderService.save(order);
 
             // Xóa các sản phẩm đã chọn khỏi giỏ hàng nếu thanh toán từ giỏ
             if (form.getCartId() != null) {
