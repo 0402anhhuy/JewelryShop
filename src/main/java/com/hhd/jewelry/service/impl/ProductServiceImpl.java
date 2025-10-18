@@ -1,9 +1,6 @@
 package com.hhd.jewelry.service.impl;
 
-import com.hhd.jewelry.entity.Cart;
-import com.hhd.jewelry.entity.CartItem;
-import com.hhd.jewelry.entity.Product;
-import com.hhd.jewelry.entity.User;
+import com.hhd.jewelry.entity.*;
 import com.hhd.jewelry.repository.CartItemRepository;
 import com.hhd.jewelry.repository.CartRepository;
 import com.hhd.jewelry.repository.ProductRepository;
@@ -140,5 +137,30 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void RemoveProductToCart(Integer cart_id, Integer product_id) {
         cartItemRepository.deleteByCart_CartIdAndProduct_Id(cart_id, product_id);
+    }
+    @Override
+    public void updateStockForOrder(Order order) {
+        // Duyệt qua từng sản phẩm trong đơn hàng
+        for (OrderItem item : order.getItems()) {
+            Product product = item.getProduct();
+            int orderedQuantity = item.getQuantity();
+
+            // Lấy số lượng tồn kho hiện tại
+            int currentStock = product.getStockQuantity();
+
+            // Kiểm tra xem có đủ hàng không
+            if (currentStock < orderedQuantity) {
+                // Nếu không đủ, ném ra ngoại lệ để rollback transaction
+                throw new IllegalStateException("Sản phẩm " + product.getName() + " không đủ số lượng tồn kho. Chỉ còn " + currentStock + " sản phẩm.");
+            }
+
+            // Tính toán số lượng mới và cập nhật
+            int newStock = currentStock - orderedQuantity;
+            product.setStockQuantity(newStock);
+            product.setOrder(product.getOrder()+orderedQuantity);
+
+            // Lưu lại thông tin sản phẩm đã cập nhật
+            productRepository.save(product);
+        }
     }
 }
