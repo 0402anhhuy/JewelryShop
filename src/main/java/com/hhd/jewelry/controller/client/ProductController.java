@@ -1,15 +1,13 @@
 package com.hhd.jewelry.controller.client;
 
-import com.hhd.jewelry.entity.Category;
+import com.hhd.jewelry.entity.*;
 import com.hhd.jewelry.entity.Collection;
-import com.hhd.jewelry.entity.Product;
-import com.hhd.jewelry.repository.CategoryRepository;
-import com.hhd.jewelry.repository.CollectionRepository;
-import com.hhd.jewelry.repository.ProductRepository;
+import com.hhd.jewelry.repository.*;
 import com.hhd.jewelry.service.specification.ProductSpecs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +24,8 @@ public class ProductController {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final CollectionRepository collectionRepository;
+    private final UserRepository userRepository;
+    private final WishlistRepository wishlistRepository;
 
     @GetMapping("/products")
     public String products(
@@ -38,7 +38,8 @@ public class ProductController {
             @RequestParam(value = "sort", defaultValue = "newest") String sort,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "12") int size,
-            Model model)
+            Model model,
+            Authentication auth)
     {
         // ===== 1. XÂY DỰNG SPECIFICATION =====
         Specification<Product> spec = Specification.where(null);
@@ -91,9 +92,22 @@ public class ProductController {
                 "Bạc 925", "Kim cương", "Ngọc trai"
         );
 
+        // ===== ✅ SỬA PHẦN NÀY - Lấy wishlist với kiểu dữ liệu đúng =====
+        Set<Integer> wishlistedProductIds = new HashSet<>();
+        if (auth != null) {
+            User user = userRepository.findByEmail(auth.getName()).orElse(null);
+            if (user != null) {
+                List<Wishlist> wishlists = wishlistRepository.findAllByUser(user);
+                wishlistedProductIds = wishlists.stream()
+                        .map(w -> w.getProduct().getId())
+                        .collect(Collectors.toSet());
+            }
+        }
+
         // ===== 5. GỬI DỮ LIỆU ĐẾN VIEW =====
         model.addAttribute("products", productPage.getContent());
         model.addAttribute("pageData", productPage);
+        model.addAttribute("wishlistedProductIds", wishlistedProductIds); // ✅ THÊM DÒNG NÀY
 
         // Dữ liệu cho filter sidebar
         model.addAttribute("allCategories", allCategories);
