@@ -5,8 +5,10 @@ import com.hhd.jewelry.entity.*;
 import com.hhd.jewelry.repository.*;
 import com.hhd.jewelry.service.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,8 +36,8 @@ public class CartController {
     private final VNPayService vnPayService;
     private final MomoService momoService;
     private static final double VAT_RATE = 0.1;     // 3% VAT
-    private static final long SHIP_BASE = 30000;       // Phí ship mặc định
-    private static final long FREESHIP_MIN = 1000000;  // Miễn ship nếu tạm tính >= 1,000,000đ
+    private static final long SHIP_BASE = 50000;       // Phí ship mặc định
+    private static final long FREESHIP_MIN = 10000000;  // Miễn ship nếu tạm tính >= 1,000,000đ
 
     // ===== Hiển thị giỏ hàng =====
     @GetMapping("/cart")
@@ -142,13 +144,11 @@ public class CartController {
 
             updated.setQuantity(qty);
             cartRepository.save(cart);
-            if (selectedIds != null) {
-                for (CartItem item : cart.getItems()) {
-                    boolean isSelected = selectedIds.contains(item.getId());
-                    item.setSelected(isSelected);  // <- đảm bảo entity CartItem có field `selected`
-                }
-                cartRepository.save(cart); // Save lại toàn bộ cart sau khi update selected
+            for (CartItem item : cart.getItems()) {
+                boolean isSelected = selectedIds != null && selectedIds.contains(item.getId());
+                item.setSelected(isSelected);  // <- đảm bảo entity CartItem có field `selected`
             }
+            cartRepository.save(cart); // Save lại toàn bộ cart sau khi update selected
 
             int priceOfUpdatedItem = (updated.getProduct() != null && updated.getProduct().getPrice() != null)
                     ? updated.getProduct().getPrice() : 0;
@@ -246,11 +246,51 @@ public class CartController {
             return Map.of("ok", false, "reason", "Lỗi hệ thống: " + e.getMessage());
         }
     }
+    @PostMapping("/cart/prepare-checkout")
+    public ResponseEntity<?> prepareCheckout(@RequestParam String cartId,
+                                             @RequestParam(required = false) String couponCode,
+                                             @RequestParam(required = false) String shippingName,
+                                             @RequestParam(required = false, defaultValue = "0") long shippingFee,
+                                             @RequestParam long subtotal,
+                                             @RequestParam long discount,
+                                             @RequestParam long total,
+                                             HttpSession session) {
+        Map<String, Object> checkoutData = new HashMap<>();
+        checkoutData.put("cartId", cartId);
+        checkoutData.put("couponCode", couponCode);
+        checkoutData.put("shippingName", shippingName);
+        checkoutData.put("shippingFee", shippingFee);
+        checkoutData.put("subtotal", subtotal);
+        checkoutData.put("discount", discount);
+        checkoutData.put("total", total);
 
+        // ✅ Lưu vào session tạm
+        session.setAttribute("checkoutData", checkoutData);
+
+        return ResponseEntity.ok(Map.of("ok", true));
+    }
     // ===== Trang checkout (Mua từ giỏ hàng) =====
     // *** ĐÃ SỬA LỖI: Chỉ lấy các sản phẩm được chọn và tính tổng ban đầu ***
     @GetMapping("/checkout/cart/{id}")
-    public String getCartCheckOut(Model model, @PathVariable("id") Integer id, Authentication auth) {
+    public String getCartCheckOut(Model model, @PathVariable("id") Integer id, Authentication auth, HttpSession session) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> checkoutData = (Map<String, Object>) session.getAttribute("checkoutData");
+        if(checkoutData != null){
+            String couponCode = (String) checkoutData.getOrDefault("couponCode", "");
+            String shippingName = (String) checkoutData.getOrDefault("shippingName", "");
+            long subtotal = (long) checkoutData.getOrDefault("subtotal", 0L);
+            long discount = (long) checkoutData.getOrDefault("discount", 0L);
+            long shipping = (long) checkoutData.getOrDefault("shippingFee", 0L);
+            long tax = calculateTax(subtotal);
+            long total = subtotal - discount + shipping + tax;
+            model.addAttribute("shippingName", shippingName);
+            model.addAttribute("couponCode", couponCode);
+            model.addAttribute("subtotal", subtotal);
+            model.addAttribute("discount", discount);
+            model.addAttribute("shippingFee", shipping);
+            model.addAttribute("tax", tax);
+            model.addAttribute("total", total);
+        }
         User user = userRepository.findByEmail(auth.getName()).orElse(null);
         List<CartItem> allItems = cartItemRepository.findAllByCart_CartId(id);
 
@@ -272,21 +312,10 @@ public class CartController {
                 })
                 .sum();
 
-        long discount = 0; // Mặc định là 0 khi tải trang
-        long shipping = calculateShipping(subtotal, null);
-        long tax = calculateTax(subtotal);
-        long total = subtotal + shipping + tax;
-
+        model.addAttribute("isBuyNow", false); //
         model.addAttribute("carts", selectedItems); // Chỉ gửi các sản phẩm được chọn
         model.addAttribute("user", user);
         model.addAttribute("cartId", id);
-
-        // Gửi các giá trị đã tính toán ra view
-        model.addAttribute("subtotal", subtotal);
-        model.addAttribute("discount", discount);
-        model.addAttribute("shippingFee", shipping);
-        model.addAttribute("tax", tax);
-        model.addAttribute("total", total);
 
         return "client_1/product/checkout";
     }
@@ -295,8 +324,11 @@ public class CartController {
     // *** ĐÃ HOÀN THIỆN: Tính toán tổng tiền ban đầu cho "Mua ngay" ***
     @GetMapping("/checkout/{serialNumber}")
     public String getCheckout(Model model, @PathVariable("serialNumber") String serialNumber, Authentication auth) {
-        if (auth != null && auth.isAuthenticated()) {
-            model.addAttribute("user", userRepository.findByEmail(auth.getName()).orElse(null));
+        User user = userRepository.findByEmail(auth.getName()).orElse(null);
+        boolean isNotNewMember = true;
+        if (user != null) {
+            model.addAttribute("user", user);
+            isNotNewMember = orderService.existsOrderByUser(user);
         }
 
         Product product = productService.getProductBySerialNumber(serialNumber);
@@ -316,21 +348,27 @@ public class CartController {
         int discountPercent = Math.min(originalDiscount, 100);
         long finalPrice = price - (price * discountPercent / 100);
 
-        // Gán giá đã giảm vào CartItem "ảo"
-        item.setPrice((int) finalPrice); // Sử dụng trường price để lưu giá cuối cùng
+        item.setPrice((int) finalPrice);
 
         long subtotal = finalPrice; // Vì số lượng là 1
-        long discount = 0;
-        long shipping = calculateShipping(subtotal, null);
+        long discount = 0; // Ban đầu không giảm giá
+        long shipping = calculateShipping(subtotal, null); // Phí ship mặc định
         long tax = calculateTax(subtotal);
         long total = subtotal + shipping + tax;
-
+        String shippingName = "Giao hàng tiêu chuẩn"; // ✅ Tên ship mặc định
+        if (shipping == 0) {
+            // Có thể là freeship do subtotal >= FREESHIP_MIN
+            shippingName = "Giao hàng tiêu chuẩn";
+        }
+        model.addAttribute("isBuyNow", true);
         model.addAttribute("carts", List.of(item));
         model.addAttribute("serialNumber", serialNumber);
-
+        model.addAttribute("isNotNewMember", isNotNewMember);
         model.addAttribute("subtotal", subtotal);
         model.addAttribute("discount", discount);
+        model.addAttribute("couponCode", "");
         model.addAttribute("shippingFee", shipping);
+        model.addAttribute("shippingName", shippingName);
         model.addAttribute("tax", tax);
         model.addAttribute("total", total);
 
@@ -435,23 +473,8 @@ public class CartController {
         orderItemRepository.saveAll(items);
         order.setItems(items);
 
-        // Bước 2: Tính toán tổng tiền (Subtotal, Discount, Shipping, Tax)
-        // Subtotal là tổng tiền của các OrderItem (đã bao gồm giảm giá TẠI SẢN PHẨM)
-        long subtotal = items.stream()
-                .mapToLong(item -> item.getTotalPrice().longValue())
-                .sum();
-
-        // Giảm giá (từ mã coupon)
-        long discount = calculateCouponDiscount(subtotal, form.getCoupon());
-
-        // Phí vận chuyển
-        long shipping = calculateShipping(subtotal - discount, form.getCoupon());
-
-        // Thuế
-        long tax = calculateTax(subtotal - discount);
-
         // TỔNG TIỀN CUỐI CÙNG (do server tính, bỏ qua form.getTotal())
-        long totalAmount = (subtotal - discount) + shipping + tax;
+        long totalAmount = form.getTotal();
         if (totalAmount < 0) totalAmount = 0;
 
         // Bước 3: Cập nhật tổng tiền chính xác vào đơn hàng
@@ -481,23 +504,11 @@ public class CartController {
 
             // Xóa các sản phẩm đã chọn khỏi giỏ hàng nếu thanh toán từ giỏ
             if (form.getCartId() != null) {
-                // Chỉ xóa các item đã được chọn (nằm trong list `items`)
-                List<Integer> itemIdsToDelete = items.stream()
-                        .map(oi -> oi.getProduct().getId())
-                        .collect(Collectors.toList());
-
-                // Lấy các CartItem tương ứng để xóa
-                Cart cart = cartRepository.findById(form.getCartId()).get();
-                List<CartItem> itemsToDelete = cart.getItems().stream()
-                        .filter(ci -> ci.isSelected() && itemIdsToDelete.contains(ci.getProduct().getId()))
-                        .collect(Collectors.toList());
-
-                cartItemRepository.deleteAll(itemsToDelete);
-
-                // Cập nhật kho hàng
-                productService.updateStockForOrder(order);
+                if(cartItemService.deleteSelectedByUser(user) == 1){
+                    // Cập nhật kho hàng
+                    productService.updateStockForOrder(order);
+                }
             }
-
             return "redirect:/"; // Chuyển hướng về trang chủ (hoặc trang cảm ơn)
         }
     }
