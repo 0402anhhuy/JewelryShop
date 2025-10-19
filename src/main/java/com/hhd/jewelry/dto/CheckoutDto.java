@@ -38,6 +38,7 @@ public class CheckoutDto {
 
     // Mã giảm giá (nếu có)
     private String coupon;
+    private String shippingName;
     private Long subtotal;
     private Long discount;
     private Long shippingFee;

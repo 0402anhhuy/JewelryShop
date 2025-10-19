@@ -58,6 +58,7 @@ document.addEventListener('click', async function (e) {
             btn.style.background = '#dc3545';
             setTimeout(() => { btn.innerHTML = originalHTML; btn.style.background = '' }, 2000);
             console.error('Add to cart failed:', data);
+            location.href = `/login`;
         }
     } catch (err) {
         btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Lỗi mạng';

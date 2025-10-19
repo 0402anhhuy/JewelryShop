@@ -916,10 +916,9 @@
         const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
         const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-        const body = new URLSearchParams({
-            itemId: currentItemId,
-            qty: quantity
-        });
+        const body = new URLSearchParams();
+        body.append('itemId', currentItemId);
+        body.append('qty', quantity);
 
         const selectedIds = getSelectedItemIds();
         selectedIds.forEach(id => body.append('selectedIds', id));
@@ -979,10 +978,6 @@
         }
     }
 
-    /**
-     * [SỬA LẠI] Tính toán và cập nhật phần tóm tắt (discount, shipping, total)
-     * Hàm này sẽ chạy mỗi khi có thay đổi (từ server hoặc từ client)
-     */
     function updateFinalSummary() {
         const subtotalEl = document.getElementById('subtotal');
         const discountEl = document.getElementById('discount');
@@ -1085,7 +1080,9 @@
         } else {
             item.classList.remove('selected');
         }
-        updateCartOnServer(); // Gọi server
+        const id = item.dataset.itemId;
+        const qty = document.getElementById(`qty-input-${id}`)?.value || 1;
+        updateCartOnServer(id, qty); // Gọi server
     }
 
     async function removeItem(btn) {
@@ -1171,20 +1168,70 @@
         updateFinalSummary();
     }
 
-    function checkout() {
-        const selectedItemIds = getSelectedItemIds();
+    async function checkout() {
+        const selectedItemIds = getSelectedItemIds()
         if (selectedItemIds.length === 0) {
-            alert('Vui lòng chọn ít nhất một sản phẩm để thanh toán!');
-            return;
+            alert('Vui lòng chọn ít nhất một sản phẩm để thanh toán!')
+            return
         }
 
-        // Đọc cartId từ container chính (đã sửa ở Bước 1)
-        const cartId = document.querySelector('.cart-container')?.dataset.cartId;
+        const cartId = document.querySelector('.cart-container')?.dataset.cartId
+        if (!cartId) {
+            alert('Không tìm thấy ID giỏ hàng để thanh toán.')
+            return
+        }
 
-        if (cartId) {
-            window.location.href = `/checkout/cart/${cartId}`;
-        } else {
-            alert('Không tìm thấy ID giỏ hàng để thanh toán.');
+        // Lấy thông tin mã giảm giá, phương thức giao hàng
+        const couponCode = document.getElementById('couponInput')?.value || ''
+        const shippingOption = document.querySelector('input[name="shipping"]:checked')
+        const shippingName = shippingOption?.closest('.shipping-option')
+            .querySelector('.shipping-name').textContent.trim()
+        const shippingFeeText = shippingOption?.closest('.shipping-option')
+            .querySelector('.shipping-price').textContent.trim()
+        const shippingFee = shippingFeeText === 'Miễn phí' ? 0 : parseInt(shippingFeeText.replace(/\D/g, ''))
+
+        // Lấy giá trị tổng từ DOM
+        const subtotalText = document.getElementById('subtotal').textContent.replace(/\D/g, '')
+        const discountText = document.getElementById('discount').textContent.replace(/\D/g, '')
+        const totalText = document.getElementById('total').textContent.replace(/\D/g, '')
+
+        const subtotal = parseInt(subtotalText || 0)
+        const discount = parseInt(discountText || 0)
+        const total = parseInt(totalText || 0)
+
+        // Gửi dữ liệu tổng qua server trước khi chuyển trang
+        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content')
+        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content')
+
+        const body = new URLSearchParams({
+            cartId,
+            couponCode,
+            shippingName,
+            shippingFee,
+            subtotal,
+            discount,
+            total
+        })
+
+        try {
+            const response = await fetch('/cart/prepare-checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    [header]: token
+                },
+                body
+            })
+
+            if (response.ok) {
+                // ✅ Server lưu thông tin thành công, giờ mới chuyển trang
+                window.location.href = `/checkout/cart/${cartId}`
+            } else {
+                alert('Không thể chuẩn bị dữ liệu thanh toán.')
+            }
+        } catch (e) {
+            console.error(e)
+            alert('Lỗi khi chuẩn bị thanh toán.')
         }
     }
 
