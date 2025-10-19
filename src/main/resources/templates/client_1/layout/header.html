@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Jewellery</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
@@ -11,16 +11,34 @@
     <div class="container">
         <div class="top-header">
             <div class="nav-brand">Jewellery</div>
+
             <div class="search-bar">
                 <i class="fas fa-search"></i>
                 <input type="text" placeholder="What are you looking for?">
             </div>
+
             <div class="header-icons">
-                <a href="/account" title="Profile"><i class="far fa-user"></i></a>
-                <a href="/wishlist" title="Wishlist"><i class="far fa-heart"></i></a>
-                <a href="/products" title="Products"><i class="fas fa-box-open"></i></a>
-                <a href="/cart" title="Cart"><i class="fas fa-shopping-bag"></i></a>
-                <a href="/login" title="Login"><i class="fas fa-right-to-bracket"></i></a>
+                <!-- ✅ Nếu đã đăng nhập -->
+                <div th:if="${#authorization.expression('isAuthenticated()')}" style="display: flex; align-items: center; gap: 18px;">
+                    <span style="font-size:14px; color:#333;">
+                        👋 Xin chào,
+                        <strong th:text="${#authentication.principal.username}">User</strong>
+                    </span>
+                    <a href="/account" title="Profile"><i class="far fa-user"></i></a>
+                    <a href="/wishlist" title="Wishlist"><i class="far fa-heart"></i></a>
+                    <a href="/products" title="Products"><i class="fas fa-box-open"></i></a>
+                    <a href="/cart" title="Cart"><i class="fas fa-shopping-bag"></i></a>
+                    <a href="/login" title="Logout"><i class="fas fa-right-from-bracket"></i></a>
+                </div>
+
+                <!-- 🚫 Nếu chưa đăng nhập -->
+                <div th:if="${!#authorization.expression('isAuthenticated()')}" style="display: flex; align-items: center; gap: 18px;">
+                    <a href="/account" title="Profile"><i class="far fa-user"></i></a>
+                    <a href="/wishlist" title="Wishlist"><i class="far fa-heart"></i></a>
+                    <a href="/products" title="Products"><i class="fas fa-box-open"></i></a>
+                    <a href="/cart" title="Cart"><i class="fas fa-shopping-bag"></i></a>
+                    <a href="/login" title="Login"><i class="fas fa-right-to-bracket"></i></a>
+                </div>
             </div>
         </div>
     </div>

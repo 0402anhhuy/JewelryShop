@@ -15,4 +15,5 @@ public interface WishlistRepository extends JpaRepository<Wishlist, Integer>{
     Optional<Wishlist> findByUserAndProduct(User user, Product product);
 
     List<Wishlist> findAllByUser(User user);
+
 }

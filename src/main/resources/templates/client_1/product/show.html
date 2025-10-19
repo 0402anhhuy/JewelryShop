@@ -788,8 +788,13 @@
                            class="action-btn" title="Chi tiết">
                             <i class="far fa-eye"></i>
                         </a>
-                        <button class="action-btn" title="Yêu thích">
-                            <i class="far fa-heart"></i>
+
+                        <button class="action-btn"
+                                title="Yêu thích"
+                                th:attr="data-id=${product.id}">
+                            <i th:classappend="${wishlistedProductIds.contains(product.id)} ? 'fas' : 'far'"
+                               class="fa-heart"
+                               th:style="${wishlistedProductIds.contains(product.id)} ? 'color: #e74c3c;' : ''"></i>
                         </button>
                     </div>
                 </div>
@@ -911,7 +916,59 @@
         this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lọc...';
         window.scrollTo({ top: 300, behavior: 'smooth' });
     });
+
+    // ✅ Wishlist Toggle Handler - Đã sửa lại hoàn toàn
+    document.addEventListener("DOMContentLoaded", () => {
+        const token = document.querySelector('meta[name="_csrf"]').content;
+        const header = document.querySelector('meta[name="_csrf_header"]').content;
+
+        // Lắng nghe sự kiện click trên tất cả nút wishlist
+        document.querySelectorAll('.action-btn i.fa-heart').forEach(icon => {
+            icon.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const btn = icon.closest('.action-btn');
+                const productId = btn.getAttribute('data-id');
+
+                if (!productId) {
+                    console.error('Không tìm thấy product ID');
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`/wishlist/toggle/${productId}`, {
+                        method: 'POST',
+                        headers: {
+                            [header]: token
+                        }
+                    });
+
+                    const status = await res.text();
+
+                    if (status === 'added') {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        icon.style.color = '#e74c3c';
+                    } else if (status === 'removed') {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                        icon.style.color = '';
+                    } else if (status === 'unauthorized') {
+                        alert('Vui lòng đăng nhập để thêm sản phẩm yêu thích!');
+                        window.location.href = '/login';
+                    } else {
+                        alert('Đã xảy ra lỗi: ' + status);
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi thêm/xóa wishlist:', error);
+                    alert('Đã xảy ra lỗi kết nối!');
+                }
+            });
+        });
+    });
 </script>
+
 <footer th:replace="~{client_1/layout/chatbox :: none}"></footer>
 <script th:src="@{/js/home.js}"></script>
 </body>

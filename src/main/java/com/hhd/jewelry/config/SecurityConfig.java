@@ -56,7 +56,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(a -> a
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/assets/**").permitAll()
-                        .requestMatchers("/", "/login", "/register", "/register/**", "/details/**", "/products/**", "/forgot-password/**").permitAll()
+                        .requestMatchers("/", "/login", "/register", "/register/**", "/details/**", "/products/**", "/forgot-password/**","/ws-chat/**", "/topic/**", "/app/**" ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/manager/**").hasRole("MANAGER")
                         .requestMatchers("/client_1/**").hasRole("USER")
