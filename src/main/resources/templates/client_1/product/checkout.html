@@ -902,8 +902,8 @@
                     </div>
                     <div class="price-row discount">
                         <span class="price-label">Giảm giá</span>
-                        <span class="price-value" id="discountDisplay" th:text="'-'+${#numbers.formatDecimal(discount ?: 0,span>
-                    </div> 0, 'COMMA', 0, 'POINT')} + ' đ'">-0 đ</
+                        <span class="price-value" id="discountDisplay" th:text="'-'+${#numbers.formatDecimal(discount ?: 0, 0, 'COMMA', 0, 'POINT')} + ' đ'">-0 đ</span>
+                    </div>
                     <div class="price-row discount">
                         <span class="price-label">Thuế VAT(10%)</span>
                         <span class="price-value" id="taxDisplay" th:text="${#numbers.formatDecimal(tax ?: 0, 0, 'COMMA', 0, 'POINT')} + ' đ'">-0 đ</span>
