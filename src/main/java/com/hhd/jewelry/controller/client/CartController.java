@@ -379,17 +379,17 @@ public class CartController {
         User user = userRepository.findByEmail(auth.getName()).orElse(null);
         if (user == null) throw new IllegalStateException("Người dùng không tồn tại!");
 
-//        // (Giữ nguyên logic lưu địa chỉ)
-//        Address address = new Address();
-//        address.setUser(user);
-//        address.setReceiverName(form.getReceiverName());
-//        address.setPhone(form.getReceiverPhone());
-//        address.setAddressLine(form.getAddressLine());
-//        address.setCity(form.getProvince());
-//        address.setDistrict(form.getDistrict());
-//        address.setWard(form.getWard());
-//        address.setIsDefault(false);
-//        addressRepository.save(address);
+        // (Giữ nguyên logic lưu địa chỉ)
+        Address address = new Address();
+        address.setUser(user);
+        address.setReceiverName(form.getReceiverName());
+        address.setPhone(form.getReceiverPhone());
+        address.setAddressLine(form.getAddressLine());
+        address.setCity(form.getProvince());
+        address.setDistrict(form.getDistrict());
+        address.setWard(form.getWard());
+        address.setIsDefault(false);
+        addressService.save(address);
 
         // Tạo đơn hàng (nhưng chưa set tổng tiền vội)
         Order order = new Order();

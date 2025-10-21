@@ -37,7 +37,7 @@ public class CheckoutDto {
     private String fullAddress;
 
     // Mã giảm giá (nếu có)
-    private String coupon;
+    private String couponCode;
     private String shippingName;
     private Long subtotal;
     private Long discount;
