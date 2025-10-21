@@ -922,7 +922,6 @@
         const token = document.querySelector('meta[name="_csrf"]').content;
         const header = document.querySelector('meta[name="_csrf_header"]').content;
 
-        // Lắng nghe sự kiện click trên tất cả nút wishlist
         document.querySelectorAll('.action-btn i.fa-heart').forEach(icon => {
             icon.addEventListener('click', async (e) => {
                 e.preventDefault();
@@ -930,18 +929,12 @@
 
                 const btn = icon.closest('.action-btn');
                 const productId = btn.getAttribute('data-id');
-
-                if (!productId) {
-                    console.error('Không tìm thấy product ID');
-                    return;
-                }
+                if (!productId) return;
 
                 try {
                     const res = await fetch(`/wishlist/toggle/${productId}`, {
                         method: 'POST',
-                        headers: {
-                            [header]: token
-                        }
+                        headers: { [header]: token }
                     });
 
                     const status = await res.text();
@@ -961,12 +954,12 @@
                         alert('Đã xảy ra lỗi: ' + status);
                     }
                 } catch (error) {
-                    console.error('Lỗi khi thêm/xóa wishlist:', error);
-                    alert('Đã xảy ra lỗi kết nối!');
+                    console.error('Lỗi khi toggle wishlist:', error);
                 }
             });
         });
     });
+
 </script>
 
 <footer th:replace="~{client_1/layout/chatbox :: none}"></footer>
