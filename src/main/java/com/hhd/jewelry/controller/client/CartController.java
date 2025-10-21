@@ -362,44 +362,52 @@ public class CartController {
     }
 
     // ===== Xử lý xác nhận thanh toán =====
-    // *** ĐÃ SỬA LỖI BẢO MẬT: Tính toán lại toàn bộ ở server ***
     @PostMapping("/checkout/confirm")
     @Transactional
     public String confirmCheckout(@Valid @ModelAttribute CheckoutDto form, BindingResult errors,
                                   Model model, Authentication auth, HttpServletRequest request) throws Exception {
-
-        if (errors.hasErrors()) {
-            // (Giữ nguyên logic xử lý lỗi của bạn)
-            model.addAttribute("coupon", form.getCouponCode());
-            model.addAttribute("paymentMethod", form.getPaymentMethod());
-            model.addAttribute("receiver", form);
-            return "client_1/product/checkout";
-        }
-
         User user = userRepository.findByEmail(auth.getName()).orElse(null);
         if (user == null) throw new IllegalStateException("Người dùng không tồn tại!");
+// --- VALIDATION ĐỊA CHỈ ---
+        boolean hasOtherErrors = errors.hasErrors() && !(errors.getErrorCount() == 1 && errors.hasFieldErrors("selectedAddressId"));
+        boolean noAddressSelected = form.getSelectedAddressId() == null;
 
-        // (Giữ nguyên logic lưu địa chỉ)
-        Address address = new Address();
-        address.setUser(user);
-        address.setReceiverName(form.getReceiverName());
-        address.setPhone(form.getReceiverPhone());
-        address.setAddressLine(form.getAddressLine());
-        address.setCity(form.getProvince());
-        address.setDistrict(form.getDistrict());
-        address.setWard(form.getWard());
-        address.setIsDefault(false);
-        addressService.save(address);
-
+        if (hasOtherErrors || noAddressSelected) {
+            if (noAddressSelected && !hasOtherErrors) {
+                // Chỉ thêm lỗi này nếu chưa có lỗi nào khác về addressId
+                errors.rejectValue("selectedAddressId", "NotNull", "Vui lòng chọn địa chỉ giao hàng");
+            }
+            // Nạp lại dữ liệu cần thiết cho view và trả về
+            reloadCheckoutModelOnError(model, form, user);
+            return "client_1/product/checkout";
+        }
+            // --- LẤY ĐỊA CHỈ ĐÃ CHỌN ---
+                Address selectedAddress = addressService.getAddressByIdAndUser(form.getSelectedAddressId(), user)
+                .orElseThrow(() -> {
+                    // Trường hợp ID không hợp lệ hoặc không thuộc về user
+                    errors.rejectValue("selectedAddressId", "Invalid", "Địa chỉ đã chọn không hợp lệ.");
+                    // Ném exception để dừng xử lý và rollback transaction
+                    return new IllegalStateException("Địa chỉ không hợp lệ hoặc không thuộc về người dùng!");
+                });
         // Tạo đơn hàng (nhưng chưa set tổng tiền vội)
         Order order = new Order();
         order.setUser(user);
-        order.setStatus(Order.Status.PENDING);
+        order.setStatus(Order.Status.PENDING); // Trạng thái ban đầu
         order.setCreatedAt(LocalDateTime.now());
         order.setPaid(false);
         order.setMethodPay(form.getPaymentMethod());
-        orderService.save(order);
-
+        order.setNote(form.getNote());
+        order.setConsignee(selectedAddress.getReceiverName());
+        order.setShippingPhone(selectedAddress.getPhone());
+        order.setShippingAddressLine(selectedAddress.getAddressLine());
+        order.setShippingWard(selectedAddress.getWard());
+        order.setShippingDistrict(selectedAddress.getDistrict());
+        order.setShippingCity(selectedAddress.getCity());
+        order.setCouponCode(form.getCouponCode());
+        order.setShippingName(form.getShippingName());
+        order.setShippingFee(form.getShippingFee());
+        order.setDiscount(form.getDiscount());
+        order.setTax(form.getTax());
         // --- BẮT ĐẦU TÍNH TOÁN PHÍA SERVER ---
 
         // Bước 1: Tạo danh sách OrderItem và tính giá chính xác
@@ -500,6 +508,39 @@ public class CartController {
             }
             return "redirect:/"; // Chuyển hướng về trang chủ (hoặc trang cảm ơn)
         }
+    }
+    private void reloadCheckoutModelOnError(Model model, CheckoutDto form, User user) {
+        model.addAttribute("user", user);
+        model.addAttribute("allAddress", addressService.getAddressesByUser(user)); // Luôn cần load lại địa chỉ
+        model.addAttribute("isBuyNow", form.getSerialNumber() != null);
+
+        // Nạp lại cart items
+        if (form.getCartId() != null) {
+            List<CartItem> allItems = cartItemRepository.findAllByCart_CartId(form.getCartId());
+            model.addAttribute("carts", allItems.stream().filter(CartItem::isSelected).collect(Collectors.toList()));
+        } else if (form.getSerialNumber() != null) {
+            Product product = productService.getProductBySerialNumber(form.getSerialNumber());
+            if (product != null) {
+                CartItem item = new CartItem(); /* Tạo CartItem ảo */
+                item.setProduct(product); item.setQuantity(1);
+                long price = product.getPrice() != null ? product.getPrice() : 0;
+                int discount = Math.min(product.getDiscount() != null ? product.getDiscount() : 0, 100);
+                item.setPrice((int)(price - (price * discount / 100)));
+                model.addAttribute("carts", List.of(item));
+            } else { model.addAttribute("carts", List.of()); }
+        } else { model.addAttribute("carts", List.of()); }
+
+        // Nạp lại các giá trị form
+        model.addAttribute("couponCode", form.getCouponCode());
+        model.addAttribute("shippingName", form.getShippingName());
+        model.addAttribute("shippingFee", form.getShippingFee());
+        model.addAttribute("subtotal", form.getSubtotal());
+        model.addAttribute("discount", form.getDiscount());
+        model.addAttribute("tax", form.getTax());
+        model.addAttribute("total", form.getTotal());
+        model.addAttribute("paymentMethod", form.getPaymentMethod());
+        model.addAttribute("note", form.getNote());
+        model.addAttribute("isNotNewMember", orderService.existsOrderByUser(user));
     }
     /**
      * Tính thuế VAT (Logic khớp với checkout.js)

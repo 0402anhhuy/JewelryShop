@@ -71,7 +71,7 @@ public class PaymentController {
         }
 
         // Trả về một view để hiển thị thông báo
-        return "client/product/payment_result";
+        return "client_1/product/payment_result";
     }
 
     @GetMapping("/momo_return")
@@ -118,7 +118,7 @@ public class PaymentController {
         if (!calculatedSignature.equals(momoSignature)) {
             model.addAttribute("status", "fail");
             model.addAttribute("message", "Lỗi: Chữ ký không hợp lệ.");
-            return "client/product/payment_result";
+            return "client_1/product/payment_result";
         }
 
         // 2. Kiểm tra kết quả giao dịch
@@ -129,7 +129,7 @@ public class PaymentController {
             if (order == null) {
                 model.addAttribute("status", "fail");
                 model.addAttribute("message", "Lỗi: Không tìm thấy đơn hàng của bạn.");
-                return "client/product/payment_result";
+                return "client_1/product/payment_result";
             }
 
             if ("0".equals(resultCode)) {
@@ -161,6 +161,6 @@ public class PaymentController {
             model.addAttribute("message", "Lỗi: Mã đơn hàng không hợp lệ.");
         }
 
-        return "client/product/payment_result";
+        return "client_1/product/payment_result";
     }
 }
