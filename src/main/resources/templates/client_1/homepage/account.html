@@ -1369,12 +1369,13 @@
             </div>
 
             <div class="orders-tabs">
-                <button class="tab-btn active">Tất cả</button>
-                <button class="tab-btn">Chờ xác nhận</button>
-                <button class="tab-btn">Đang xử lý</button>
-                <button class="tab-btn">Đang giao</button>
-                <button class="tab-btn">Hoàn thành</button>
-                <button class="tab-btn">Đã hủy</button>
+                <button class="tab-btn active" data-status="all">Tất cả</button>
+                <button class="tab-btn" data-status="pending">Chờ xác nhận</button>
+                <button class="tab-btn" data-status="paid">Đang xử lý</button>
+                <button class="tab-btn" data-status="shipping">Đang giao</button>
+                <button class="tab-btn" data-status="delivered">Hoàn thành</button>
+                <button class="tab-btn" data-status="cancelled">Đã hủy</button>
+                <button class="tab-btn" data-status="returned">Trả hàng</button>
             </div>
 
             <div class="orders-list" th:if="${not #lists.isEmpty(user.orders)}">
@@ -1386,7 +1387,7 @@
                             <small style="color: #999;" th:text="'Đặt ngày ' + ${#temporals.format(order.createdAt, 'dd/MM/yyyy')}">Đặt ngày 15/10/2024</small>
                         </div>
                         <span class="order-status" th:classappend="'status-' + ${order.status.name().toLowerCase()}"
-                              th:text="${order.status}">Đang giao hàng
+                              th:text="${order.displayStatus()}">Đang giao hàng
                         </span>
                     </div>
                     <div class="order-items" th:each="item : ${order.items}">
@@ -1414,38 +1415,28 @@
                             Tổng: 13.732.000 ₫
                         </div>
                         <div class="order-actions">
-                            <!-- Nút Theo dõi: luôn hiện -->
-<!--                            <button class="btn btn-primary btn-sm">-->
-<!--                                <i class="fas fa-truck"></i> Theo dõi-->
-<!--                            </button>-->
-
-                            <!-- Nút Hủy đơn: chỉ hiển thị nếu trạng thái là PENDING hoặc PAID -->
                             <button class="btn btn-danger btn-sm"
                                     th:if="${order.status.name() == 'PENDING' or order.status.name() == 'PAID'}"
                                     th:onclick="'cancelOrder(' + ${order.id} + ')'">
                                 <i class="fas fa-times"></i> Hủy đơn
                             </button>
 
-                            <!-- Nút Mua lại: chỉ hiển thị nếu trạng thái là COMPLETED -->
                             <button class="btn btn-warning btn-sm"
                                     th:if="${order.status.name() == 'COMPLETED'}"
                                     th:onclick="'reorder(' + ${order.id} + ')'">
                                 <i class="fas fa-shopping-bag"></i> Mua lại
                             </button>
 
-                            <!-- Nút Đánh giá sản phẩm: chỉ hiển thị nếu trạng thái là COMPLETED -->
                             <button class="btn btn-success btn-sm"
                                     th:if="${order.status.name() == 'COMPLETED'}"
                                     th:onclick="'reviewOrder(' + ${order.id} + ')'">
                                 <i class="fas fa-star"></i> Đánh giá
                             </button>
 
-                            <!-- Nút Chi tiết: luôn hiện -->
-                            <button class="btn btn-secondary btn-sm">
+                            <button class="btn btn-secondary btn-sm" th:onclick="'showOrderDetailModal(' + ${order.id} + ')'">
                                 <i class="fas fa-eye"></i> Chi tiết
                             </button>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -2042,12 +2033,72 @@
         });
 
         // Orders Tab Filtering (giữ nguyên)
-        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabButtons = document.querySelectorAll('.orders-tabs .tab-btn');
+        const orderCards = document.querySelectorAll('.orders-list .order-card');
+        const ordersListContainer = document.querySelector('.orders-list');
+
+        // Tạo một thông báo "empty state" cho bộ lọc
+        let filterEmptyState = document.getElementById('filter-empty-state');
+        if (!filterEmptyState && ordersListContainer) { // Chỉ tạo nếu có danh sách đơn hàng
+            filterEmptyState = document.createElement('div');
+            filterEmptyState.id = 'filter-empty-state';
+            filterEmptyState.className = 'empty-state'; // Tái sử dụng style
+            filterEmptyState.style.display = 'none'; // Ẩn ban đầu
+            filterEmptyState.innerHTML = `
+                <i class="fas fa-filter"></i>
+                <h3>Không tìm thấy đơn hàng</h3>
+                <p>Không có đơn hàng nào phù hợp với trạng thái này.</p>
+            `;
+            // Chèn vào sau dải tab
+            const tabsContainer = document.querySelector('.orders-tabs');
+            if (tabsContainer) {
+                tabsContainer.after(filterEmptyState);
+            }
+        }
+
         tabButtons.forEach(btn => {
             btn.addEventListener('click', () => {
+                // 1. Cập nhật trạng thái 'active' cho tab
                 tabButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                console.log(`Filtering orders: ${btn.textContent}`);
+
+                // 2. Lấy trạng thái cần lọc từ 'data-status'
+                const filterStatus = btn.getAttribute('data-status');
+                let hasVisibleCards = false; // Biến đếm xem có card nào hiển thị không
+
+                // 3. Lặp qua tất cả các thẻ đơn hàng
+                orderCards.forEach(card => {
+                    if (filterStatus === 'all') {
+                        // Nếu là "Tất cả", hiển thị tất cả card
+                        card.style.display = 'block';
+                        hasVisibleCards = true;
+                    } else {
+                        // Nếu lọc theo trạng thái cụ thể
+                        // Tìm phần tử .order-status bên trong card
+                        const statusElement = card.querySelector('.order-status');
+
+                        // Tạo tên class cần tìm, ví dụ: "status-pending"
+                        const targetClass = 'status-' + filterStatus;
+
+                        if (statusElement && statusElement.classList.contains(targetClass)) {
+                            // Nếu card có class trạng thái khớp, hiển thị nó
+                            card.style.display = 'block';
+                            hasVisibleCards = true;
+                        } else {
+                            // Ẩn card nếu không khớp
+                            card.style.display = 'none';
+                        }
+                    }
+                });
+
+                // 4. Hiển thị hoặc ẩn thông báo "empty state" của bộ lọc
+                if (filterEmptyState) {
+                    if (hasVisibleCards) {
+                        filterEmptyState.style.display = 'none'; // Ẩn nếu có card
+                    } else {
+                        filterEmptyState.style.display = 'block'; // Hiển thị nếu không có card nào
+                    }
+                }
             });
         });
     });
@@ -2745,7 +2796,6 @@
             closeAddressModal();
         }
     }
-
     function cancelOrder(id) {
         showToast('warning', 'Xác nhận hủy đơn', 'Bạn có chắc muốn hủy đơn hàng #' + id + '?', true, () => {
             showToast('success', 'Đã hủy', 'Đơn hàng #' + id + ' đã được hủy thành công!');

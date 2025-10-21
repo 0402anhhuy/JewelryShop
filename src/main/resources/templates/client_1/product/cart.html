@@ -77,6 +77,18 @@
         .header-icons i:hover {
             color: var(--primary-color);
         }
+        .header-icons a,
+        .header-icons a:link,
+        .header-icons a:visited,
+        .header-icons a:active {
+            color: var(--dark-color) !important; /* ép về đen */
+            text-decoration: none !important;
+        }
+
+        .header-icons a:hover {
+            color: var(--primary-color) !important; /* vàng khi hover */
+            text-decoration: none !important;
+        }
 
         .cart-badge {
             position: absolute;
@@ -711,19 +723,19 @@
     <div class="header-content">
         <div class="brand">LUXURY<span>GEMS</span></div>
         <div class="header-icons">
-            <i class="fas fa-search"></i>
-            <i class="far fa-heart"></i>
-            <i class="fas fa-shopping-cart">
+            <a href="/" title="Trang chủ"><i class="fas fa-home"></i></a>
+            <a href="/wishlist" title="Yêu thích"><i class="far fa-heart"></i></a>
+            <a href="/cart" title="Giỏ hàng"><i class="fas fa-shopping-cart">
                 <span class="cart-badge" th:text="${carts.size()}">3</span>
-            </i>
-            <i class="far fa-user"></i>
+            </i></a>
+            <a href="/account" title="Tài khoản"><i class="far fa-user"></i></a>
         </div>
     </div>
 </header>
 
 <!-- Breadcrumb -->
 <div class="breadcrumb">
-    <a href="#">Trang chủ</a> /
+    <a href="/">Trang chủ</a> /
     <span>Giỏ hàng</span>
 </div>
 
