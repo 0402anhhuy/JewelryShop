@@ -55,6 +55,28 @@ public class Order {
 
     private Long totalAmount;
 
+    @Column(columnDefinition = "TEXT")
+    private String note;
+
+    @Column(nullable = false)
+    private String consignee; // Tên người nhận hàng
+
+    @Column(nullable = false)
+    private String shippingPhone; // Số điện thoại người nhận
+
+    @Column(nullable = false)
+    private String shippingAddressLine; // Địa chỉ chi tiết (số nhà, tên đường)
+
+    private String shippingWard; // Phường/Xã
+
+    private String shippingDistrict; // Quận/Huyện
+    @Column(nullable = false)
+    private String shippingCity; // Tỉnh/Thành phố
+    private String couponCode;
+    private String shippingName;
+    private Long discount;
+    private Long shippingFee;
+    private Long tax;
     // 🔹 Trạng thái giao hàng / xử lý đơn
     public enum Status {
         PENDING,
