@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
         groupWard:     null,
         provinceNameHidden: document.getElementById('provinceHidden'),
         districtNameHidden: document.getElementById('districtHidden'),
-        wardNameHidden:     document.getElementById('wardNameHidden'),
+        wardNameHidden:     document.getElementById('wardHidden'),
     });
 
     // --- BƯỚC 3: GẮN LOGIC CỦA TRANG CHECKOUT ---
