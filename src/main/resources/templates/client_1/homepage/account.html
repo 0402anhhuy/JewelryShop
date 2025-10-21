@@ -1414,13 +1414,38 @@
                             Tổng: 13.732.000 ₫
                         </div>
                         <div class="order-actions">
-                            <button class="btn btn-primary btn-sm" th:if="${order.status}">
-                                <i class="fas fa-truck"></i> Theo dõi
+                            <!-- Nút Theo dõi: luôn hiện -->
+<!--                            <button class="btn btn-primary btn-sm">-->
+<!--                                <i class="fas fa-truck"></i> Theo dõi-->
+<!--                            </button>-->
+
+                            <!-- Nút Hủy đơn: chỉ hiển thị nếu trạng thái là PENDING hoặc PAID -->
+                            <button class="btn btn-danger btn-sm"
+                                    th:if="${order.status.name() == 'PENDING' or order.status.name() == 'PAID'}"
+                                    th:onclick="'cancelOrder(' + ${order.id} + ')'">
+                                <i class="fas fa-times"></i> Hủy đơn
                             </button>
+
+                            <!-- Nút Mua lại: chỉ hiển thị nếu trạng thái là COMPLETED -->
+                            <button class="btn btn-warning btn-sm"
+                                    th:if="${order.status.name() == 'COMPLETED'}"
+                                    th:onclick="'reorder(' + ${order.id} + ')'">
+                                <i class="fas fa-shopping-bag"></i> Mua lại
+                            </button>
+
+                            <!-- Nút Đánh giá sản phẩm: chỉ hiển thị nếu trạng thái là COMPLETED -->
+                            <button class="btn btn-success btn-sm"
+                                    th:if="${order.status.name() == 'COMPLETED'}"
+                                    th:onclick="'reviewOrder(' + ${order.id} + ')'">
+                                <i class="fas fa-star"></i> Đánh giá
+                            </button>
+
+                            <!-- Nút Chi tiết: luôn hiện -->
                             <button class="btn btn-secondary btn-sm">
                                 <i class="fas fa-eye"></i> Chi tiết
                             </button>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -2719,6 +2744,23 @@
         if (event.target === modal) {
             closeAddressModal();
         }
+    }
+
+    function cancelOrder(id) {
+        showToast('warning', 'Xác nhận hủy đơn', 'Bạn có chắc muốn hủy đơn hàng #' + id + '?', true, () => {
+            showToast('success', 'Đã hủy', 'Đơn hàng #' + id + ' đã được hủy thành công!');
+            // TODO: Gọi API hủy đơn ở đây (fetch POST /orders/cancel/{id})
+        });
+    }
+
+    function reorder(id) {
+        showToast('info', 'Mua lại', 'Đang thêm sản phẩm từ đơn #' + id + ' vào giỏ hàng...');
+        // TODO: Gọi API /orders/reorder/{id}
+    }
+
+    function reviewOrder(id) {
+        showToast('info', 'Đánh giá', 'Chuyển hướng đến trang đánh giá cho đơn #' + id);
+        window.location.href = '/reviews/order/' + id;
     }
 </script>
 </body>
