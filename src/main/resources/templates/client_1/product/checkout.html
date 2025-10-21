@@ -851,18 +851,6 @@
                             <label class="form-label">Ghi chú (Tùy chọn)</label>
                             <textarea class="form-input" name="note" rows="3" placeholder="Ví dụ: giao giờ hành chính, gọi trước khi giao..." th:text="${note}"></textarea>
                         </div>
-<!--                        &lt;!&ndash; Chỉ 3 input ẨN để submit về server (không hiển thị -> không lặp UI) &ndash;&gt;-->
-<!--                        <input id="wardHidden"     type="hidden" name="ward"     th:value="${receiver?.ward}">-->
-<!--                        <input id="districtHidden" type="hidden" name="district" th:value="${receiver?.district}">-->
-<!--                        <input id="provinceHidden" type="hidden" name="province" th:value="${receiver?.province}">-->
-
-<!--                        &lt;!&ndash;                        &lt;!&ndash; (khuyến nghị) ẩn thêm full address nếu bạn cần ở server &ndash;&gt;&ndash;&gt;-->
-<!--                        <input id="address" type="hidden" name="fullAddress"-->
-<!--                               th:value="${(receiver?.addressLine != null ? receiver.addressLine + ', ' : '') +-->
-<!--                  (receiver?.ward != null ? receiver.ward + ', ' : '') +-->
-<!--                  (receiver?.district != null ? receiver.district + ', ' : '') +-->
-<!--                  (receiver?.province != null ? receiver.province : '')}">-->
-<!--                    </div>-->
                 </div>
 
                 <!-- Payment Method -->

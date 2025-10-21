@@ -362,7 +362,6 @@ public class CartController {
     }
 
     // ===== Xử lý xác nhận thanh toán =====
-    // *** ĐÃ SỬA LỖI BẢO MẬT: Tính toán lại toàn bộ ở server ***
     @PostMapping("/checkout/confirm")
     @Transactional
     public String confirmCheckout(@Valid @ModelAttribute CheckoutDto form, BindingResult errors,
