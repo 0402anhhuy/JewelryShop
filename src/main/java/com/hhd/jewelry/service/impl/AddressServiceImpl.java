@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,10 +34,15 @@ public class AddressServiceImpl implements AddressService {
     }
 
 
+    public Optional<Address> getAddressByIdAndUser(Integer id, User  user) {
+        return addressRepository.findAddressByIdAndUser(id, user);
+    }
+
     @Override
     public Address getAddressById(int id) {
-        return addressRepository.findById(id);
+        return addressRepository.findAddressById(id);
     }
+
 
     @Override
     public Address save(Address address) {
