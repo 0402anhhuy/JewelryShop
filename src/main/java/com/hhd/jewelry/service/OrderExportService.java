@@ -13,13 +13,15 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
+import java.io.InputStream;
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -30,7 +32,7 @@ import java.util.Locale;
 public class OrderExportService {
 
     private final OrderRepository orderRepo;
-
+    private final ResourceLoader resourceLoader;
     // ✅ Xuất Excel
     public ByteArrayInputStream exportToExcel() throws Exception {
         List<Order> orders = orderRepo.findAll();
@@ -112,8 +114,16 @@ public class OrderExportService {
         document.open();
 
         // Font Unicode tiếng Việt
-        String fontPath = new File("src/main/resources/fonts/DejaVuSans.ttf").getAbsolutePath();
-        BaseFont unicodeFont = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+        String fontClasspath = "classpath:fonts/DejaVuSans.ttf";
+        Resource resource = resourceLoader.getResource(fontClasspath);
+
+        // Đọc font thành mảng byte[]
+        InputStream inputStream = resource.getInputStream();
+        byte[] fontBytes = inputStream.readAllBytes();
+        inputStream.close();
+
+        // Tạo BaseFont từ mảng byte
+        BaseFont unicodeFont = BaseFont.createFont("DejaVuSans.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED, false, fontBytes, null);
         Font fontNormal = new Font(unicodeFont, 11);
         Font fontHeader = new Font(unicodeFont, 12, Font.BOLD);
         Font fontTitle = new Font(unicodeFont, 16, Font.BOLD, Color.BLUE);
