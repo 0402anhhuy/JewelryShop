@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
@@ -21,5 +23,10 @@ public class OrderServiceImpl implements OrderService {
     public boolean existsOrderByUser(User user) {
         List<Order>  orders = orderRepository.findAllByUser(user);
         return orders.stream().anyMatch(Order::isPaid);
+    }
+
+    @Override
+    public Optional<Order> getOrderByOrderId(Integer orderId) {
+        return orderRepository.findById(orderId);
     }
 }

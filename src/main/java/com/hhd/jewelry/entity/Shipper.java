@@ -1,5 +1,6 @@
 package com.hhd.jewelry.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,5 +28,6 @@ public class Shipper {
     // Một shipper có thể giao nhiều đơn
     @OneToMany(mappedBy = "shipper", cascade = CascadeType.ALL)
     @ToString.Exclude
+    @JsonManagedReference
     private List<Order> orders;
 }

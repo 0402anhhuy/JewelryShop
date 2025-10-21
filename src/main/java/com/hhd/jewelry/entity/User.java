@@ -1,5 +1,6 @@
 package com.hhd.jewelry.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -48,6 +49,7 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     @ToString.Exclude @EqualsAndHashCode.Exclude
+    @JsonManagedReference
     private List<Order> orders;
 
     @ManyToOne
