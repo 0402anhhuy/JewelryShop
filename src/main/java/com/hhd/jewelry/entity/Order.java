@@ -1,5 +1,7 @@
 package com.hhd.jewelry.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,11 +24,13 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "user_id")
     @ToString.Exclude @EqualsAndHashCode.Exclude
+    @JsonBackReference
     private User user;
 
     // 🔹 Danh sách sản phẩm trong đơn
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude @EqualsAndHashCode.Exclude
+    @JsonManagedReference
     private List<OrderItem> items;
 
     // 🔹 Trạng thái đơn hàng
@@ -47,6 +51,7 @@ public class Order {
     // 🔹 Shipper được phân công
     @ManyToOne
     @JoinColumn(name = "shipper_id")
+    @JsonBackReference
     private Shipper shipper;
 
     // 🔹 Phương thức vận chuyển
@@ -91,5 +96,18 @@ public class Order {
     public enum ShippingMethod {
         DELIVERY,       // Giao tận nơi
         STORE_PICKUP    // Nhận tại cửa hàng
+    }
+
+    public String displayStatus(){
+        String strStatus = "";
+        switch (status){
+            case PENDING: strStatus = "Chờ Xác nhận"; break;
+            case PAID: strStatus = "Đang xử lý";  break;
+            case SHIPPING: strStatus = "Đang giao";  break;
+            case DELIVERED: strStatus = "Hoàn Thành";  break;
+            case CANCELLED: strStatus = "Đã hủy";  break;
+            case RETURNED: strStatus = "Trả hàng";   break;
+        }
+        return strStatus;
     }
 }
