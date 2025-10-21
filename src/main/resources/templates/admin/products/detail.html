@@ -69,7 +69,9 @@
                                         <div class="col-6" th:if="${p.discount > 0}">
                                             <small class="text-muted d-block">Giá sau giảm</small>
                                             <h5 class="text-success fw-bold mb-0"
-                                                th:text="${#numbers.formatInteger(p.price * (100 - p.discount) / 100, 0, 'POINT')} + ' ₫'"></h5>
+                                                th:text="${#numbers.formatInteger((p.price * (100 - p.discount)) / 100, 0, 'POINT')} + ' ₫'">
+                                            </h5>
+
                                         </div>
                                         <div class="col-6">
                                             <small class="text-muted d-block">Tồn kho</small>

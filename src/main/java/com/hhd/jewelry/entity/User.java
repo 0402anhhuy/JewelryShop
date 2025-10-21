@@ -55,10 +55,10 @@ public class User {
     @ToString.Exclude @EqualsAndHashCode.Exclude
     private Manager manager;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Cart  cart;
+    private Cart cart;
 
     public enum Role {
         USER, ADMIN, MANAGER, GUEST

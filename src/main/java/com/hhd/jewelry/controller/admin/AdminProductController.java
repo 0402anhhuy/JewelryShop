@@ -6,15 +6,18 @@ import com.hhd.jewelry.repository.CollectionRepository;
 import com.hhd.jewelry.repository.ProductRepository;
 import com.hhd.jewelry.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +33,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/admin/products")
 @RequiredArgsConstructor
+@Slf4j
 public class AdminProductController {
 
     private final ProductRepository productRepo;
@@ -214,6 +218,81 @@ public class AdminProductController {
     @GetMapping("/delete/{id}")
     public String deleteProduct(@PathVariable Long id) {
         productRepo.deleteById(id);
+        return "redirect:/admin/products";
+    }
+
+    @PostMapping("/update-prices")
+    @Transactional
+    public String updatePrices(
+            @RequestParam(value = "productIds", required = false) List<Integer> productIds,
+            @RequestParam(value = "prices", required = false) List<Integer> prices,
+            RedirectAttributes redirect
+    ) {
+        try {
+            // Kiểm tra dữ liệu đầu vào
+            if (productIds == null || prices == null || productIds.isEmpty()) {
+                redirect.addFlashAttribute("warning", "⚠️ Không có dữ liệu để cập nhật!");
+                return "redirect:/admin/products";
+            }
+
+            if (productIds.size() != prices.size()) {
+                redirect.addFlashAttribute("error", "❌ Dữ liệu không hợp lệ!");
+                return "redirect:/admin/products";
+            }
+
+            int updatedCount = 0;
+            List<String> updatedProducts = new ArrayList<>();
+
+            for (int i = 0; i < productIds.size(); i++) {
+                Integer productId = productIds.get(i);
+                Integer newPrice = prices.get(i);
+
+                // Bỏ qua nếu giá <= 0
+                if (newPrice == null || newPrice <= 0) {
+                    continue;
+                }
+
+                // Lấy product từ DB
+                Product product = productRepo.findById(Long.valueOf(productId)).orElse(null);
+                if (product == null) {
+                    log.warn("⚠️ Không tìm thấy sản phẩm ID: {}", productId);
+                    continue;
+                }
+
+                // Chỉ cập nhật nếu giá thay đổi
+                Integer oldPrice = product.getPrice();
+                if (!oldPrice.equals(newPrice)) {
+                    product.setPrice(newPrice);
+                    productRepo.save(product);
+
+                    log.info("💰 Cập nhật giá: {} | {} ₫ → {} ₫",
+                            product.getName(), oldPrice, newPrice);
+
+                    updatedProducts.add(product.getName() + ": " +
+                            String.format("%,d", oldPrice) + " ₫ → " +
+                            String.format("%,d", newPrice) + " ₫");
+                    updatedCount++;
+                }
+            }
+
+            if (updatedCount > 0) {
+                redirect.addFlashAttribute("success",
+                        "✅ Đã cập nhật giá cho " + updatedCount + " sản phẩm thành công!");
+
+                // Log chi tiết (tùy chọn)
+                log.info("📋 Danh sách cập nhật giá:");
+                updatedProducts.forEach(log::info);
+            } else {
+                redirect.addFlashAttribute("info",
+                        "ℹ️ Không có giá nào thay đổi.");
+            }
+
+        } catch (Exception e) {
+            log.error("❌ Lỗi khi cập nhật giá hàng loạt: ", e);
+            redirect.addFlashAttribute("error",
+                    "❌ Có lỗi xảy ra: " + e.getMessage());
+        }
+
         return "redirect:/admin/products";
     }
 }

@@ -68,6 +68,7 @@
                         <!-- 👤 Người thực hiện -->
                         <td th:text="${m.manager != null ? m.manager.fullName : '—'}"></td>
 
+
                         <!-- 🕒 Thời gian -->
                         <td th:text="${#temporals.format(m.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
 
@@ -104,6 +105,8 @@
 
         </main>
     </div>
+</div>
+<div th:replace="~{admin/layout/footer :: footer}"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

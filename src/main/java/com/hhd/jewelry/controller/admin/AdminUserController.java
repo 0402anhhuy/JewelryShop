@@ -195,6 +195,7 @@ public class AdminUserController {
     }
 
     // ✅ Xoá user - GHI LOG
+    // ✅ Xoá user - GHI LOG (Fixed version)
     @GetMapping("/delete/{id}")
     public String deleteUser(@PathVariable Integer id, HttpServletRequest request) {
         var user = userRepo.findById(id).orElse(null);
@@ -202,6 +203,18 @@ public class AdminUserController {
             String userEmail = user.getEmail();
             String userName = user.getFullName();
 
+            // ✅ XÓA MANAGER TRƯỚC (nếu có)
+            managerRepository.findAll().stream()
+                    .filter(m -> m.getUser() != null && m.getUser().getId().equals(user.getId()))
+                    .findFirst()
+                    .ifPresent(manager -> managerRepository.delete(manager));
+
+            // ✅ XÓA CART TRƯỚC (nếu có)
+            cartRepository.findAll().stream()
+                    .filter(c -> c.getUser() != null && c.getUser().getId().equals(user.getId()))
+                    .forEach(cart -> cartRepository.delete(cart));
+
+            // ✅ SAU ĐÓ MỚI XÓA USER
             userRepo.delete(user);
 
             // Ghi log xóa

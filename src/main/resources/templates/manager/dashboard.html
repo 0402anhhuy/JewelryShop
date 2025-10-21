@@ -147,9 +147,15 @@
                             </thead>
                             <tbody>
                             <tr th:each="p : ${lowStockProducts}">
-                                <td th:text="${p.name}">Nhẫn vàng PNJ</td>
+                                <td th:text="${p.displayName}">Nhẫn vàng PNJ</td>
                                 <td th:text="${p.stockQuantity}">5</td>
-                                <td><a th:href="@{'/manager/products/detail/' + ${p.id}}" class="btn btn-sm btn-outline-primary">Chi tiết</a></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary"
+                                            data-bs-toggle="modal"
+                                            th:data-bs-target="'#detailModal' + ${p.id}">
+                                        Chi tiết
+                                    </button>
+                                </td>
                             </tr>
                             <tr th:if="${lowStockProducts == null || lowStockProducts.isEmpty()}">
                                 <td colspan="3" class="text-center text-muted">Không có sản phẩm sắp hết hàng</td>
@@ -160,6 +166,10 @@
                 </div>
             </div>
 
+            <!-- ✅ Modal chi tiết sản phẩm (fragment) -->
+            <div th:if="${lowStockProducts != null}" th:each="p : ${lowStockProducts}">
+                <div th:replace="~{manager/products/detail :: detailModal(p=${p})}"></div>
+            </div>
         </main>
 
         <!-- Footer -->

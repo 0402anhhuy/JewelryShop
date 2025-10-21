@@ -27,21 +27,32 @@ public class AdminCollectionController {
     private final CollectionRepository collectionRepo;
     private final ProductRepository productRepo;
 
-    // ✅ Danh sách có phân trang
     @GetMapping
     public String listCollections(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "5") int size,
+            @RequestParam(value = "keyword", required = false) String keyword,
             Model model
     ) {
         var pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
         var collectionPage = collectionRepo.findAll(pageable);
 
+        // ✅ Lọc theo keyword (nếu có)
+        if (keyword != null && !keyword.isBlank()) {
+            var filtered = collectionPage.getContent().stream()
+                    .filter(c -> c.getName() != null && c.getName().toLowerCase().contains(keyword.toLowerCase()))
+                    .toList();
+            collectionPage = new org.springframework.data.domain.PageImpl<>(filtered, pageable, filtered.size());
+        }
+
         model.addAttribute("collections", collectionPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", collectionPage.getTotalPages());
+        model.addAttribute("keyword", keyword);
+
         return "admin/collections/list";
     }
+
 
     // ✅ Form thêm mới
     @GetMapping("/form")

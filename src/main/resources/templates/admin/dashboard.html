@@ -135,7 +135,7 @@
                             </thead>
                             <tbody>
                             <tr th:each="p : ${lowStockProducts}">
-                                <td th:text="${p.name}">Nhẫn vàng PNJ</td>
+                                <td th:text="${p.displayName}">Nhẫn vàng PNJ</td>
                                 <td th:text="${p.stockQuantity}">5</td>
                                 <td><a th:href="@{'/admin/products/detail/' + ${p.id}}" class="btn btn-sm btn-outline-primary">Chi tiết</a></td>
                             </tr>
