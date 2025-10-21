@@ -21,8 +21,21 @@
             <h3 class="fw-bold text-primary mb-4"
                 th:text="${isEdit} ? 'Chỉnh sửa giao dịch kho' : 'Thêm giao dịch mới'"></h3>
 
+            <!-- ⚡ Thông báo thành công / lỗi -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                <i class="bi bi-check-circle me-2"></i>
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
             <form th:action="@{/manager/stocks/save}" th:object="${movement}" method="post"
-                  class="card p-4 shadow-sm bg-white border-0">
+                  class="card p-4 shadow-sm bg-white border-0 mt-3">
 
                 <input type="hidden" th:field="*{id}">
 

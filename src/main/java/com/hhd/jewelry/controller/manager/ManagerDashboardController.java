@@ -7,10 +7,12 @@ import com.hhd.jewelry.repository.OrderRepository;
 import com.hhd.jewelry.repository.ProductRepository;
 import com.hhd.jewelry.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j  // ✅ Thêm logging
 @Controller
 @RequiredArgsConstructor
 public class ManagerDashboardController {
@@ -30,6 +33,7 @@ public class ManagerDashboardController {
     private final OrderRepository orderRepo;
 
     @GetMapping("/manager/dashboard")
+    @Transactional(readOnly = true)  // ✅ ĐẢM BẢO LUÔN ĐỌC DATA MỚI NHẤT
     public String dashboard(Model model, Authentication auth) {
 
         // === 1. Tổng số liệu cơ bản ===
@@ -70,7 +74,8 @@ public class ManagerDashboardController {
                         o -> o.getStatus().name(),
                         Collectors.counting()
                 ));
-        // 7. lấy tên
+
+        // === 7. Lấy tên user ===
         String email = auth != null ? auth.getName() : null;
         String fullName = "Quản trị viên";
 
@@ -80,7 +85,16 @@ public class ManagerDashboardController {
                 fullName = user.getFullName();
             }
         }
+
+        // === 8. ✅ SẢN PHẨM SẮP HẾT HÀNG (ĐỌC LẠI TỪ DB) ===
         List<Product> lowStockProducts = productRepo.findTop5ByStockQuantityLessThanOrderByStockQuantityAsc(10);
+
+        // ✅ LOG ĐỂ DEBUG
+        log.info("📊 Dashboard - Tìm thấy {} sản phẩm sắp hết hàng:", lowStockProducts.size());
+        lowStockProducts.forEach(p ->
+                log.info("   - ID: {}, Tên: {}, Tồn kho: {}", p.getId(), p.getName(), p.getStockQuantity())
+        );
+
         model.addAttribute("lowStockProducts", lowStockProducts);
 
         // === Gán sang Thymeleaf ===
