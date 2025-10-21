@@ -1,5 +1,7 @@
 package com.hhd.jewelry.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,12 +23,25 @@ public class OrderItem {
     @ManyToOne
     @JoinColumn(name = "order_id")
     @ToString.Exclude @EqualsAndHashCode.Exclude
+    @JsonBackReference
     private Order order;
 
     // 🔹 Sản phẩm được mua
     @ManyToOne
     @JoinColumn(name = "product_id")
     @ToString.Exclude @EqualsAndHashCode.Exclude
+    @JsonIgnoreProperties({
+            "hibernateLazyInitializer", "handler", // Luôn cần cho lazy loading (dù product đang EAGER)
+            "orderItems",     // Product có list OrderItem -> Lặp
+            "wishlists",      // Product có list Wishlist -> Lặp qua User -> Order
+            "cartItems",      // Product có list CartItem -> Có thể lặp qua User
+            "reviews",        // Product có list Review -> Có thể lặp qua User
+            "category",       // Có thể không cần khi xem chi tiết OrderItem
+            "collection",     // Có thể không cần khi xem chi tiết OrderItem
+            "supplier",       // Có thể không cần
+            "viewedProducts"  // Thường không cần trong OrderItem
+            // Thêm các trường List/Set hoặc Entity khác trong Product nếu cần
+    })
     private Product product;
 
     // 🔹 Số lượng

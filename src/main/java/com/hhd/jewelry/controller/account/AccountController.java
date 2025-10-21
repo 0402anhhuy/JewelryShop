@@ -2,9 +2,11 @@ package com.hhd.jewelry.controller.account;
 
 import com.hhd.jewelry.dto.ProfileDto;
 import com.hhd.jewelry.entity.Address;
+import com.hhd.jewelry.entity.Order;
 import com.hhd.jewelry.entity.User;
 import com.hhd.jewelry.entity.Wishlist;
 import com.hhd.jewelry.service.AddressService;
+import com.hhd.jewelry.service.OrderService;
 import com.hhd.jewelry.service.UserService;
 import com.hhd.jewelry.service.WishlistService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,14 +17,18 @@ import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +43,7 @@ public class AccountController {
     private final UserService userService;
     private final WishlistService wishlistService;
     private final AddressService addressService;
-
+    private final OrderService orderService;
     @GetMapping("/account")
     public String getAccountPage(
             Authentication auth,
@@ -177,7 +183,14 @@ public class AccountController {
 
         return response;
     }
-
+    @GetMapping("/account/orders/detail/{orderId}")
+    @Transactional(readOnly = true)
+    public ResponseEntity<Order> getOrderDetail(@PathVariable("orderId") Integer orderId) {
+        Order order = orderService.getOrderByOrderId(orderId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Không tìm thấy đơn hàng với ID: " + orderId));
+        int size = order.getItems().size();
+        return ResponseEntity.ok(order);
+    }
     private void updateAuthentication(String newEmail, Authentication oldAuth, HttpServletRequest request) {
         // Tạo authentication mới với email mới
         UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(

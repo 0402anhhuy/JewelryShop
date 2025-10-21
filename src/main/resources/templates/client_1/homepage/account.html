@@ -1219,6 +1219,502 @@
                 padding: 30px 20px;
             }
         }
+        /* Order Detail Modal */
+        .order-detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .order-detail-modal.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .order-detail-content {
+            background: #fff;
+            border-radius: 20px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s ease;
+            position: relative;
+        }
+
+        .order-detail-content::-webkit-scrollbar {
+            width: 0px;
+        }
+
+        /* Header */
+        .order-detail-header {
+            background: linear-gradient(135deg, var(--primary-color), #f4d47c);
+            padding: 30px;
+            border-radius: 20px 20px 0 0;
+            color: white;
+            position: relative;
+        }
+
+        .order-detail-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            color: var(--dark-color);
+            font-size: 22px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+        }
+
+        .order-detail-close:hover {
+            background: white;
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        .order-detail-close:active {
+            transform: rotate(90deg) scale(0.95);
+        }
+
+        .order-header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding-right: 70px
+        }
+
+        .order-id-section h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .order-date {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .order-status-badge {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 700;
+            background: white;
+            color: var(--dark-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Body */
+        .order-detail-body {
+            padding: 30px;
+        }
+
+        .detail-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--primary-color);
+            font-size: 20px;
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            background: var(--secondary-color);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .info-label {
+            font-size: 13px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 15px;
+            color: var(--dark-color);
+            font-weight: 500;
+        }
+
+        /* Product Items */
+        .product-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .product-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .product-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.15);
+        }
+
+        .product-image {
+            width: 100px;
+            height: 100px;
+            border-radius: 10px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: var(--secondary-color);
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .product-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 8px;
+        }
+
+        .product-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .product-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .product-detail-item i {
+            color: var(--primary-color);
+            font-size: 12px;
+        }
+
+        .product-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-align: right;
+        }
+
+        /* Timeline */
+        .order-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 30px;
+        }
+
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -23px;
+            top: 8px;
+            width: 2px;
+            height: calc(100% - 8px);
+            background: #e0e0e0;
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -30px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .timeline-dot.completed {
+            background: var(--success-color);
+            box-shadow: 0 0 0 2px var(--success-color);
+        }
+
+        .timeline-dot.pending {
+            background: #e0e0e0;
+            box-shadow: 0 0 0 2px #e0e0e0;
+        }
+
+        .timeline-content {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .timeline-title {
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+        }
+
+        .timeline-time {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* Summary Box */
+        .order-summary {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(244, 212, 124, 0.1));
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid var(--primary-color);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            padding-top: 15px;
+            margin-top: 5px;
+            border-top: 2px solid var(--primary-color);
+        }
+
+        .summary-label {
+            font-size: 15px;
+            color: #666;
+        }
+
+        .summary-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .summary-row:last-child .summary-label {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+
+        .summary-row:last-child .summary-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        /* Footer Actions */
+        .order-detail-footer {
+            padding: 20px 30px;
+            background: #f9f9f9;
+            border-radius: 0 0 20px 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #f4d47c);
+            color: var(--dark-color);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        /* Demo Button */
+        .demo-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, var(--primary-color), #f4d47c);
+            color: var(--dark-color);
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .demo-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(212, 175, 55, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .order-detail-content {
+                max-width: 100%;
+                border-radius: 15px;
+            }
+
+            .order-detail-header {
+                padding: 20px;
+                border-radius: 15px 15px 0 0;
+            }
+
+            .order-header-info {
+                flex-direction: column;
+            }
+
+            .order-id-section h2 {
+                font-size: 22px;
+            }
+
+            .order-detail-body {
+                padding: 20px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .product-item {
+                flex-direction: column;
+            }
+
+            .product-image {
+                width: 100%;
+                height: 200px;
+            }
+
+            .product-price {
+                text-align: left;
+                margin-top: 10px;
+            }
+
+            .order-detail-footer {
+                flex-direction: column;
+                padding: 15px 20px;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+        }
     </style>
 </head>
 <body>
@@ -1369,12 +1865,13 @@
             </div>
 
             <div class="orders-tabs">
-                <button class="tab-btn active">Tất cả</button>
-                <button class="tab-btn">Chờ xác nhận</button>
-                <button class="tab-btn">Đang xử lý</button>
-                <button class="tab-btn">Đang giao</button>
-                <button class="tab-btn">Hoàn thành</button>
-                <button class="tab-btn">Đã hủy</button>
+                <button class="tab-btn active" data-status="all">Tất cả</button>
+                <button class="tab-btn" data-status="pending">Chờ xác nhận</button>
+                <button class="tab-btn" data-status="paid">Đang xử lý</button>
+                <button class="tab-btn" data-status="shipping">Đang giao</button>
+                <button class="tab-btn" data-status="delivered">Hoàn thành</button>
+                <button class="tab-btn" data-status="cancelled">Đã hủy</button>
+                <button class="tab-btn" data-status="returned">Trả hàng</button>
             </div>
 
             <div class="orders-list" th:if="${not #lists.isEmpty(user.orders)}">
@@ -1386,7 +1883,7 @@
                             <small style="color: #999;" th:text="'Đặt ngày ' + ${#temporals.format(order.createdAt, 'dd/MM/yyyy')}">Đặt ngày 15/10/2024</small>
                         </div>
                         <span class="order-status" th:classappend="'status-' + ${order.status.name().toLowerCase()}"
-                              th:text="${order.status}">Đang giao hàng
+                              th:text="${order.displayStatus()}">Đang giao hàng
                         </span>
                     </div>
                     <div class="order-items" th:each="item : ${order.items}">
@@ -1414,38 +1911,28 @@
                             Tổng: 13.732.000 ₫
                         </div>
                         <div class="order-actions">
-                            <!-- Nút Theo dõi: luôn hiện -->
-<!--                            <button class="btn btn-primary btn-sm">-->
-<!--                                <i class="fas fa-truck"></i> Theo dõi-->
-<!--                            </button>-->
-
-                            <!-- Nút Hủy đơn: chỉ hiển thị nếu trạng thái là PENDING hoặc PAID -->
                             <button class="btn btn-danger btn-sm"
                                     th:if="${order.status.name() == 'PENDING' or order.status.name() == 'PAID'}"
                                     th:onclick="'cancelOrder(' + ${order.id} + ')'">
                                 <i class="fas fa-times"></i> Hủy đơn
                             </button>
 
-                            <!-- Nút Mua lại: chỉ hiển thị nếu trạng thái là COMPLETED -->
                             <button class="btn btn-warning btn-sm"
-                                    th:if="${order.status.name() == 'COMPLETED'}"
+                                    th:if="${order.status.name() == 'DELIVERED'}"
                                     th:onclick="'reorder(' + ${order.id} + ')'">
                                 <i class="fas fa-shopping-bag"></i> Mua lại
                             </button>
 
-                            <!-- Nút Đánh giá sản phẩm: chỉ hiển thị nếu trạng thái là COMPLETED -->
                             <button class="btn btn-success btn-sm"
-                                    th:if="${order.status.name() == 'COMPLETED'}"
+                                    th:if="${order.status.name() == 'DELIVERED'}"
                                     th:onclick="'reviewOrder(' + ${order.id} + ')'">
                                 <i class="fas fa-star"></i> Đánh giá
                             </button>
 
-                            <!-- Nút Chi tiết: luôn hiện -->
-                            <button class="btn btn-secondary btn-sm">
+                            <button class="btn btn-secondary btn-sm" th:onclick="'showOrderDetailModal(' + ${order.id} + ')'">
                                 <i class="fas fa-eye"></i> Chi tiết
                             </button>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -1458,6 +1945,219 @@
                 <button class="btn btn-primary" onclick="window.location.href='/products'">
                     Mua sắm ngay
                 </button>
+            </div>
+            <!-- Order Detail Modal -->
+            <div id="orderDetailModal" class="order-detail-modal">
+                <div class="order-detail-content">
+                    <!-- Header -->
+                    <div class="order-detail-header">
+                        <button class="order-detail-close" onclick="closeOrderDetailModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <div class="order-header-info">
+                            <div class="order-id-section">
+                                <h2 id="modalOrderId"><i class="fas fa-receipt"></i> Đơn hàng #...</h2>
+                                <p class="order-date">
+                                    <i class="far fa-calendar-alt"></i> Đặt ngày <span id="modalOrderDate">...</span> </p>
+                            </div>
+                            <div class="order-status-badge" id="modalOrderStatusBadge">
+                                <i class="fas fa-spinner fa-spin"></i> <span id="modalOrderStatusText">Đang tải...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="order-detail-body">
+                        <!-- Thông tin khách hàng & Địa chỉ -->
+                        <div class="detail-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-user"></i>
+                                Thông Tin Giao Hàng
+                            </h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Người nhận</span>
+                                    <span class="info-value" id="modalOrderConsignee">...</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Số điện thoại</span>
+                                    <span class="info-value" id="modalOrderPhone">...</span>
+                                </div>
+                                <div class="info-item" style="grid-column: 1 / -1;">
+                                    <span class="info-label">Địa chỉ giao hàng</span>
+                                    <span class="info-value" id="modalOrderAddress">...</span>>
+                                </div>
+                                <div class="info-item" style="grid-column: 1 / -1; display: none;"> <span class="info-label">Ghi chú</span>
+                                    <span class="info-value" id="modalOrderNote"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Thông tin thanh toán -->
+                        <div class="detail-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-credit-card"></i>
+                                Thông Tin Thanh Toán
+                            </h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Phương thức thanh toán</span>
+                                    <span class="info-value" id="modalOrderPaymentMethod">...</span>                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Trạng thái thanh toán</span>
+                                    <span class="info-value" id="modalOrderPaymentStatus" style="color: var(--warning-color);">
+                                                <i class="fas fa-clock"></i> <span>Chờ xử lý</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sản phẩm -->
+                        <div class="detail-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-box-open"></i>
+                                Sản Phẩm Đã Đặt
+                            </h3>
+                            <div class="product-items" id="modalOrderItems">
+                                <p style="text-align: center; padding: 20px;">Đang tải sản phẩm...</p>
+                            </div>
+<!--                            <div class="product-items">-->
+<!--                                <div class="product-item">-->
+<!--                                    <div class="product-image">-->
+<!--                                        <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400" alt="Product">-->
+<!--                                    </div>-->
+<!--                                    <div class="product-info">-->
+<!--                                        <div>-->
+<!--                                            <div class="product-name">Lắc tay Đá ECZ Vàng 14K</div>-->
+<!--                                            <div class="product-details">-->
+<!--                                        <span class="product-detail-item">-->
+<!--                                            <i class="fas fa-cube"></i>-->
+<!--                                            Số lượng: 1-->
+<!--                                        </span>-->
+<!--                                                <span class="product-detail-item">-->
+<!--                                            <i class="fas fa-tag"></i>-->
+<!--                                            Mã SP: LG001-->
+<!--                                        </span>-->
+<!--                                                <span class="product-detail-item">-->
+<!--                                            <i class="fas fa-weight"></i>-->
+<!--                                            Trọng lượng: 15.5g-->
+<!--                                        </span>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
+<!--                                        <div class="product-price">13.732.000 ₫</div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+
+<!--                                <div class="product-item">-->
+<!--                                    <div class="product-image">-->
+<!--                                        <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400" alt="Product">-->
+<!--                                    </div>-->
+<!--                                    <div class="product-info">-->
+<!--                                        <div>-->
+<!--                                            <div class="product-name">Nhẫn Kim cương Vàng trắng 14K</div>-->
+<!--                                            <div class="product-details">-->
+<!--                                        <span class="product-detail-item">-->
+<!--                                            <i class="fas fa-cube"></i>-->
+<!--                                            Số lượng: 1-->
+<!--                                        </span>-->
+<!--                                                <span class="product-detail-item">-->
+<!--                                            <i class="fas fa-tag"></i>-->
+<!--                                            Mã SP: LG002-->
+<!--                                        </span>-->
+<!--                                                <span class="product-detail-item">-->
+<!--                                            <i class="fas fa-gem"></i>-->
+<!--                                            Kim cương: 0.5 carat-->
+<!--                                        </span>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
+<!--                                        <div class="product-price">25.500.000 ₫</div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+                        </div>
+
+                        <!-- Chi tiết đơn hàng -->
+                        <div class="detail-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-history"></i>
+                                Chi tiết đơn hàng
+                            </h3>
+                            <div class="order-timeline">
+                                <div class="timeline-item">
+                                    <div class="timeline-dot completed"></div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-title">Đơn hàng đã được đặt</div>
+                                        <div class="timeline-time">15/10/2024 - 14:30</div>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-dot completed"></div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-title">Đã xác nhận đơn hàng</div>
+                                        <div class="timeline-time">15/10/2024 - 15:00</div>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-dot completed"></div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-title">Đang chuẩn bị hàng</div>
+                                        <div class="timeline-time">16/10/2024 - 09:15</div>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-title">Đang giao hàng</div>
+                                        <div class="timeline-time">17/10/2024 - 08:00</div>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-dot pending"></div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-title">Giao hàng thành công</div>
+                                        <div class="timeline-time">Chờ xác nhận</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tổng kết đơn hàng -->
+                        <div class="detail-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-calculator"></i>
+                                Chi Tiết Thanh Toán
+                            </h3>
+                            <div class="order-summary">
+                                <div class="summary-row">
+                                    <span class="summary-label">Tạm tính</span>
+                                    <span class="summary-value" id="modalSubtotal">0 ₫</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Phí vận chuyển</span>
+                                    <span class="summary-value" id="modalShippingFee">0 ₫</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Giảm giá</span>
+                                    <span class="summary-value" id="modalDiscount" style="color: var(--danger-color);">-0 ₫</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Tổng cộng</span>
+                                    <span class="summary-value" id="modalFinalTotal">0 ₫</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="order-detail-footer">
+                        <button class="btn btn-secondary" onclick="window.print()">
+                            <i class="fas fa-print"></i> In đơn hàng
+                        </button>
+                        <button class="btn btn-primary" onclick="alert('Liên hệ hỗ trợ!')">
+                            <i class="fas fa-headset"></i> Liên hệ hỗ trợ
+                        </button>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -2042,12 +2742,72 @@
         });
 
         // Orders Tab Filtering (giữ nguyên)
-        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabButtons = document.querySelectorAll('.orders-tabs .tab-btn');
+        const orderCards = document.querySelectorAll('.orders-list .order-card');
+        const ordersListContainer = document.querySelector('.orders-list');
+
+        // Tạo một thông báo "empty state" cho bộ lọc
+        let filterEmptyState = document.getElementById('filter-empty-state');
+        if (!filterEmptyState && ordersListContainer) { // Chỉ tạo nếu có danh sách đơn hàng
+            filterEmptyState = document.createElement('div');
+            filterEmptyState.id = 'filter-empty-state';
+            filterEmptyState.className = 'empty-state'; // Tái sử dụng style
+            filterEmptyState.style.display = 'none'; // Ẩn ban đầu
+            filterEmptyState.innerHTML = `
+                <i class="fas fa-filter"></i>
+                <h3>Không tìm thấy đơn hàng</h3>
+                <p>Không có đơn hàng nào phù hợp với trạng thái này.</p>
+            `;
+            // Chèn vào sau dải tab
+            const tabsContainer = document.querySelector('.orders-tabs');
+            if (tabsContainer) {
+                tabsContainer.after(filterEmptyState);
+            }
+        }
+
         tabButtons.forEach(btn => {
             btn.addEventListener('click', () => {
+                // 1. Cập nhật trạng thái 'active' cho tab
                 tabButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                console.log(`Filtering orders: ${btn.textContent}`);
+
+                // 2. Lấy trạng thái cần lọc từ 'data-status'
+                const filterStatus = btn.getAttribute('data-status');
+                let hasVisibleCards = false; // Biến đếm xem có card nào hiển thị không
+
+                // 3. Lặp qua tất cả các thẻ đơn hàng
+                orderCards.forEach(card => {
+                    if (filterStatus === 'all') {
+                        // Nếu là "Tất cả", hiển thị tất cả card
+                        card.style.display = 'block';
+                        hasVisibleCards = true;
+                    } else {
+                        // Nếu lọc theo trạng thái cụ thể
+                        // Tìm phần tử .order-status bên trong card
+                        const statusElement = card.querySelector('.order-status');
+
+                        // Tạo tên class cần tìm, ví dụ: "status-pending"
+                        const targetClass = 'status-' + filterStatus;
+
+                        if (statusElement && statusElement.classList.contains(targetClass)) {
+                            // Nếu card có class trạng thái khớp, hiển thị nó
+                            card.style.display = 'block';
+                            hasVisibleCards = true;
+                        } else {
+                            // Ẩn card nếu không khớp
+                            card.style.display = 'none';
+                        }
+                    }
+                });
+
+                // 4. Hiển thị hoặc ẩn thông báo "empty state" của bộ lọc
+                if (filterEmptyState) {
+                    if (hasVisibleCards) {
+                        filterEmptyState.style.display = 'none'; // Ẩn nếu có card
+                    } else {
+                        filterEmptyState.style.display = 'block'; // Hiển thị nếu không có card nào
+                    }
+                }
             });
         });
     });
@@ -2745,7 +3505,6 @@
             closeAddressModal();
         }
     }
-
     function cancelOrder(id) {
         showToast('warning', 'Xác nhận hủy đơn', 'Bạn có chắc muốn hủy đơn hàng #' + id + '?', true, () => {
             showToast('success', 'Đã hủy', 'Đơn hàng #' + id + ' đã được hủy thành công!');
@@ -2755,13 +3514,299 @@
 
     function reorder(id) {
         showToast('info', 'Mua lại', 'Đang thêm sản phẩm từ đơn #' + id + ' vào giỏ hàng...');
-        // TODO: Gọi API /orders/reorder/{id}
+        window.location.href = '/checkout/{id}'
     }
 
     function reviewOrder(id) {
         showToast('info', 'Đánh giá', 'Chuyển hướng đến trang đánh giá cho đơn #' + id);
         window.location.href = '/reviews/order/' + id;
     }
+
+    //Modal Order Detail
+    const orderDetailModal = document.getElementById('orderDetailModal');
+    function formatDateTime(dateTimeString) {
+        if (!dateTimeString) return 'N/A';
+        try {
+            const date = new Date(dateTimeString);
+            if (isNaN(date.getTime())) {
+                console.error("Invalid date string:", dateTimeString);
+                return 'Ngày lỗi'; // Trả về text lỗi dễ hiểu hơn
+            }
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes} ${day}/${month}/${year}`;
+        } catch (e) {
+            console.error("Error formatting date:", dateTimeString, e);
+            return 'Ngày lỗi'; // Trả về text lỗi
+        }
+    }
+    function formatCurrency(amount) {
+        if (amount === null || amount === undefined) return '0 ₫';
+        // Sử dụng toLocaleString để định dạng tiền tệ Việt Nam
+        try {
+            // Chuyển đổi sang number nếu là string (phòng trường hợp)
+            const numAmount = Number(amount);
+            if (isNaN(numAmount)) {
+                console.warn("formatCurrency received non-numeric value:", amount);
+                return 'Lỗi giá';
+            }
+            return numAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+        } catch (e) {
+            console.error("Error formatting currency:", amount, e);
+            return 'Lỗi giá';
+        }
+    }
+
+    // <<< HÀM QUAN TRỌNG: SHOW MODAL VÀ BINDING DỮ LIỆU >>>
+    async function showOrderDetailModal(orderId) { // Nhận orderId làm tham số
+        if (!orderDetailModal) {
+            console.error("Order detail modal not found!");
+            return;
+        }
+
+        // --- 1. Hiển thị Modal và Loading State ---
+        orderDetailModal.classList.add('show');
+        document.body.style.overflow = 'hidden'; // Ngăn scroll body
+
+        // Lấy các element cần cập nhật (chỉ cần lấy 1 lần)
+        const modalOrderIdEl = orderDetailModal.querySelector('.order-id-section h2');
+        const modalOrderDateEl = orderDetailModal.querySelector('.order-date span'); // Lấy span bên trong
+        const modalOrderStatusBadgeEl = orderDetailModal.querySelector('.order-status-badge');
+        const modalOrderStatusTextEl = orderDetailModal.querySelector('.order-status-badge span'); // Giả sử có span cho text
+        const modalConsigneeEl = orderDetailModal.querySelector('#modalOrderConsignee'); // Sử dụng ID đã thêm
+        const modalPhoneEl = orderDetailModal.querySelector('#modalOrderPhone');
+        const modalAddressEl = orderDetailModal.querySelector('#modalOrderAddress');
+        const modalNoteContainerEl = orderDetailModal.querySelector('#modalOrderNote')?.parentElement; // Lấy div cha của note
+        const modalNoteEl = orderDetailModal.querySelector('#modalOrderNote');
+        const modalPaymentMethodEl = orderDetailModal.querySelector('#modalOrderPaymentMethod');
+        const modalPaymentStatusEl = orderDetailModal.querySelector('#modalOrderPaymentStatus'); // Bao gồm cả icon và text
+        const modalPaymentStatusIconEl = modalPaymentStatusEl?.querySelector('i');
+        const modalPaymentStatusTextEl = modalPaymentStatusEl?.querySelector('span');
+        const modalItemCountEl = orderDetailModal.querySelector('#modalItemCount');
+        const modalItemsContainerEl = orderDetailModal.querySelector('#modalOrderItems');
+        const modalSubtotalEl = orderDetailModal.querySelector('#modalSubtotal');
+        const modalShippingFeeEl = orderDetailModal.querySelector('#modalShippingFee');
+        const modalDiscountContainerEl = orderDetailModal.querySelector('#modalDiscount')?.parentElement; // Lấy div cha của discount
+        const modalDiscountEl = orderDetailModal.querySelector('#modalDiscount');
+        const modalFinalTotalEl = orderDetailModal.querySelector('#modalFinalTotal');
+        const modalCancelButton = orderDetailModal.querySelector('#modalCancelButton'); // Nút hủy trong modal
+        const modalTimelineContainerEl = orderDetailModal.querySelector('#modalOrderTimeline'); // Container timeline
+
+        // Reset/Loading state
+        if (modalOrderIdEl) modalOrderIdEl.innerHTML = `<i class="fas fa-receipt"></i> Đơn hàng #${orderId}`;
+        if (modalOrderDateEl) modalOrderDateEl.textContent = 'Đang tải...';
+        if (modalOrderStatusBadgeEl) {
+            modalOrderStatusBadgeEl.className = 'order-status-badge'; // Reset class
+            modalOrderStatusBadgeEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...'; // Thêm icon loading
+        }
+        // ... Reset các trường khác nếu cần ...
+        if (modalItemsContainerEl) modalItemsContainerEl.innerHTML = '<p style="text-align: center; padding: 20px;">Đang tải sản phẩm...</p>';
+        if (modalTimelineContainerEl) modalTimelineContainerEl.innerHTML = '<p style="text-align: center; padding: 10px;">Đang tải lịch sử...</p>'; // Loading cho timeline
+
+        try {
+            // --- 2. Fetch dữ liệu từ API ---
+            const response = await fetch(`/account/orders/detail/${orderId}`); // Gọi API
+
+            if (!response.ok) {
+                // Xử lý lỗi HTTP (ví dụ: 404 Not Found)
+                throw new Error(`Lỗi ${response.status}: ${response.statusText || 'Không thể tải dữ liệu'}`);
+            }
+
+            const orderData = await response.json(); // Chuyển response thành JSON
+            // const responseText = await response.text();
+            // console.log("Raw Response Text:", responseText); // In ra console
+            // const orderData = JSON.parse(responseText); // Thử parse thủ công
+            // --- 3. Binding dữ liệu vào Modal ---
+
+            // Header
+            if (modalOrderIdEl) modalOrderIdEl.innerHTML = `<i class="fas fa-receipt"></i> Đơn hàng #${orderData.id}`;
+            if (modalOrderDateEl) modalOrderDateEl.textContent = formatDateTime(orderData.createdAt);
+            if (modalOrderStatusBadgeEl) {
+                modalOrderStatusBadgeEl.className = 'order-status-badge'; // Reset class trước
+                if(orderData.status) {
+                    modalOrderStatusBadgeEl.classList.add(`status-${orderData.status.toLowerCase()}`); // Thêm class trạng thái mới
+                }
+                // Cập nhật icon và text dựa trên trạng thái (ví dụ)
+                let statusIcon = 'fa-question-circle'; // Icon mặc định
+                if(orderData.status === 'PENDING') statusIcon = 'fa-clock';
+                else if(orderData.status === 'PAID') statusIcon = 'fa-cogs'; // Đang xử lý
+                else if(orderData.status === 'SHIPPING') statusIcon = 'fa-shipping-fast';
+                else if(orderData.status === 'DELIVERED') statusIcon = 'fa-check-circle';
+                else if(orderData.status === 'CANCELLED') statusIcon = 'fa-times-circle';
+                else if(orderData.status === 'RETURNED') statusIcon = 'fa-undo';
+                modalOrderStatusBadgeEl.innerHTML = `<i class="fas ${statusIcon}"></i> <span>${orderData.displayStatus || 'N/A'}</span>`; // Cập nhật cả icon và text
+            }
+
+
+            // Thông tin giao hàng
+            if (modalConsigneeEl) modalConsigneeEl.textContent = orderData.consignee || 'N/A';
+            if (modalPhoneEl) modalPhoneEl.textContent = orderData.shippingPhone || 'N/A';
+            const addressParts = [
+                orderData.shippingAddressLine,
+                orderData.shippingWard,
+                orderData.shippingDistrict,
+                orderData.shippingCity
+            ].filter(part => part && part.trim() !== '').join(', '); // Lọc kỹ hơn
+            if (modalAddressEl) modalAddressEl.textContent = addressParts || 'N/A';
+
+            // Ghi chú (hiển thị/ẩn và cập nhật text)
+            if (modalNoteContainerEl) {
+                if (orderData.note && orderData.note.trim() !== '') {
+                    if (modalNoteEl) modalNoteEl.textContent = orderData.note;
+                    modalNoteContainerEl.style.display = 'block'; // Hiển thị nếu có note
+                } else {
+                    modalNoteContainerEl.style.display = 'none'; // Ẩn nếu không có note
+                }
+            }
+
+            // Thông tin thanh toán
+            if (modalPaymentMethodEl) modalPaymentMethodEl.textContent = orderData.methodPay || 'N/A';
+            if (modalPaymentStatusEl) {
+                if (orderData.paid) {
+                    modalPaymentStatusEl.style.color = 'var(--success-color)';
+                    if(modalPaymentStatusIconEl) modalPaymentStatusIconEl.className = 'fas fa-check-circle';
+                    if(modalPaymentStatusTextEl) modalPaymentStatusTextEl.textContent = ' Đã thanh toán';
+                } else {
+                    modalPaymentStatusEl.style.color = 'var(--warning-color)';
+                    if(modalPaymentStatusIconEl) modalPaymentStatusIconEl.className = 'fas fa-clock';
+                    if(modalPaymentStatusTextEl) modalPaymentStatusTextEl.textContent = ' Chưa thanh toán / Chờ xử lý';
+                }
+            }
+
+            // Danh sách sản phẩm
+            if (modalItemCountEl) modalItemCountEl.textContent = orderData.items?.length || 0;
+            if (modalItemsContainerEl) {
+                modalItemsContainerEl.innerHTML = ''; // Xóa loading/dữ liệu cũ
+                if (orderData.items && orderData.items.length > 0) {
+                    orderData.items.forEach(item => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'product-item';
+
+                        const imageUrl = item.product?.imageUrls?.[0] || '/images/default-product.png'; // Ảnh mặc định nếu ko có
+                        const productName = item.product?.name || 'Sản phẩm không xác định';
+                        const productPrice = item.product?.price || 0; // Giá gốc nếu cần
+                        const itemQuantity = item.quantity || 0;
+                        const itemTotalPrice = item.totalPrice || 0;
+
+                        // Thêm nhiều chi tiết hơn nếu có trong 'item.product'
+                        // Ví dụ: Lấy mã SP, trọng lượng,... (cần backend trả về)
+                        // const productCode = item.product?.serialNumber || 'N/A';
+                        // const productWeight = item.product?.weight || 'N/A';
+
+                        itemDiv.innerHTML = `
+                        <div class="product-image">
+                            <img src="${imageUrl}" alt="${productName}">
+                        </div>
+                        <div class="product-info">
+                            <div>
+                                <div class="product-name">${productName}</div>
+                                <div class="product-details">
+                                    <span class="product-detail-item">
+                                        <i class="fas fa-cube"></i>
+                                        Số lượng: ${itemQuantity}
+                                    </span>
+                                    </div>
+                            </div>
+                            <div class="product-price">${formatCurrency(itemTotalPrice)}</div>
+                        </div>
+                    `;
+                        modalItemsContainerEl.appendChild(itemDiv);
+                    });
+                } else {
+                    modalItemsContainerEl.innerHTML = '<p style="text-align: center; padding: 15px;">Đơn hàng không có sản phẩm nào.</p>';
+                }
+            }
+
+            // Lịch sử đơn hàng (Timeline - Ví dụ đơn giản, bạn có thể cần fetch riêng nếu phức tạp)
+            if(modalTimelineContainerEl){
+                modalTimelineContainerEl.innerHTML = ''; // Xóa loading
+                // Tạo timeline dựa trên trạng thái hiện tại (ví dụ đơn giản)
+                const timelineData = [
+                    { title: 'Đơn hàng đã được đặt', time: formatDateTime(orderData.createdAt), status: 'completed' }
+                ];
+                // Thêm các bước khác dựa trên status
+                if(['PAID', 'SHIPPING', 'DELIVERED', 'RETURNED', 'CANCELLED'].includes(orderData.status)) {
+                    timelineData.push({ title: 'Đã xác nhận đơn hàng', time: '...', status: 'completed'}); // Cần thời gian thực tế
+                } else {
+                    timelineData.push({ title: 'Chờ xác nhận', time: '...', status: 'pending'});
+                }
+                // Thêm các trạng thái tiếp theo... (Shipping, Delivered) tương tự
+
+                timelineData.forEach(item => {
+                    const timelineItemDiv = document.createElement('div');
+                    timelineItemDiv.className = 'timeline-item';
+                    timelineItemDiv.innerHTML = `
+                     <div class="timeline-dot ${item.status}"></div>
+                     <div class="timeline-content">
+                         <div class="timeline-title">${item.title}</div>
+                         <div class="timeline-time">${item.time}</div>
+                     </div>
+                 `;
+                    modalTimelineContainerEl.appendChild(timelineItemDiv);
+                });
+            }
+
+
+            // Tổng kết đơn hàng
+            const subtotal = (orderData.totalAmount || 0) - (orderData.shippingFee || 0) + (orderData.discount || 0);
+            if (modalSubtotalEl) modalSubtotalEl.textContent = formatCurrency(subtotal);
+            if (modalShippingFeeEl) modalShippingFeeEl.textContent = formatCurrency(orderData.shippingFee || 0);
+            if (modalDiscountContainerEl) {
+                if (orderData.discount && orderData.discount > 0) {
+                    if (modalDiscountEl) modalDiscountEl.textContent = `- ${formatCurrency(orderData.discount)}`;
+                    modalDiscountContainerEl.style.display = 'flex'; // Hiển thị dòng giảm giá
+                } else {
+                    modalDiscountContainerEl.style.display = 'none'; // Ẩn nếu không có giảm giá
+                }
+            }
+            if (modalFinalTotalEl) modalFinalTotalEl.textContent = formatCurrency(orderData.totalAmount || 0);
+
+            // Nút Hủy đơn trong Footer
+            if(modalCancelButton){
+                if (orderData.status === 'PENDING' || orderData.status === 'PAID') {
+                    modalCancelButton.style.display = 'inline-flex'; // Hiển thị nút
+                    // Cập nhật onclick nếu cần đảm bảo ID đúng
+                    modalCancelButton.onclick = () => cancelOrder(orderId);
+                } else {
+                    modalCancelButton.style.display = 'none'; // Ẩn nút
+                }
+            }
+
+
+        } catch (error) {
+            // --- 4. Xử lý lỗi Fetch hoặc JSON ---
+            console.error('Lỗi khi tải chi tiết đơn hàng:', error);
+            // Hiển thị lỗi trong modal hoặc dùng toast
+            if (modalItemsContainerEl) modalItemsContainerEl.innerHTML = `<p style='color: var(--danger-color); text-align: center; padding: 20px;'>${error.message}</p>`;
+            // Reset các trường khác về N/A hoặc trống
+            if (modalOrderDateEl) modalOrderDateEl.textContent = 'Lỗi';
+            if (modalOrderStatusBadgeEl) modalOrderStatusBadgeEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Lỗi';
+            // ... reset các trường khác ...
+            showToast('error', 'Lỗi', `Không thể tải chi tiết đơn hàng: ${error.message}`);
+        }
+    }
+    // Close modal when clicking exit
+    function closeOrderDetailModal() {
+        orderDetailModal.classList.remove('show');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target === orderDetailModal) {
+            closeOrderDetailModal();
+        }
+    }
+
+    // Close modal with ESC key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeOrderDetailModal();
+        }
+    });
 </script>
 </body>
 </html>
