@@ -89,15 +89,17 @@
     </div>
 </section>
 
-<!-- Collections Section - CLICKABLE FILTER -->
+
+<!-- Collections Section - CLICKABLE FILTER WITH SCROLL -->
 <section class="collections container my-4 text-center">
     <h2 class="section-title">Our Collections</h2>
     <div class="collection-wrap position-relative mt-3">
         <button class="carousel-btn prev-btn collection-prev"><i class="fas fa-chevron-left"></i></button>
         <div class="collection-track" id="collectionTrack">
             <a th:each="col : ${collections}"
-               th:href="@{/products(collectionName=${col.name})}"
+               th:href="@{/(collectionName=${col.name})}"
                class="collection-item"
+               th:classappend="${selectedCollection != null && selectedCollection == col.name} ? 'active' : ''"
                th:attr="data-collection-id=${col.id}"
                style="text-decoration: none; color: inherit; display: block;">
                 <img th:src="@{${col.imageUrl}}" th:alt="${col.name}" />
@@ -107,23 +109,37 @@
         <button class="carousel-btn next-btn collection-next"><i class="fas fa-chevron-right"></i></button>
     </div>
     <div class="collection-dots mt-3" id="collectionDots"></div>
+
+    <!-- Reset Filter Button -->
+<!--    <div th:if="${selectedCollection != null}" style="margin-top: 20px;">-->
+<!--        <a th:href="@{/}" class="btn btn-outline-secondary">-->
+<!--            <i class="fas fa-times"></i> Clear Filter-->
+<!--        </a>-->
+<!--    </div>-->
 </section>
 
 <!-- New Arrivals Section - WITH SORT FILTER -->
-<section class="new-arrivals">
+<section class="new-arrivals" id="new-arrivals">
     <div class="container">
         <div class="arrivals-container">
             <div class="arrivals-content">
                 <div class="arrivals-header">
-                    <h2 class="section-title">New Arrival</h2>
+                    <h2 class="section-title">
+                        COLLECTION - [[${selectedCollection}]]
+
+                    </h2>
                     <div class="sort-filter">
                         <span class="filter-label">Sort by</span>
-                        <select class="filter-select" onchange="applySortFilter(this.value)">
-                            <option value="newest">Newest</option>
-                            <option value="priceAsc">Price: Low to High</option>
-                            <option value="priceDesc">Price: High to Low</option>
-                            <option value="bestSelling">Best Selling</option>
+                        <select class="filter-select"
+                                th:attr="data-selected-collection=${selectedCollection}"
+                                onchange="applySortFilter(this.value, this.dataset.selectedCollection)"
+                                th:value="${selectedSort}">
+                            <option value="newest" th:selected="${selectedSort == 'newest' or selectedSort == null}">Newest</option>
+                            <option value="priceAsc" th:selected="${selectedSort == 'priceAsc'}">Price: Low to High</option>
+                            <option value="priceDesc" th:selected="${selectedSort == 'priceDesc'}">Price: High to Low</option>
+                            <option value="bestSelling" th:selected="${selectedSort == 'bestSelling'}">Best Selling</option>
                         </select>
+
                     </div>
                 </div>
 
@@ -135,8 +151,8 @@
                             <img th:src="@{${product.imageUrls[0]}}" class="arrivals-image" alt="Ảnh sản phẩm">
                         </div>
                         <div class="product-info">
-                            <h3 class="product-title" th:text="${product.name}">
-                                Lắc tay trẻ em Vàng 10K Doraemon | PNJ 0000Y004538
+                            <h3 class="product-title" th:text="${product.displayName}">
+                                Lắc tay trẻ em Vàng 10K Doraemon
                             </h3>
                             <div class="product-price">
                                 <span class="current-price"
@@ -146,6 +162,14 @@
                             </div>
                             <div class="product-sold" th:text="${product.order + ' đã bán'}">45 đã bán</div>
                         </div>
+                    </div>
+
+                    <!-- No Products Message -->
+                    <div th:if="${#lists.isEmpty(products)}" class="text-center w-100" style="padding: 60px 20px;">
+                        <i class="fas fa-inbox" style="font-size: 64px; color: #ccc; margin-bottom: 20px;"></i>
+                        <h3 style="color: #666;">No products found</h3>
+                        <p style="color: #999;">Try selecting a different collection or clear the filter</p>
+                        <a th:href="@{/}" class="btn btn-primary mt-3">View All Products</a>
                     </div>
                 </div>
 
@@ -165,17 +189,34 @@
                 </div>
             </div>
 
-            <!-- Banner -->
+            <!-- Banner động theo Collection -->
             <div class="arrivals-banner">
-                <h3 class="banner-title">Wedding Edition</h3>
-                <p class="banner-subtitle">Special collection for your big day</p>
+                <!-- ✅ Tiêu đề: lấy theo tên collection -->
+                <h3 class="banner-title"
+                    th:text="${selectedCollection != null ? selectedCollection + ' Edition' : 'Wedding Edition'}">
+                    Wedding Edition
+                </h3>
+
+
+                <!-- ✅ Ảnh: sửa lại phần hiển thị ảnh -->
                 <div class="banner-image">
-                    <i class="fas fa-ring"></i>
+                    <img th:if="${selectedImage != null}"
+                         th:src="@{${selectedImage}}"
+                         th:alt="${selectedCollection}"
+                         style="width:100%;height:auto;object-fit:cover;border-radius:12px;"
+                         onerror="this.onerror=null;this.src='/images/default.jpg';">
+
+                    <!-- Nếu chưa có hình -->
+                    <i th:if="${selectedImage == null}" class="fas fa-ring"></i>
                 </div>
-                <a th:href="@{/products(collectionName='Wedding')}" style="text-decoration: none;">
+
+                <!-- ✅ Nút chuyển hướng -->
+                <a th:href="@{/products(collectionName=${selectedCollection})}"
+                   style="text-decoration: none;">
                     <button class="banner-btn">Explore Collection</button>
                 </a>
             </div>
+
         </div>
     </div>
 </section>
@@ -363,9 +404,38 @@
 <script th:src="@{/js/style.js}"></script>
 <script>
     // Sort filter function
-    function applySortFilter(sortValue) {
-        window.location.href = '/products?sort=' + sortValue;
+    function applySortFilter(sortValue, collectionName) {
+        let url = '/?sort=' + sortValue;
+        if (collectionName && collectionName !== 'null') {
+            url += '&collectionName=' + encodeURIComponent(collectionName);
+        }
+        // Không thêm "#new-arrivals" để tránh nhảy vị trí trước khi load
+        window.location.href = url;
     }
+
+    // Auto scroll to New Arrivals section when collection is selected
+    window.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const collectionParam = urlParams.get('collectionName');
+
+        if (collectionParam) {
+            // Smooth scroll to new arrivals section
+            setTimeout(function() {
+                const newArrivalsSection = document.getElementById('new-arrivals');
+                if (newArrivalsSection) {
+                    newArrivalsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 300);
+        }
+    });
+
+    // Highlight active collection
+    document.querySelectorAll('.collection-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            document.querySelectorAll('.collection-item').forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
 
     // FAQ accordion
     document.querySelectorAll('.faq-question').forEach(question => {
