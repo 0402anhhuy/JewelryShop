@@ -690,18 +690,14 @@
             <span class="step-label">Hoàn tất</span>
         </div>
     </div>
-    <form method="post" th:action="@{/checkout/confirm}">
+    <form method="post" th:action="@{/checkout/confirm}"
+          id="checkout-form"
+          th:data-is-buy-now="${isBuyNow}"
+          th:data-base-subtotal="${subtotal ?: 0}"
+          th:data-is-not-new-member="${isNotNewMember ?: true}">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <input type="hidden" name="serialNumber" th:if="${serialNumber}" th:value="${serialNumber}">
         <input type="hidden" name="cartId" th:if="${cartId}" th:value="${cartId}">
-        <input type="hidden" name="subtotal" th:value="${subtotal}">
-        <input type="hidden" name="discount" th:value="${discount}">
-        <input type="hidden" name="shippingFee" th:value="${shippingFee}">
-        <input type="hidden" name="tax" th:value="${tax}">
-        <input type="hidden" name="total" th:value="${total}">
-        <input type="hidden" name="shippingName" th:value="${shippingName}">
-        <input type="hidden" name="couponCode" th:value="${couponCode}">
-
         <!-- Main Content -->
         <div class="checkout-content">
             <!-- Left Column - Form -->
@@ -866,6 +862,14 @@
                             <div class="shipping-price">Miễn phí</div>
                         </label>
                         <label class="shipping-option">
+                            <input type="radio" name="shipping" value="pickup">
+                            <div class="shipping-info">
+                                <div class="shipping-name">Nhận tại cửa hàng</div>
+                                <div class="shipping-time">Sau 2-3 giờ (Hãy chú ý điện thoại vì sẽ có nhân viên điện)</div>
+                            </div>
+                            <div class="shipping-price">Miễn phí</div>
+                        </label>
+                        <label class="shipping-option">
                             <input type="radio" name="shipping" value="fast">
                             <div class="shipping-info">
                                 <div class="shipping-name">Giao hàng nhanh</div>
@@ -917,7 +921,7 @@
                 <input type="hidden" name="subtotal" id="subtotalVal" th:value="${subtotal?:0}">
                 <input type="hidden" name="discount" id="discountVal" th:value="${discount?:0}">
                 <input type="hidden" name="shippingFee" id="shippingVal" th:value="${shippingFee?:0}">
-                <input type="hidden" name="shippingName" id="shippingName" th:value="${shippingName?:0}">
+                <input type="hidden" name="shippingName" id="shippingNameVal" th:value="${shippingName?:0}">
                 <input type="hidden" name="tax" id="taxVal" th:value="${tax?:0}">
                 <input type="hidden" name="total" id="totalVal" th:value="${total?:0}">
                 <input type="hidden" name="couponCode" id="couponCodeVal" th:value="${couponCode?:''}">
@@ -933,243 +937,8 @@
                 </div>
             </div>
         </div>
-        </div>
     </form>
 </div>
 <script defer type="module"  th:src="@{/js/checkout.js}"></script>
-
-<script th:inline="javascript">
-    /*<![CDATA[*/
-
-    // Payment method selection (Giữ nguyên)
-    document.querySelectorAll('.payment-option').forEach(option => {
-        option.addEventListener('click', function() {
-            document.querySelectorAll('.payment-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            this.classList.add('selected');
-            this.querySelector('input[type="radio"]').checked = true;
-        });
-    });
-
-    // ===================================================================
-    //  LOGIC CẬP NHẬT GIÁ CHO "MUA NGAY"
-    //  (Toàn bộ script này giữ nguyên, nó đã đúng)
-    // ===================================================================
-
-    // Khởi tạo các giá trị cơ sở từ Model (do Controller truyền sang)
-    const IS_BUY_NOW = /*[[${isBuyNow}]]*/ false;
-    const BASE_SUBTOTAL = /*[[${subtotal ?: 0}]]*/ 0;
-    const IS_NOT_NEW_MEMBER = /*[[${isNotNewMember ?: true}]]*/ true;
-    const VAT_RATE = 0.1; // 10% VAT (phải khớp với controller)
-
-    /**
-     * Hàm định dạng số thành tiền tệ VND.
-     */
-    function formatCurrency(num) {
-        if (typeof num !== 'number') {
-            num = 0;
-        }
-        return num.toLocaleString('vi-VN') + ' ₫';
-    }
-
-    /**
-     * Tính giảm giá từ mã coupon (logic sao chép từ cart.html)
-     */
-    function calculateCouponDiscount(subtotal, couponCode) {
-        if (!couponCode) return 0;
-
-        switch (couponCode.trim().toUpperCase()) {
-            case 'NEWMEMBER20':
-                // Giảm 20%
-                return Math.floor(subtotal * 0.20);
-            case 'FREESHIP':
-                // Mã này không giảm tiền hàng, sẽ được xử lý ở phí ship
-                return 0;
-            // Thêm các mã giảm giá khác của bạn ở đây
-            default:
-                return 0;
-        }
-    }
-
-    /**
-     * Hàm tính toán và cập nhật lại toàn bộ Bảng tóm tắt đơn hàng
-     */
-    function updateFinalSummary() {
-        // Lấy các element HIỂN THỊ
-        const subtotalEl = document.getElementById('subtotalDisplay');
-        const discountEl = document.getElementById('discountDisplay');
-        const shippingEl = document.getElementById('shippingDisplay');
-        const totalEl = document.getElementById('totalDisplay');
-        const taxEl = document.getElementById('taxDisplay');
-        const shippingNameEl = document.getElementById('shippingNameDisplay');
-        const couponEl = document.getElementById('couponDisplay');
-
-        // Lấy các INPUT ẨN (để submit form)
-        const subtotalInput = document.getElementById('subtotalVal');
-        const discountInput = document.getElementById('discountVal');
-        const shippingInput = document.getElementById('shippingVal');
-        const shippingNameInput = document.getElementById('shippingName');
-        const totalInput = document.getElementById('totalVal');
-        const taxInput = document.getElementById('taxVal');
-        const couponInputHidden = document.getElementById('couponCodeVal');
-
-        // Lấy element nhập mã coupon
-        const couponInput = document.getElementById('couponInput');
-
-        // === BƯỚC 1: LẤY CÁC GIÁ TRỊ CƠ SỞ ===
-        const subtotal = BASE_SUBTOTAL;
-        let couponCode = couponInput ? couponInput.value.trim().toUpperCase() : (couponInputHidden ? couponInputHidden.value : '');
-
-        // Cập nhật Tạm tính (luôn luôn)
-        if (subtotalEl) subtotalEl.textContent = formatCurrency(subtotal);
-        if (subtotalInput) subtotalInput.value = subtotal;
-
-        // === BƯỚC 2: KIỂM TRA ĐIỀU KIỆN VOUCHER ===
-        const newMemberVoucher = document.getElementById('voucher-newmember');
-        const newMemberRadio = document.getElementById('radio-newmember');
-
-        if (newMemberVoucher && newMemberRadio) {
-            if (IS_NOT_NEW_MEMBER) {
-                newMemberVoucher.classList.add('voucher-disabled');
-                newMemberRadio.disabled = true;
-                if (couponCode === 'NEWMEMBER20') {
-                    couponInput.value = '';
-                    newMemberRadio.checked = false;
-                    couponCode = '';
-                }
-            } else {
-                newMemberVoucher.classList.remove('voucher-disabled');
-                newMemberRadio.disabled = false;
-            }
-        }
-
-        // --- 2.2 Tính giảm giá (để kiểm tra FREESHIP) ---
-        const discountAmount = calculateCouponDiscount(subtotal, couponCode);
-        const subtotalAfterDiscount = subtotal - discountAmount;
-
-        // --- 2.3 Kiểm tra FREESHIP ---
-        const freeshipVoucher = document.getElementById('voucher-freeship');
-        const freeshipRadio = document.getElementById('radio-freeship');
-
-        if (freeshipVoucher && freeshipRadio) {
-            if (subtotalAfterDiscount < 10000000) { // 10 triệu
-                freeshipVoucher.classList.add('voucher-disabled');
-                freeshipRadio.disabled = true;
-                if (couponCode === 'FREESHIP') {
-                    couponInput.value = '';
-                    freeshipRadio.checked = false;
-                    updateFinalSummary();
-                    return;
-                }
-            } else {
-                freeshipVoucher.classList.remove('voucher-disabled');
-                freeshipRadio.disabled = false;
-            }
-        }
-
-        // === BƯỚC 3: TÍNH TOÁN CÁC GIÁ TRỊ CUỐI CÙNG ===
-
-        // --- 3.1 Giảm giá ---
-        if (discountEl) discountEl.textContent = '- ' + formatCurrency(discountAmount);
-        if (discountInput) discountInput.value = discountAmount;
-        if (couponEl) couponEl.textContent = couponCode || 'Không có';
-        if (couponInputHidden) couponInputHidden.value = couponCode;
-
-        // --- 3.2 Phí vận chuyển ---
-        const shippingRadio = document.querySelector('input[name="shipping"]:checked');
-        let shippingFee = 0;
-        let shippingName = 'Giao hàng tiêu chuẩn'; // Mặc định
-        if (shippingRadio) {
-            const option = shippingRadio.closest('.shipping-option');
-            shippingName = option.querySelector('.shipping-name').textContent.trim();
-            const shippingPriceText = option.querySelector('.shipping-price').textContent;
-            if (shippingPriceText !== 'Miễn phí') {
-                shippingFee = parseInt(shippingPriceText.replace(/[^0-9]/g, ''), 10);
-            }
-        }
-
-        // Áp dụng FREESHIP (nếu còn hợp lệ)
-        if (couponCode === 'FREESHIP' && (subtotal - discountAmount) >= 10000000) {
-            shippingFee = 0;
-        }
-
-        if (shippingEl) shippingEl.textContent = (shippingFee === 0) ? 'Miễn phí' : formatCurrency(shippingFee);
-        if (shippingNameEl) shippingNameEl.textContent = shippingName;
-        if (shippingInput) shippingInput.value = shippingFee;
-        if (shippingNameInput) shippingNameInput.value = shippingName;
-
-        // --- 3.3 Thuế VAT ---
-        const taxAmount = Math.floor(subtotal * VAT_RATE);
-        if (taxEl) taxEl.textContent = formatCurrency(taxAmount);
-        if (taxInput) taxInput.value = taxAmount;
-
-        // --- 3.4 Tổng cộng ---
-        const finalTotal = (subtotal - discountAmount) + shippingFee + taxAmount;
-        const finalTotalNonNegative = finalTotal < 0 ? 0 : finalTotal;
-        if (totalEl) totalEl.textContent = formatCurrency(finalTotalNonNegative);
-        if (totalInput) totalInput.value = finalTotalNonNegative;
-    }
-
-
-    // ===================================================================
-    //  KHỞI CHẠY VÀ GẮN SỰ KIỆN
-    // ===================================================================
-    document.addEventListener('DOMContentLoaded', function() {
-
-        // Logic chọn payment (luôn chạy, giữ nguyên)
-        document.querySelectorAll('.payment-option').forEach(option => {
-            option.addEventListener('click', function() {
-                document.querySelectorAll('.payment-option').forEach(opt => {
-                    opt.classList.remove('selected');
-                });
-                this.classList.add('selected');
-                this.querySelector('input[type="radio"]').checked = true;
-            });
-        });
-
-        // Chỉ chạy logic tính toán động nếu là trang "MUA NGAY"
-        if (IS_BUY_NOW) {
-            // 1. Tính toán tổng tiền lần đầu khi tải trang
-            updateFinalSummary();
-
-            // 2. Gắn sự kiện cho các lựa chọn VẬN CHUYỂN
-            document.querySelectorAll('input[name="shipping"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    updateFinalSummary();
-                });
-            });
-
-            // 3. Gắn sự kiện cho các lựa chọn VOUCHER (radio)
-            document.querySelectorAll('input[name="voucher"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    const voucherCode = this.value;
-                    document.getElementById('couponInput').value = voucherCode;
-                    updateFinalSummary();
-                });
-            });
-
-            // 4. Gắn sự kiện cho nút "Áp dụng" (button)
-            const applyBtn = document.getElementById('applyCouponBtn');
-            if (applyBtn) {
-                applyBtn.addEventListener('click', function(e) {
-                    e.preventDefault(); // Ngăn submit form
-                    updateFinalSummary();
-                });
-            }
-
-            // 5. Gắn sự kiện Enter cho ô input coupon
-            const couponInputEl = document.getElementById('couponInput');
-            if (couponInputEl) {
-                couponInputEl.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault(); // Ngăn form submit
-                        updateFinalSummary();
-                    }
-                });
-            }
-        }
-    });
-</script>
 </body>
 </html>

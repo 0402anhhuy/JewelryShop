@@ -28,16 +28,14 @@ public class CartController {
     private final ProductService productService;
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
-    private final AddressRepository addressRepository;
+    private final AddressService addressService;
     private final OrderItemRepository orderItemRepository;
     private final CartItemRepository cartItemRepository;
     private final OrderService orderService;
     private final CartItemService cartItemService;
     private final VNPayService vnPayService;
     private final MomoService momoService;
-    private static final double VAT_RATE = 0.1;     // 3% VAT
-    private static final long SHIP_BASE = 50000;       // Phí ship mặc định
-    private static final long FREESHIP_MIN = 10000000;  // Miễn ship nếu tạm tính >= 1,000,000đ
+    private static final double VAT_RATE = 0.1;
 
     // ===== Hiển thị giỏ hàng =====
     @GetMapping("/cart")
@@ -293,29 +291,17 @@ public class CartController {
         }
         User user = userRepository.findByEmail(auth.getName()).orElse(null);
         List<CartItem> allItems = cartItemRepository.findAllByCart_CartId(id);
-
+        List<Address> allAddress = addressService.getAddressesByUser(user);
         // Chỉ lấy các sản phẩm ĐƯỢC CHỌN để thanh toán
         List<CartItem> selectedItems = allItems.stream()
                 .filter(CartItem::isSelected)
                 .collect(Collectors.toList());
 
-        // Tính toán tổng tiền ban đầu (dựa trên logic đã sửa ở getCartPage)
-        long subtotal = selectedItems.stream()
-                .mapToLong(item -> {
-                    Product p = item.getProduct();
-                    long price = p.getPrice() != null ? p.getPrice() : 0;
-                    int originalDiscount = p.getDiscount() != null ? p.getDiscount() : 0;
-                    int discountPercent = Math.min(originalDiscount, 100);
-                    int quantity = item.getQuantity() != null ? item.getQuantity() : 1;
-                    long finalPrice = price - (price * discountPercent / 100);
-                    return finalPrice * quantity;
-                })
-                .sum();
-
         model.addAttribute("isBuyNow", false); //
         model.addAttribute("carts", selectedItems); // Chỉ gửi các sản phẩm được chọn
         model.addAttribute("user", user);
         model.addAttribute("cartId", id);
+        model.addAttribute("allAddress", allAddress);
 
         return "client_1/product/checkout";
     }
@@ -352,10 +338,10 @@ public class CartController {
 
         long subtotal = finalPrice; // Vì số lượng là 1
         long discount = 0; // Ban đầu không giảm giá
-        long shipping = calculateShipping(subtotal, null); // Phí ship mặc định
+        long shipping = 0; // Phí ship mặc định
         long tax = calculateTax(subtotal);
         long total = subtotal + shipping + tax;
-        String shippingName = "Giao hàng tiêu chuẩn"; // ✅ Tên ship mặc định
+        String shippingName = ""; // ✅ Tên ship mặc định
         if (shipping == 0) {
             // Có thể là freeship do subtotal >= FREESHIP_MIN
             shippingName = "Giao hàng tiêu chuẩn";
@@ -384,7 +370,7 @@ public class CartController {
 
         if (errors.hasErrors()) {
             // (Giữ nguyên logic xử lý lỗi của bạn)
-            model.addAttribute("coupon", form.getCoupon());
+            model.addAttribute("coupon", form.getCouponCode());
             model.addAttribute("paymentMethod", form.getPaymentMethod());
             model.addAttribute("receiver", form);
             return "client_1/product/checkout";
@@ -393,17 +379,17 @@ public class CartController {
         User user = userRepository.findByEmail(auth.getName()).orElse(null);
         if (user == null) throw new IllegalStateException("Người dùng không tồn tại!");
 
-        // (Giữ nguyên logic lưu địa chỉ)
-        Address address = new Address();
-        address.setUser(user);
-        address.setReceiverName(form.getReceiverName());
-        address.setPhone(form.getReceiverPhone());
-        address.setAddressLine(form.getAddressLine());
-        address.setCity(form.getProvince());
-        address.setDistrict(form.getDistrict());
-        address.setWard(form.getWard());
-        address.setIsDefault(false);
-        addressRepository.save(address);
+//        // (Giữ nguyên logic lưu địa chỉ)
+//        Address address = new Address();
+//        address.setUser(user);
+//        address.setReceiverName(form.getReceiverName());
+//        address.setPhone(form.getReceiverPhone());
+//        address.setAddressLine(form.getAddressLine());
+//        address.setCity(form.getProvince());
+//        address.setDistrict(form.getDistrict());
+//        address.setWard(form.getWard());
+//        address.setIsDefault(false);
+//        addressRepository.save(address);
 
         // Tạo đơn hàng (nhưng chưa set tổng tiền vội)
         Order order = new Order();
@@ -472,6 +458,9 @@ public class CartController {
 
         orderItemRepository.saveAll(items);
         order.setItems(items);
+        if(form.getShippingName().equalsIgnoreCase("Nhận tại cửa hàng")){
+            order.setShippingMethod(Order.ShippingMethod.STORE_PICKUP);
+        }
 
         // TỔNG TIỀN CUỐI CÙNG (do server tính, bỏ qua form.getTotal())
         long totalAmount = form.getTotal();
@@ -512,38 +501,6 @@ public class CartController {
             return "redirect:/"; // Chuyển hướng về trang chủ (hoặc trang cảm ơn)
         }
     }
-
-
-    // --- CÁC HÀM HELPER TÍNH TOÁN (PRIVATE) ---
-
-    /**
-     * Tính giảm giá từ mã coupon (Logic khớp với checkout.js)
-     */
-    private long calculateCouponDiscount(long subtotal, String couponCode) {
-        if (couponCode == null || couponCode.trim().isEmpty()) return 0;
-        String code = couponCode.trim().toUpperCase();
-        switch (code) {
-            case "GIAM5":
-                return (long) Math.floor(subtotal * 0.05);
-            case "FIX50K":
-                return Math.min(50000, subtotal);
-            case "FREESHIP":
-                return 0; // Được xử lý ở hàm shipping
-            default:
-                return 0;
-        }
-    }
-
-    /**
-     * Tính phí vận chuyển (Logic khớp với checkout.js)
-     */
-    private long calculateShipping(long baseAmount, String couponCode) {
-        String code = (couponCode == null) ? "" : couponCode.trim().toUpperCase();
-        if (baseAmount >= FREESHIP_MIN) return 0; // Miễn ship nếu đạt ngưỡng
-        if ("FREESHIP".equals(code)) return 0; // Miễn ship nếu dùng code
-        return SHIP_BASE;
-    }
-
     /**
      * Tính thuế VAT (Logic khớp với checkout.js)
      */

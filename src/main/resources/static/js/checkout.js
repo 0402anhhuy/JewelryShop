@@ -1,128 +1,264 @@
+// TRONG FILE: checkout.js
+
 import { initAddressPicker } from './addressPicker.js';
-(function(){
-    // --- Cấu hình chung ---
-    const VAT_RATE = 0.10;               // 10% VAT
-    const SHIP_BASE = 30000;             // phí ship mặc định
-    const FREESHIP_MIN = 1000000;        // miễn ship nếu tạm tính >= 1,000,000đ
 
-    // --- Helper định dạng ---
-    function formatVND(n){
-    try {
-    return new Intl.NumberFormat('vi-VN').format(Math.round(n)) + ' đ';
-} catch(e){
-    // fallback
-    return (Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ' đ';
-}
-}
+// === TOÀN BỘ LOGIC TÍNH TOÁN ĐƯỢC DI CHUYỂN VÀO ĐÂY ===
 
-    // --- Đọc danh sách item để tính subtotal ---
-    function getSubtotal(){
-    const rows = document.querySelectorAll('#checkoutItems .list-group-item[data-price][data-qty]');
-    let sum = 0;
-    rows.forEach(r=>{
-    const price = Number(r.getAttribute('data-price')) || 0;
-    const qty   = Number(r.getAttribute('data-qty'))   || 0;
-    sum += price * qty;
-});
-    return sum;
+// Khởi tạo các biến toàn cục (sẽ được gán giá trị khi DOM load)
+let IS_BUY_NOW = false;
+let BASE_SUBTOTAL = 0;
+let IS_NOT_NEW_MEMBER = true;
+const VAT_RATE = 0.1; // 10% VAT (phải khớp với controller)
+
+/**
+ * Hàm định dạng số thành tiền tệ VND.
+ */
+function formatCurrency(num) {
+    if (typeof num !== 'number') {
+        num = 0;
+    }
+    return num.toLocaleString('vi-VN') + ' đ';
 }
 
-    // --- Tính giảm giá từ mã coupon ---
-    function calcDiscount(subtotal, couponCode){
-    if(!couponCode) return 0;
-    const code = couponCode.trim().toUpperCase();
+/**
+ * Tính giảm giá từ mã coupon (logic sao chép từ cart.html)
+ */
+function calculateCouponDiscount(subtotal, couponCode) {
+    if (!couponCode) return 0;
 
-    // Ví dụ rule:
-    // GIAM5   => giảm 5% trên subtotal
-    // FIX50K  => giảm 50,000đ
-    // FREESHIP=> không giảm tiền hàng, nhưng sẽ miễn phí ship (xử lý dưới)
-    switch(code){
-    case 'GIAM5':
-    return Math.floor(subtotal * 0.05);
-    case 'FIX50K':
-    return Math.min(50000, subtotal);
-    case 'FREESHIP':
-    return 0;
-    default:
-    return 0;
-}
+    switch (couponCode.trim().toUpperCase()) {
+        case 'NEWMEMBER20':
+            // Giảm 20%
+            return Math.floor(subtotal * 0.20);
+        case 'FREESHIP':
+            // Mã này không giảm tiền hàng, sẽ được xử lý ở phí ship
+            return 0;
+        // Thêm các mã giảm giá khác của bạn ở đây
+        default:
+            return 0;
+    }
 }
 
-    // --- Tính phí ship (có ưu đãi) ---
-    function calcShipping(subtotal, discount, couponCode){
-    // Miễn ship nếu vượt ngưỡng hoặc dùng FREESHIP
-    const code = (couponCode||'').trim().toUpperCase();
-    if(subtotal >= FREESHIP_MIN) return 0;
-    if(code === 'FREESHIP') return 0;
-    return SHIP_BASE;
-}
+/**
+ * Hàm tính toán và cập nhật lại toàn bộ Bảng tóm tắt đơn hàng
+ */
+function updateFinalSummary() {
+    // Lấy các element HIỂN THỊ
+    const subtotalEl = document.getElementById('subtotalDisplay');
+    const discountEl = document.getElementById('discountDisplay');
+    const shippingEl = document.getElementById('shippingDisplay');
+    const totalEl = document.getElementById('totalDisplay');
+    const taxEl = document.getElementById('taxDisplay');
+    const shippingNameEl = document.getElementById('shippingNameDisplay');
+    const couponEl = document.getElementById('couponDisplay');
 
-    // --- Tính VAT trên (subtotal - discount) ---
-    function calcTax(subtotal, discount){
-    const base = Math.max(0, subtotal - discount);
-    return Math.floor(base * VAT_RATE);
-}
+    // Lấy các INPUT ẨN (để submit form)
+    const subtotalInput = document.getElementById('subtotalVal');
+    const discountInput = document.getElementById('discountVal');
+    const shippingInput = document.getElementById('shippingVal');
+    const shippingNameInput = document.getElementById('shippingNameVal');
+    const totalInput = document.getElementById('totalVal');
+    const taxInput = document.getElementById('taxVal');
+    const couponInputHidden = document.getElementById('couponCodeVal');
 
-    // --- Cập nhật UI + input ẩn ---
-    function updateUI({subtotal, discount, shipping, tax, total}){
-    // Text
-    const $ = id => document.getElementById(id);
-    if($('subtotalText')) $('subtotalText').innerText = formatVND(subtotal);
-    if($('discountText')) $('discountText').innerText = formatVND(discount);
-    if($('shippingText')) $('shippingText').innerText = formatVND(shipping);
-    if($('taxText'))      $('taxText').innerText      = formatVND(tax);
-    if($('totalText'))    $('totalText').innerText    = formatVND(total);
-
-    // Hidden values để submit server
-    if($('subtotalVal')) $('subtotalVal').value = Math.round(subtotal);
-    if($('discountVal')) $('discountVal').value = Math.round(discount);
-    if($('shippingVal')) $('shippingVal').value = Math.round(shipping);
-    if($('taxVal'))      $('taxVal').value      = Math.round(tax);
-    if($('totalVal'))    $('totalVal').value    = Math.round(total);
-}
-
-    // --- Hàm tổng tính lại ---
-    function recalc(){
-    const subtotal = getSubtotal();
-    const couponCode = (document.getElementById('couponInput')?.value)||'';
-    const discount = calcDiscount(subtotal, couponCode);
-    const shipping = calcShipping(subtotal, discount, couponCode);
-    const tax      = calcTax(subtotal, discount);
-    const total    = Math.max(0, subtotal - discount) + shipping + tax;
-
-    updateUI({subtotal, discount, shipping, tax, total});
-}
-
-    // --- Gắn event ---
+    // Lấy element nhập mã coupon
     const couponInput = document.getElementById('couponInput');
-    const applyBtn    = document.getElementById('applyCouponBtn');
 
-    if(couponInput){
-    couponInput.addEventListener('input', recalc);
+    // === BƯỚC 1: LẤY CÁC GIÁ TRỊ CƠ SỞ ===
+    // (Sử dụng các biến toàn cục đã được gán)
+    const subtotal = BASE_SUBTOTAL;
+    let couponCode = couponInput ? couponInput.value.trim().toUpperCase() : (couponInputHidden ? couponInputHidden.value : '');
+
+    // Cập nhật Tạm tính (luôn luôn)
+    if (subtotalEl) subtotalEl.textContent = formatCurrency(subtotal);
+    if (subtotalInput) subtotalInput.value = subtotal;
+
+    // === BƯỚC 2: KIỂM TRA ĐIỀU KIỆN VOUCHER ===
+    const newMemberVoucher = document.getElementById('voucher-newmember');
+    const newMemberRadio = document.getElementById('radio-newmember');
+
+    if (newMemberVoucher && newMemberRadio) {
+        if (IS_NOT_NEW_MEMBER) {
+            newMemberVoucher.classList.add('voucher-disabled');
+            newMemberRadio.disabled = true;
+            if (couponCode === 'NEWMEMBER20') {
+                couponInput.value = '';
+                newMemberRadio.checked = false;
+                couponCode = '';
+            }
+        } else {
+            newMemberVoucher.classList.remove('voucher-disabled');
+            newMemberRadio.disabled = false;
+        }
+    }
+
+    // --- 2.2 Tính giảm giá (để kiểm tra FREESHIP) ---
+    const discountAmount = calculateCouponDiscount(subtotal, couponCode);
+    const subtotalAfterDiscount = subtotal - discountAmount;
+
+    // --- 2.3 Kiểm tra FREESHIP ---
+    const freeshipVoucher = document.getElementById('voucher-freeship');
+    const freeshipRadio = document.getElementById('radio-freeship');
+
+    if (freeshipVoucher && freeshipRadio) {
+        if (subtotalAfterDiscount < 10000000) { // 10 triệu
+            freeshipVoucher.classList.add('voucher-disabled');
+            freeshipRadio.disabled = true;
+            if (couponCode === 'FREESHIP') {
+                couponInput.value = '';
+                freeshipRadio.checked = false;
+                updateFinalSummary();
+                return;
+            }
+        } else {
+            freeshipVoucher.classList.remove('voucher-disabled');
+            freeshipRadio.disabled = false;
+        }
+    }
+
+    // === BƯỚC 3: TÍNH TOÁN CÁC GIÁ TRỊ CUỐI CÙNG ===
+
+    // --- 3.1 Giảm giá ---
+    if (discountEl) discountEl.textContent = '- ' + formatCurrency(discountAmount);
+    if (discountInput) discountInput.value = discountAmount;
+    if (couponEl) couponEl.textContent = couponCode || 'Không có';
+    if (couponInputHidden) couponInputHidden.value = couponCode;
+
+    // --- 3.2 Phí vận chuyển ---
+    const shippingRadio = document.querySelector('input[name="shipping"]:checked');
+    let shippingFee = parseInt(document.getElementById('shippingVal')?.value || '0', 10);
+    let shippingName = document.getElementById('shippingNameVal')?.value || 'Giao hàng tiêu chuẩn';
+
+    if (shippingRadio) {
+        const option = shippingRadio.closest('.shipping-option');
+        shippingName = option.querySelector('.shipping-name').textContent.trim();
+        const shippingPriceText = option.querySelector('.shipping-price').textContent;
+        if (shippingPriceText !== 'Miễn phí') {
+            shippingFee = parseInt(shippingPriceText.replace(/[^0-9]/g, ''), 10);
+        } else {
+            shippingFee = 0;
+        }
+    }
+
+    // Áp dụng FREESHIP (nếu còn hợp lệ)
+    if (couponCode === 'FREESHIP' && (subtotal - discountAmount) >= 10000000) {
+        shippingFee = 0;
+    }
+
+    if (shippingEl) shippingEl.textContent = (shippingFee === 0) ? 'Miễn phí' : formatCurrency(shippingFee);
+    if (shippingNameEl) shippingNameEl.textContent = shippingName;
+    if (shippingInput) shippingInput.value = shippingFee;
+    if (shippingNameInput) shippingNameInput.value = shippingName;
+
+    // --- 3.3 Thuế VAT ---
+    // (Sửa lỗi: Tính thuế trên subtotalAfterDiscount)
+    const taxAmount = Math.floor(subtotalAfterDiscount * VAT_RATE);
+    if (taxEl) taxEl.textContent = formatCurrency(taxAmount);
+    if (taxInput) taxInput.value = taxAmount;
+
+    // --- 3.4 Tổng cộng ---
+    const finalTotal = (subtotal - discountAmount) + shippingFee + taxAmount;
+    const finalTotalNonNegative = finalTotal < 0 ? 0 : finalTotal;
+    if (totalEl) totalEl.textContent = formatCurrency(finalTotalNonNegative);
+    if (totalInput) totalInput.value = finalTotalNonNegative;
 }
-    if(applyBtn){
-    applyBtn.addEventListener('click', recalc);
-}
 
-    // Nếu có gì đó thay đổi ở items (SPA/HTMX), bạn có thể gọi recalc() lại.
 
-    // Khởi tạo lần đầu
-    recalc();
-})();
-document.addEventListener('DOMContentLoaded', () => {
+// ===================================================================
+//  KHỞI CHẠY VÀ GẮN SỰ KIỆN
+// ===================================================================
+document.addEventListener('DOMContentLoaded', function() {
+
+    // --- BƯỚC 1: ĐỌC DỮ LIỆU TỪ "CẦU NỐI" HTML ---
+    const form = document.getElementById('checkout-form');
+    const dataset = form ? form.dataset : {};
+
+    // Gán giá trị từ DOM cho các biến toàn cục
+    IS_BUY_NOW = dataset.isBuyNow === 'true';
+    BASE_SUBTOTAL = parseInt(dataset.baseSubtotal || '0', 10);
+    IS_NOT_NEW_MEMBER = dataset.isNotNewMember === 'true';
+
+
+    // --- BƯỚC 2: GẮN LOGIC ADDRESS PICKER ---
     initAddressPicker({
         provinceEl: document.getElementById('addressProvince'),
         wardEl:     document.getElementById('addressWard'),
         streetEl:   document.getElementById('addressStreet'),
         addressEl:  document.getElementById('address'),
-
-        // Không dùng group nào thì cho null
         groupDistrict: null,
         groupWard:     null,
-
-        // GHI TÊN vào 3 input ẨN để submit
         provinceNameHidden: document.getElementById('provinceHidden'),
         districtNameHidden: document.getElementById('districtHidden'),
-        wardNameHidden:     document.getElementById('wardHidden'),
+        wardNameHidden:     document.getElementById('wardNameHidden'),
     });
+
+    // --- BƯỚC 3: GẮN LOGIC CỦA TRANG CHECKOUT ---
+
+    // Logic chọn payment
+    document.querySelectorAll('.payment-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.payment-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            this.classList.add('selected');
+            this.querySelector('input[type="radio"]').checked = true;
+        });
+    });
+
+    // Logic tự động check shipping (Đã sửa lỗi)
+    const initialShippingFee = parseInt(document.getElementById('shippingVal')?.value || '0', 10);
+    const initialShippingName = document.getElementById('shippingNameVal')?.value || 'Giao hàng tiêu chuẩn';
+
+    document.querySelectorAll('input[name="shipping"]').forEach(radio => {
+        const option = radio.closest('.shipping-option');
+        const priceText = option.querySelector('.shipping-price').textContent;
+        let price = 0;
+        if (priceText !== 'Miễn phí') {
+            price = parseInt(priceText.replace(/[^0-9]/g, ''), 10);
+        }
+        const optionName = option.querySelector('.shipping-name').textContent.trim();
+
+        if (price === initialShippingFee && optionName === initialShippingName) {
+            radio.checked = true;
+        }
+    });
+
+    // Tính toán lần đầu khi vào trang
+    updateFinalSummary();
+
+    // Gắn sự kiện cho radio shipping
+    document.querySelectorAll('input[name="shipping"]').forEach(radio => {
+        radio.addEventListener('change', updateFinalSummary);
+    });
+
+    // Chỉ riêng phần voucher/coupon mới cần IS_BUY_NOW
+    // (Vì khi mua từ giỏ hàng, logic này đã nằm ở cart.html)
+    if (IS_BUY_NOW) {
+        document.querySelectorAll('input[name="voucher"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                const voucherCode = this.value;
+                const couponInput = document.getElementById('couponInput');
+                if (couponInput) couponInput.value = voucherCode;
+                updateFinalSummary();
+            });
+        });
+
+        const applyBtn = document.getElementById('applyCouponBtn');
+        if (applyBtn) {
+            applyBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                updateFinalSummary();
+            });
+        }
+
+        const couponInputEl = document.getElementById('couponInput');
+        if (couponInputEl) {
+            couponInputEl.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    updateFinalSummary();
+                }
+            });
+        }
+    }
 });

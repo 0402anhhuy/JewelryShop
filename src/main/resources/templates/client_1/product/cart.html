@@ -484,9 +484,16 @@
 
         .price-row.shipping {
             color: #666;
-            border-bottom: 1px solid #eee;
             padding-bottom: 15px;
+        }
+        .price-row.shipping, .price-row.VAT {
+            color: #666;
+            padding-bottom: 15px; /* Giảm padding một chút */
+        }
+
+        .price-row.VAT {
             margin-bottom: 15px;
+            border-bottom: 1px solid #eee; /* Di chuyển border-bottom xuống đây */
         }
 
         .price-row.total {
@@ -825,6 +832,14 @@
                 <label class="shipping-option">
                     <input type="radio" name="shipping">
                     <div class="shipping-info">
+                        <div class="shipping-name">Nhận tại cửa hàng</div>
+                        <div class="shipping-time">Sau 2-3 giờ (Hãy chú ý điện thoại vì sẽ có nhân viên điện)</div>
+                    </div>
+                    <div class="shipping-price">Miễn phí</div>
+                </label>
+                <label class="shipping-option">
+                    <input type="radio" name="shipping">
+                    <div class="shipping-info">
                         <div class="shipping-name">Giao hàng nhanh</div>
                         <div class="shipping-time">1-2 ngày làm việc</div>
                     </div>
@@ -856,6 +871,10 @@
                 <span>Phí vận chuyển</span>
                 <span id="shippingFee">Miễn phí</span>
             </div>
+            <div class="price-row VAT">
+                <span>Thuế VAT(10%)</span>
+                <span id="VAT">Miễn phí</span>
+            </div>
             <div class="price-row total">
                 <span>Tổng cộng</span>
                 <span class="amount" id="total">0 đ</span>
@@ -882,7 +901,7 @@
 <script>
     // Biến toàn cục để lưu trữ tổng tiền mới nhất từ server
     let currentServerTotals = { subtotal: 0, total: 0, discount: 0 };
-
+    const VAT_RATE = 0.1;
     /**
      * Hàm định dạng số thành tiền tệ VND.
      */
@@ -982,6 +1001,7 @@
         const subtotalEl = document.getElementById('subtotal');
         const discountEl = document.getElementById('discount');
         const shippingEl = document.getElementById('shippingFee');
+        const vatEl = document.getElementById('VAT'); // Lấy element VAT
         const totalEl = document.getElementById('total');
         const couponInput = document.getElementById('couponInput');
 
@@ -1068,8 +1088,11 @@
 
         if (shippingEl) shippingEl.textContent = (shippingFee === 0) ? 'Miễn phí' : formatCurrency(shippingFee);
 
-        // --- 3.2 Tính Tổng cộng ---
-        const finalTotal = (subtotal - discountAmount) + shippingFee;
+        // --- 3.2 Tính VAT ---
+        const vatAmount = Math.floor(subtotalAfterDiscount * VAT_RATE);
+        if (vatEl) vatEl.textContent = formatCurrency(vatAmount);
+        // 3.3 Tính Tổng cộng
+        const finalTotal = (subtotal - discountAmount) + shippingFee + vatAmount;
         if (totalEl) totalEl.textContent = formatCurrency(finalTotal < 0 ? 0 : finalTotal);
     }
 

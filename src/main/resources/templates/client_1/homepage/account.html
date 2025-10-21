@@ -1386,7 +1386,7 @@
                             <small style="color: #999;" th:text="'Đặt ngày ' + ${#temporals.format(order.createdAt, 'dd/MM/yyyy')}">Đặt ngày 15/10/2024</small>
                         </div>
                         <span class="order-status" th:classappend="'status-' + ${order.status.name().toLowerCase()}"
-                              th:text="${order.statusDisplay}">Đang giao hàng
+                              th:text="${order.status}">Đang giao hàng
                         </span>
                     </div>
                     <div class="order-items" th:each="item : ${order.items}">
