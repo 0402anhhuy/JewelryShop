@@ -57,4 +57,50 @@ public final class OrderSpecs {
         // Lấy đến cuối ngày (23:59:59)
         return (root, query, cb) -> cb.lessThanOrEqualTo(root.get("createdAt"), toDate.atTime(23, 59, 59));
     }
+    public static Specification<Order> byKeyword(String keyword) {
+        if (!StringUtils.hasText(keyword)) {
+            return null; // Bỏ qua
+        }
+        return (root, query, cb) -> {
+            String likePattern = "%" + keyword.toLowerCase() + "%";
+
+            // Phải join với bảng User để tìm kiếm
+            // "user" là tên thuộc tính (field) trong Entity Order
+            var userJoin = root.join("user");
+
+            // Tìm kiếm trên fullName hoặc phone
+            return cb.or(
+                    cb.like(cb.lower(userJoin.get("fullName")), likePattern),
+                    cb.like(userJoin.get("phone"), likePattern) // Giả sử phone đã là chuỗi
+            );
+        };
+    }
+
+    /**
+     * Lọc theo Tháng của ngày tạo (createdAt).
+     * Bỏ qua nếu month là null.
+     */
+    public static Specification<Order> byMonth(Integer month) {
+        if (month == null) {
+            return null;
+        }
+        return (root, query, cb) -> cb.equal(
+                cb.function("MONTH", Integer.class, root.get("createdAt")),
+                month
+        );
+    }
+
+    /**
+     * Lọc theo Năm của ngày tạo (createdAt).
+     * Bỏ qua nếu year là null.
+     */
+    public static Specification<Order> byYear(Integer year) {
+        if (year == null) {
+            return null;
+        }
+        return (root, query, cb) -> cb.equal(
+                cb.function("YEAR", Integer.class, root.get("createdAt")),
+                year
+        );
+    }
 }

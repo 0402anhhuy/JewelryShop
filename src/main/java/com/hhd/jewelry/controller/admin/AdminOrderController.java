@@ -4,9 +4,11 @@ import com.hhd.jewelry.entity.Order;
 import com.hhd.jewelry.repository.OrderRepository;
 import com.hhd.jewelry.repository.ShipperRepository;
 import com.hhd.jewelry.service.OrderExportService;
+import com.hhd.jewelry.service.specification.OrderSpecs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayInputStream;
+import java.time.LocalDate;
 
 @Controller
 @RequestMapping("/admin/orders")
@@ -37,45 +40,30 @@ public class AdminOrderController {
     ) {
         int pageSize = 5;
         Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "id"));
-        var allOrders = orderRepo.findAll(pageable);
 
-        // ✅ Lọc theo từ khóa
-        var filtered = allOrders.getContent().stream()
-                .filter(o -> {
-                    boolean match = true;
+        LocalDate from = null;
+        if (fromDate != null && !fromDate.isBlank()) {
+            try { from = LocalDate.parse(fromDate); } catch (Exception e) {}
+        }
 
-                    // Lọc keyword (tên, sđt)
-                    if (keyword != null && !keyword.isBlank()) {
-                        String lower = keyword.toLowerCase();
-                        match &= o.getUser() != null && (
-                                (o.getUser().getFullName() != null && o.getUser().getFullName().toLowerCase().contains(lower)) ||
-                                        (o.getUser().getPhone() != null && o.getUser().getPhone().toLowerCase().contains(lower))
-                        );
-                    }
+        LocalDate to = null;
+        if (toDate != null && !toDate.isBlank()) {
+            try { to = LocalDate.parse(toDate); } catch (Exception e) {}
+        }
 
-                    // Lọc theo ngày cụ thể
-                    if (fromDate != null && !fromDate.isBlank()) {
-                        var start = java.time.LocalDate.parse(fromDate);
-                        match &= !o.getCreatedAt().toLocalDate().isBefore(start);
-                    }
-                    if (toDate != null && !toDate.isBlank()) {
-                        var end = java.time.LocalDate.parse(toDate);
-                        match &= !o.getCreatedAt().toLocalDate().isAfter(end);
-                    }
+        // ✅ Kết hợp các Specification
+        // Bắt đầu với một Specification không làm gì cả (luôn đúng)
+        Specification<Order> spec = Specification.not(null);
 
-                    // Lọc theo tháng/năm
-                    if (month != null) {
-                        match &= o.getCreatedAt().getMonthValue() == month;
-                    }
-                    if (year != null) {
-                        match &= o.getCreatedAt().getYear() == year;
-                    }
+        // Nối các điều kiện (các hàm Specs trả về null sẽ tự động bị bỏ qua)
+        spec = spec.and(OrderSpecs.byKeyword(keyword));
+        spec = spec.and(OrderSpecs.byFromDate(from));
+        spec = spec.and(OrderSpecs.byToDate(to));
+        spec = spec.and(OrderSpecs.byMonth(month));
+        spec = spec.and(OrderSpecs.byYear(year));
 
-                    return match;
-                })
-                .toList();
-
-        Page<Order> orderPage = new PageImpl<>(filtered, pageable, filtered.size());
+        // ✅ Gọi repo với Specification
+        Page<Order> orderPage = orderRepo.findAll(spec, pageable);
 
         model.addAttribute("orders", orderPage.getContent());
         model.addAttribute("currentPage", page);
