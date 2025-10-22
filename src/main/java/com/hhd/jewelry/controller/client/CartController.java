@@ -346,6 +346,7 @@ public class CartController {
             // Có thể là freeship do subtotal >= FREESHIP_MIN
             shippingName = "Giao hàng tiêu chuẩn";
         }
+        List<Address> allAddress = addressService.getAddressesByUser(user);
         model.addAttribute("isBuyNow", true);
         model.addAttribute("carts", List.of(item));
         model.addAttribute("serialNumber", serialNumber);
@@ -357,7 +358,7 @@ public class CartController {
         model.addAttribute("shippingName", shippingName);
         model.addAttribute("tax", tax);
         model.addAttribute("total", total);
-
+        model.addAttribute("allAddress", allAddress);
         return "client_1/product/checkout";
     }
 
