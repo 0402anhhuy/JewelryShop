@@ -32,12 +32,12 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Trạng thái đơn hàng</label>
                         <select class="form-select" name="status" id="statusSelect" th:field="*{status}" onchange="handleStatusChange()">
-                            <option value="PENDING">Chờ xử lý</option>
-                            <option value="PAID">Đã thanh toán</option>
+                            <option value="PENDING">Chờ xác nhận</option>
+                            <option value="PAID">Đang xử lý</option>
                             <option value="SHIPPING">Đang giao</option>
-                            <option value="COMPLETED">Hoàn tất</option>
+                            <option value="DELIVERED">Hoàn tất</option>
                             <option value="CANCELLED">Đã hủy</option>
-                            <option value="CANCELLED">Trả hàng</option>
+                            <option value="RETURNED">Trả hàng</option>
                         </select>
                     </div>
 
