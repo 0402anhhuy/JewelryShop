@@ -4,6 +4,7 @@ import com.hhd.jewelry.entity.User;
 import com.hhd.jewelry.repository.UserRepository;
 import com.hhd.jewelry.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -13,6 +14,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public Optional<User> findByEmail(String email) {
@@ -47,5 +49,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public void delete(User user) {
         userRepository.delete(user);
+    }
+
+    @Override
+    public void updatePassword(String email, String rawPassword) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setPasswordHash(passwordEncoder.encode(rawPassword));
+            userRepository.save(user);
+        } else {
+            throw new RuntimeException("Không tìm thấy người dùng với email: " + email);
+        }
     }
 }

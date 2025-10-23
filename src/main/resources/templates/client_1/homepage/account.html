@@ -1797,10 +1797,12 @@
                 </a>
             </li>
             <li class="menu-item">
-                <a href="#" class="menu-link logout" th:href="@{/logout}" onclick="return confirm('Bạn có chắc muốn đăng xuất?')">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Đăng xuất</span>
-                </a>
+                <form th:action="@{/logout}" method="post" style="margin:0;">
+                    <button type="submit" class="menu-link logout-link" onclick="return confirm('Bạn có chắc muốn đăng xuất?')">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Đăng xuất</span>
+                    </button>
+                </form>
             </li>
         </ul>
     </aside>
@@ -2137,7 +2139,58 @@
                 </div>
             </div>
         </section>
+        <!-- Change Password Section -->
+        <section class="content-section" id="password">
+            <div class="section-header">
+                <h2 class="section-title">Đổi Mật Khẩu</h2>
+            </div>
 
+            <form th:action="@{/account/change-password-otp}" method="post" id="changePasswordForm">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <!-- Email + OTP on same line -->
+                <div class="form-group" style="display:flex; gap:10px; align-items:flex-end;">
+                    <div style="flex:1; display:flex; flex-direction:column;">
+                        <label>Email đã đăng ký</label>
+                        <!-- prefill từ user, cho phép chỉnh nếu muốn -->
+                        <input type="email"
+                               id="emailInput"
+                               name="email"
+                               class="form-input"
+                               th:value="${user?.email}"
+                               placeholder="Nhập email"
+                               required>
+                    </div>
+
+                    <!-- nút OTP nằm cùng hàng -->
+                    <div style="align-self:flex-end;">
+                        <button type="button" id="sendOtpBtn" class="btn btn-primary">Gửi OTP</button>
+                    </div>
+                </div>
+
+                <!-- OTP -->
+                <div class="form-group">
+                    <label>Nhập OTP</label>
+                    <input type="text" id="otpInput" name="otp" class="form-input" placeholder="Nhập mã OTP" required>
+                </div>
+
+                <!-- New password -->
+                <div class="form-group">
+                    <label>Mật khẩu mới</label>
+                    <input type="password" id="newPasswordInput" name="newPassword" class="form-input" placeholder="Nhập mật khẩu mới" required>
+                </div>
+
+                <!-- Confirm password -->
+                <div class="form-group">
+                    <label>Xác nhận mật khẩu mới</label>
+                    <input type="password" id="confirmPasswordInput" class="form-input" placeholder="Xác nhận mật khẩu mới" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="verifyOtpBtn" class="btn btn-success">Đổi mật khẩu</button>
+                </div>
+            </form>
+        </section>
         <!-- Wishlist Section -->
         <section class="content-section" id="wishlist">
             <div class="section-header">
@@ -3870,6 +3923,96 @@
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
             closeOrderDetailModal();
+        }
+    });
+
+    // ======= CHANGE PASSWORD WITH OTP =======
+    // Gửi OTP (giữ nguyên logic hiện tại)
+    document.getElementById('sendOtpBtn')?.addEventListener('click', async function () {
+        const email = document.getElementById('emailInput').value.trim();
+        if (!email) {
+            showToast('warning', 'Thiếu thông tin', 'Vui lòng nhập email trước khi gửi OTP.');
+            return;
+        }
+
+        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        showToast('info', 'Đang gửi', 'Hệ thống đang gửi mã OTP đến email của bạn.');
+
+        try {
+            const response = await fetch('/account/request-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    [header]: token
+                },
+                body: new URLSearchParams({ email })
+            });
+
+            const result = await response.text();
+
+            if (result === 'OK') {
+                showToast('success', 'Thành công', 'Mã OTP đã được gửi đến email của bạn.');
+            } else if (result === 'NOT_FOUND') {
+                showToast('error', 'Không tìm thấy', 'Email này chưa được đăng ký trong hệ thống.');
+            } else if (result === 'INVALID_EMAIL') {
+                showToast('warning', 'Email không hợp lệ', 'Vui lòng nhập địa chỉ email hợp lệ.');
+            } else {
+                showToast('error', 'Thất bại', 'Không thể gửi OTP. Vui lòng thử lại.');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('error', 'Lỗi kết nối', 'Không thể kết nối đến máy chủ.');
+        }
+    });
+
+    // Xác minh OTP + kiểm tra confirm password
+    document.getElementById('verifyOtpBtn')?.addEventListener('click', async function () {
+        const email = document.getElementById('emailInput').value.trim();
+        const otp = document.getElementById('otpInput').value.trim();
+        const newPassword = document.getElementById('newPasswordInput').value.trim();
+        const confirmPassword = document.getElementById('confirmPasswordInput').value.trim();
+
+        if (!email || !otp || !newPassword || !confirmPassword) {
+            showToast('warning', 'Thiếu thông tin', 'Vui lòng nhập đủ Email, OTP, Mật khẩu và Xác nhận mật khẩu.');
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            showToast('warning', 'Không khớp', 'Mật khẩu mới và xác nhận mật khẩu không khớp.');
+            return;
+        }
+
+        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        showToast('info', 'Đang xác minh', 'Vui lòng chờ trong giây lát...');
+
+        try {
+            const response = await fetch('/account/verify-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    [header]: token
+                },
+                body: new URLSearchParams({ email, otp, newPassword })
+            });
+
+            const result = await response.text();
+
+            if (result === 'SUCCESS') {
+                showToast('success', 'Thành công', 'Mật khẩu đã được đổi thành công!');
+                setTimeout(() => window.location.href = '/login', 1500);
+            } else if (result === 'INVALID') {
+                showToast('error', 'Sai OTP', 'Mã OTP không hợp lệ hoặc đã hết hạn.');
+            } else if (result === 'NOT_FOUND') {
+                showToast('error', 'Không tìm thấy', 'Email không tồn tại trong hệ thống.');
+            } else {
+                showToast('error', 'Lỗi', 'Không thể đổi mật khẩu. Vui lòng thử lại.');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('error', 'Lỗi kết nối', 'Không thể kết nối tới máy chủ.');
         }
     });
 </script>
