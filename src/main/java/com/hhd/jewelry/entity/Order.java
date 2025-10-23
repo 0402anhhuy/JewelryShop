@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -36,7 +37,12 @@ public class Order {
     // 🔹 Trạng thái đơn hàng
     @Enumerated(EnumType.STRING)
     private Status status;
-
+    // 🔹 DANH SÁCH LỊCH SỬ TRẠNG THÁI
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference // Cho phép trường này được chuyển sang JSON
+    @OrderBy("timestamp ASC") // LUÔN LUÔN sắp xếp theo thời gian tăng dần
+    @ToString.Exclude @EqualsAndHashCode.Exclude
+    private List<OrderStatusHistory> statusHistory = new ArrayList<>();
 
     // 🔹 Phương thức thanh toán (COD, VNPay, MOMO,...)
     @Column(length = 50)
@@ -88,6 +94,7 @@ public class Order {
         PAID,// Đơn mới - chờ xác nhận
         SHIPPING,       // Đang giao
         DELIVERED,      // Đã giao tới tay khách
+        COMPLETED,       // Đơn hàng hoàn thành
         CANCELLED,      // Đã hủy
         RETURNED        // Trả hàng / hoàn tiền
     }
@@ -101,10 +108,11 @@ public class Order {
     public String displayStatus(){
         String strStatus = "";
         switch (status){
-            case PENDING: strStatus = "Chờ Xác nhận"; break;
+            case PENDING: strStatus = "Chờ xác nhận"; break;
             case PAID: strStatus = "Đang xử lý";  break;
             case SHIPPING: strStatus = "Đang giao";  break;
-            case DELIVERED: strStatus = "Hoàn Thành";  break;
+            case DELIVERED: strStatus = "Đã giao hàng";  break;
+            case COMPLETED: strStatus = "Hoàn thành"; break;
             case CANCELLED: strStatus = "Đã hủy";  break;
             case RETURNED: strStatus = "Trả hàng";   break;
         }
