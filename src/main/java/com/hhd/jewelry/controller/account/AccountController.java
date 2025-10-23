@@ -5,14 +5,12 @@ import com.hhd.jewelry.entity.Address;
 import com.hhd.jewelry.entity.Order;
 import com.hhd.jewelry.entity.User;
 import com.hhd.jewelry.entity.Wishlist;
-import com.hhd.jewelry.service.AddressService;
-import com.hhd.jewelry.service.OrderService;
-import com.hhd.jewelry.service.UserService;
-import com.hhd.jewelry.service.WishlistService;
+import com.hhd.jewelry.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 
 @Controller
@@ -44,6 +44,9 @@ public class AccountController {
     private final WishlistService wishlistService;
     private final AddressService addressService;
     private final OrderService orderService;
+    private static final Logger log = LoggerFactory.getLogger(AccountController.class);
+
+    private final OtpService otpService;
     @GetMapping("/account")
     public String getAccountPage(
             Authentication auth,
@@ -206,5 +209,45 @@ public class AccountController {
             session.invalidate();
         }
         request.getSession(true);
+    }
+
+
+
+    // ✅ Gửi OTP tới email đăng ký
+    @PostMapping("/account/request-otp")
+    @ResponseBody
+    public String requestOtp(@RequestParam("email") String email) {
+        String v = (email == null) ? "" : email.trim().toLowerCase();
+
+        if (v.isEmpty() || !v.endsWith("@gmail.com")) {
+            return "INVALID_EMAIL";
+        }
+        if (!userService.existsByEmail(v)) {
+            return "NOT_FOUND";
+        }
+
+        try {
+            otpService.sendOtp(v);
+            log.info("Sent OTP to {}", v);
+            return "OK";
+        } catch (Exception e) {
+            log.error("Send OTP failed for {}: {}", v, e.getMessage());
+            return "FAILED";
+        }
+    }
+
+    // ✅ Xử lý xác minh OTP và đổi mật khẩu
+    @PostMapping("/account/verify-otp")
+    @ResponseBody
+    public String verifyOtpAndChangePassword(@RequestParam String email,
+                                             @RequestParam String otp,
+                                             @RequestParam String newPassword) {
+        if (!userService.existsByEmail(email)) return "NOT_FOUND";
+
+        boolean valid = otpService.verify(email, otp);
+        if (!valid) return "INVALID";
+
+        userService.updatePassword(email, newPassword);
+        return "SUCCESS";
     }
 }
