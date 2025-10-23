@@ -31,21 +31,26 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Trạng thái đơn hàng</label>
-                        <select class="form-select" name="status" id="statusSelect" th:field="*{status}" onchange="handleStatusChange()">
-                            <option value="PENDING">Chờ xử lý</option>
-                            <option value="PAID">Đã thanh toán</option>
-                            <option value="SHIPPING">Đang giao</option>
-                            <option value="COMPLETED">Hoàn tất</option>
-                            <option value="CANCELLED">Đã hủy</option>
-                            <option value="CANCELLED">Trả hàng</option>
+                        <select class="form-select" name="status" id="statusSelect" onchange="handleStatusChange()">
+                            <option value="PENDING" th:selected="${order.status.name() == 'PENDING'}">Chờ xác nhận</option>
+                            <option value="PAID" th:selected="${order.status.name() == 'PAID'}">Đang xử lý</option>
+                            <option value="SHIPPING" th:selected="${order.status.name() == 'SHIPPING'}">Đang giao</option>
+                            <option value="DELIVERED" th:selected="${order.status.name() == 'DELIVERED'}">Đã giao hàng</option>
+                            <option value="COMPLETED" th:selected="${order.status.name() == 'COMPLETED'}">Hoàn thành</option>
+                            <option value="CANCELLED" th:selected="${order.status.name() == 'CANCELLED'}">Đã hủy</option>
+                            <option value="RETURNED" th:selected="${order.status.name() == 'RETURNED'}">Trả hàng</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Phân công Shipper</label>
-                        <select class="form-select" th:field="*{shipper.id}">
-                            <option th:value="${null}">-- Chưa gán --</option>
-                            <option th:each="s : ${shippers}" th:value="${s.id}" th:text="${s.name}"></option>
+                        <select class="form-select" name="shipperId">
+                            <option value="0">-- Chưa gán --</option>
+                            <option th:each="s : ${shippers}"
+                                    th:value="${s.id}"
+                                    th:text="${s.name}"
+                                    th:selected="(${order.shipper} != null AND ${order.shipper.id} == ${s.id})">
+                            </option>
                         </select>
                     </div>
 
