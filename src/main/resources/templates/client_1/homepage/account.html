@@ -2741,7 +2741,7 @@
         initProfileEdit();
 
         // Tab Navigation (giữ nguyên)
-        const menuLinks = document.querySelectorAll('.menu-link');
+        const menuLinks = document.querySelectorAll('.account-menu a.menu-link');
         const contentSections = document.querySelectorAll('.content-section');
 
         menuLinks.forEach(link => {
@@ -3923,6 +3923,7 @@
             // Hiển thị lỗi trong modal hoặc dùng toast
             if (modalItemsContainerEl) modalItemsContainerEl.innerHTML = `<p style='color: var(--danger-color); text-align: center; padding: 20px;'>${error.message}</p>`;
             // Reset các trường khác về N/A hoặc trống
+            if (modalOrderDateEl) modalOrderDateEl.textContent = 'Lỗi';
             if (modalOrderDateEl) modalOrderDateEl.textContent = 'Lỗi';
             if (modalOrderStatusBadgeEl) modalOrderStatusBadgeEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Lỗi';
             // ... reset các trường khác ...

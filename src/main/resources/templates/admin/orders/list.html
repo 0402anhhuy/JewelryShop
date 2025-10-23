@@ -100,7 +100,7 @@
                             <span th:if="${o.status?.name() == 'PAID'}" class="badge bg-primary">Đang xử lý</span>
                             <span th:if="${o.status?.name() == 'SHIPPING'}" class="badge bg-info text-dark">Đang giao</span>
                             <span th:if="${o.status?.name() == 'DELIVERED'}" class="badge bg-success">Đã giao hàng</span>
-                            <span th:if="${o.status?.name() == 'COMPLETE'}" class="badge bg-success">Hoàn thành</span>
+                            <span th:if="${o.status?.name() == 'COMPLETED'}" class="badge bg-success">Hoàn thành</span>
                             <span th:if="${o.status?.name() == 'CANCELLED'}" class="badge bg-secondary">Đã hủy</span>
                             <span th:if="${o.status?.name() == 'RETURNED'}" class="badge bg-danger">Trả hàng</span>
                             <span th:if="${o.status == null}" class="badge bg-light text-dark">Chưa có</span>
