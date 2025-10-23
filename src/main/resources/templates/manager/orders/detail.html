@@ -22,10 +22,11 @@
                 <p>
                     <strong>Trạng thái:</strong>
                     <span th:switch="${order.status?.name()}">
-                        <span th:case="'PENDING'" class="badge bg-warning text-dark">Chờ xử lý</span>
+                        <span th:case="'PENDING'" class="badge bg-warning text-dark">Đang xử lý</span>
                         <span th:case="'PAID'" class="badge bg-primary">Đã thanh toán</span>
                         <span th:case="'SHIPPING'" class="badge bg-info text-dark">Đang giao</span>
                         <span th:case="'DELIVERED'" class="badge bg-success">Đã giao hàng</span>
+                        <span th:case="'COMPLETED'" class="badge bg-success">Hoàn Thành</span>
                         <span th:case="'CANCELLED'" class="badge bg-secondary">Đã hủy</span>
                         <span th:case="'RETURNED'" class="badge bg-danger">Trả hàng</span>
                         <span th:case="*" class="badge bg-light text-dark">Không xác định</span>

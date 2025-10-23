@@ -20,32 +20,38 @@
                     <i class="bi bi-pencil-square me-2"></i> Cập nhật đơn hàng
                 </h4>
 
-                <form th:action="@{/admin/orders/update}" th:object="${order}" method="post"
+                <form th:action="@{/admin/orders/update}" method="post"
                       class="card p-4 shadow-sm border-0">
-                    <input type="hidden" th:field="*{id}"/>
+
+                    <input type="hidden" name="orderId" th:value="${order.id}"/>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Mã đơn hàng</label>
-                        <input type="text" th:value="*{id}" class="form-control" disabled>
+                        <input type="text" th:value="${order.id}" class="form-control" disabled>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Trạng thái đơn hàng</label>
-                        <select class="form-select" name="status" id="statusSelect" th:field="*{status}" onchange="handleStatusChange()">
-                            <option value="PENDING">Chờ xác nhận</option>
-                            <option value="PAID">Đang xử lý</option>
-                            <option value="SHIPPING">Đang giao</option>
-                            <option value="DELIVERED">Hoàn tất</option>
-                            <option value="CANCELLED">Đã hủy</option>
-                            <option value="RETURNED">Trả hàng</option>
+                        <select class="form-select" name="status" id="statusSelect" onchange="handleStatusChange()">
+                            <option value="PENDING" th:selected="${order.status.name() == 'PENDING'}">Chờ xác nhận</option>
+                            <option value="PAID" th:selected="${order.status.name() == 'PAID'}">Đang xử lý</option>
+                            <option value="SHIPPING" th:selected="${order.status.name() == 'SHIPPING'}">Đang giao</option>
+                            <option value="DELIVERED" th:selected="${order.status.name() == 'DELIVERED'}">Đã giao hàng</option>
+                            <option value="COMPLETED" th:selected="${order.status.name() == 'COMPLETED'}">Hoàn thành</option>
+                            <option value="CANCELLED" th:selected="${order.status.name() == 'CANCELLED'}">Đã hủy</option>
+                            <option value="RETURNED" th:selected="${order.status.name() == 'RETURNED'}">Trả hàng</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Phân công Shipper</label>
-                        <select class="form-select" th:field="*{shipper.id}">
-                            <option th:value="${null}">-- Chưa gán --</option>
-                            <option th:each="s : ${shippers}" th:value="${s.id}" th:text="${s.name}"></option>
+                        <select class="form-select" name="shipperId">
+                            <option value="0">-- Chưa gán --</option>
+                            <option th:each="s : ${shippers}"
+                                    th:value="${s.id}"
+                                    th:text="${s.name}"
+                                    th:selected="(${order.shipper} != null AND ${order.shipper.id} == ${s.id})">
+                            </option>
                         </select>
                     </div>
 
@@ -53,12 +59,13 @@
                         <label class="form-label fw-semibold">Thanh toán</label>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox"
-                                   name="paid" id="paidCheck"
+                                   name="paid" id="paidCheck" value="true"
                                    th:checked="${order.paid}"
                                    onchange="togglePaidStatus(this)">
                             <label class="form-check-label" for="paidCheck">Đã thanh toán</label>
                         </div>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Tổng tiền</label>
                         <input type="text"
@@ -86,34 +93,26 @@
     const statusSelect = document.getElementById("statusSelect");
     const paidCheck = document.getElementById("paidCheck");
 
-    // 🔹 Khi tick vào checkbox "Đã thanh toán"
     function togglePaidStatus(checkbox) {
         if (checkbox.checked) {
-            // ✅ Nếu tick -> đổi trạng thái sang PAID
-            statusSelect.value = "PAID";
+            if (statusSelect.value === "PENDING" || statusSelect.value === "CANCELLED") {
+                statusSelect.value = "PAID";
+            }
         } else {
-            // 🔄 Nếu bỏ tick -> quay về PENDING (hoặc giữ nguyên nếu đang giao)
             if (statusSelect.value === "PAID") {
                 statusSelect.value = "PENDING";
             }
         }
     }
 
-    // 🔹 Khi chọn trạng thái trong dropdown
     function handleStatusChange() {
         const value = statusSelect.value;
-
-        if (value === "CANCELLED") {
-            // ❌ Nếu chọn "Đã hủy" -> tự bỏ tick thanh toán
+        if (value === "CANCELLED" || value === "PENDING") {
             paidCheck.checked = false;
-        }
-        else if (value === "PAID") {
-            // ✅ Nếu chọn "Đã thanh toán" -> tự tick checkbox
+        } else if (value === "PAID" || value === "SHIPPING" || value === "DELIVERED" || value === "COMPLETED") {
             paidCheck.checked = true;
         }
     }
 </script>
-
-
 </body>
 </html>

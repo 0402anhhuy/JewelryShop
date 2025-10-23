@@ -14,5 +14,4 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Order, Integer>, JpaSpecificationExecutor<Order> {
     @EntityGraph(attributePaths = {"user"})
     Page<Order> findAll(Pageable pageable);
-    List<Order> findAllByUser(User user);
-}
+    boolean existsByUser(User user);}

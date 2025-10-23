@@ -637,22 +637,27 @@
         }
 
         .status-pending {
-            background: #fff3cd;
+            background: #fff2c3;
             color: #856404;
         }
 
-        .status-processing {
-            background: #cfe2ff;
+        .status-paid {
+            background: #b2d9fd;
             color: #084298;
         }
 
         .status-shipping {
-            background: #d1ecf1;
+            background: #bef6ff;
             color: #0c5460;
         }
 
+        .status-delivered {
+            background: #b8fae5;
+            color: #07836a;
+        }
+
         .status-completed {
-            background: #d4edda;
+            background: #aaf4b9;
             color: #155724;
         }
 
@@ -660,11 +665,16 @@
             background: #f8d7da;
             color: #721c24;
         }
+        .status-returned {
+            background: #e8dff5;
+            color: #5a3c92;
+        }
 
         .order-items {
             display: flex;
             gap: 15px;
             margin-bottom: 15px;
+            align-items: center;
         }
 
         .order-item-image {
@@ -1432,8 +1442,9 @@
         .product-info {
             flex: 1;
             display: flex;
-            flex-direction: column;
             justify-content: space-between;
+            align-items: center;
+            background: #f9f9f9
         }
 
         .product-name {
@@ -1466,7 +1477,8 @@
             font-size: 18px;
             font-weight: 700;
             color: var(--primary-color);
-            text-align: right;
+            padding-left: 15px;
+            flex-shrink: 0;
         }
 
         /* Timeline */
@@ -1488,7 +1500,7 @@
             content: '';
             position: absolute;
             left: -23px;
-            top: 8px;
+            top: 43px;
             width: 2px;
             height: calc(100% - 8px);
             background: #e0e0e0;
@@ -1501,7 +1513,7 @@
         .timeline-dot {
             position: absolute;
             left: -30px;
-            top: 0;
+            top: 35px;
             width: 16px;
             height: 16px;
             border-radius: 50%;
@@ -1871,7 +1883,8 @@
                 <button class="tab-btn" data-status="pending">Chờ xác nhận</button>
                 <button class="tab-btn" data-status="paid">Đang xử lý</button>
                 <button class="tab-btn" data-status="shipping">Đang giao</button>
-                <button class="tab-btn" data-status="delivered">Hoàn thành</button>
+                <button class="tab-btn" data-status="delivered">Đã giao hàng</button>
+                <button class="tab-btn" data-status="completed">Hoàn thành</button>
                 <button class="tab-btn" data-status="cancelled">Đã hủy</button>
                 <button class="tab-btn" data-status="returned">Trả hàng</button>
             </div>
@@ -1892,15 +1905,16 @@
                         <div class="order-item-image">
                             <img th:if="${not #lists.isEmpty(item.product.imageUrls)}"
                                  th:src="${item.product.imageUrls[0]}"
-                                 alt="Product"
-                                 style="width: 60px; height: 60px; object-fit: cover;">
+                                 alt="Product">
                             <div th:unless="${not #lists.isEmpty(item.product.imageUrls)}"
                                  style="width: 60px; height: 60px; background: #f5f5f5; display: flex; align-items: center; justify-content: center;">
                                 <i class="fas fa-image" style="color: #ccc;"></i>
                             </div>
                         </div>
                         <div class="order-item-info">
-                            <div class="order-item-name" th:text="${item.product.name}">Lắc tay Đá ECZ Vàng 14K</div>
+                            <div class="order-item-name" th:text="${item.product.name + ' ' +
+                            (item.product.gemstone != null ? item.product.gemstone : '') + ' ' +
+                            item.product.material}">Lắc tay Đá ECZ Vàng 14K</div>
                             <div class="order-item-details" th:text="'Số lượng: ' + ${item.quantity}">Số lượng: 1</div>
                             <div class="order-item-price" th:if="${item.totalPrice}"
                                  th:text="'Thành tiền: ' + ${#numbers.formatDecimal(item.totalPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
@@ -1920,13 +1934,13 @@
                             </button>
 
                             <button class="btn btn-warning btn-sm"
-                                    th:if="${order.status.name() == 'DELIVERED'}"
+                                    th:if="${order.status.name() == 'COMPLETED'}"
                                     th:onclick="'reorder(' + ${order.id} + ')'">
                                 <i class="fas fa-shopping-bag"></i> Mua lại
                             </button>
 
                             <button class="btn btn-success btn-sm"
-                                    th:if="${order.status.name() == 'DELIVERED'}"
+                                    th:if="${order.status.name() == 'COMPLETED'}"
                                     th:onclick="'reviewOrder(' + ${order.id} + ')'">
                                 <i class="fas fa-star"></i> Đánh giá
                             </button>
@@ -1987,7 +2001,7 @@
                                 </div>
                                 <div class="info-item" style="grid-column: 1 / -1;">
                                     <span class="info-label">Địa chỉ giao hàng</span>
-                                    <span class="info-value" id="modalOrderAddress">...</span>>
+                                    <span class="info-value" id="modalOrderAddress">...</span>
                                 </div>
                                 <div class="info-item" style="grid-column: 1 / -1; display: none;"> <span class="info-label">Ghi chú</span>
                                     <span class="info-value" id="modalOrderNote"></span>
@@ -2004,7 +2018,8 @@
                             <div class="info-grid">
                                 <div class="info-item">
                                     <span class="info-label">Phương thức thanh toán</span>
-                                    <span class="info-value" id="modalOrderPaymentMethod">...</span>                                </div>
+                                    <span class="info-value" id="modalOrderPaymentMethod">...</span>
+                                </div>
                                 <div class="info-item">
                                     <span class="info-label">Trạng thái thanh toán</span>
                                     <span class="info-value" id="modalOrderPaymentStatus" style="color: var(--warning-color);">
@@ -2023,59 +2038,6 @@
                             <div class="product-items" id="modalOrderItems">
                                 <p style="text-align: center; padding: 20px;">Đang tải sản phẩm...</p>
                             </div>
-<!--                            <div class="product-items">-->
-<!--                                <div class="product-item">-->
-<!--                                    <div class="product-image">-->
-<!--                                        <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400" alt="Product">-->
-<!--                                    </div>-->
-<!--                                    <div class="product-info">-->
-<!--                                        <div>-->
-<!--                                            <div class="product-name">Lắc tay Đá ECZ Vàng 14K</div>-->
-<!--                                            <div class="product-details">-->
-<!--                                        <span class="product-detail-item">-->
-<!--                                            <i class="fas fa-cube"></i>-->
-<!--                                            Số lượng: 1-->
-<!--                                        </span>-->
-<!--                                                <span class="product-detail-item">-->
-<!--                                            <i class="fas fa-tag"></i>-->
-<!--                                            Mã SP: LG001-->
-<!--                                        </span>-->
-<!--                                                <span class="product-detail-item">-->
-<!--                                            <i class="fas fa-weight"></i>-->
-<!--                                            Trọng lượng: 15.5g-->
-<!--                                        </span>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                        <div class="product-price">13.732.000 ₫</div>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-
-<!--                                <div class="product-item">-->
-<!--                                    <div class="product-image">-->
-<!--                                        <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400" alt="Product">-->
-<!--                                    </div>-->
-<!--                                    <div class="product-info">-->
-<!--                                        <div>-->
-<!--                                            <div class="product-name">Nhẫn Kim cương Vàng trắng 14K</div>-->
-<!--                                            <div class="product-details">-->
-<!--                                        <span class="product-detail-item">-->
-<!--                                            <i class="fas fa-cube"></i>-->
-<!--                                            Số lượng: 1-->
-<!--                                        </span>-->
-<!--                                                <span class="product-detail-item">-->
-<!--                                            <i class="fas fa-tag"></i>-->
-<!--                                            Mã SP: LG002-->
-<!--                                        </span>-->
-<!--                                                <span class="product-detail-item">-->
-<!--                                            <i class="fas fa-gem"></i>-->
-<!--                                            Kim cương: 0.5 carat-->
-<!--                                        </span>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                        <div class="product-price">25.500.000 ₫</div>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
                         </div>
 
                         <!-- Chi tiết đơn hàng -->
@@ -2084,42 +2046,8 @@
                                 <i class="fas fa-history"></i>
                                 Chi tiết đơn hàng
                             </h3>
-                            <div class="order-timeline">
-                                <div class="timeline-item">
-                                    <div class="timeline-dot completed"></div>
-                                    <div class="timeline-content">
-                                        <div class="timeline-title">Đơn hàng đã được đặt</div>
-                                        <div class="timeline-time">15/10/2024 - 14:30</div>
-                                    </div>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-dot completed"></div>
-                                    <div class="timeline-content">
-                                        <div class="timeline-title">Đã xác nhận đơn hàng</div>
-                                        <div class="timeline-time">15/10/2024 - 15:00</div>
-                                    </div>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-dot completed"></div>
-                                    <div class="timeline-content">
-                                        <div class="timeline-title">Đang chuẩn bị hàng</div>
-                                        <div class="timeline-time">16/10/2024 - 09:15</div>
-                                    </div>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-dot"></div>
-                                    <div class="timeline-content">
-                                        <div class="timeline-title">Đang giao hàng</div>
-                                        <div class="timeline-time">17/10/2024 - 08:00</div>
-                                    </div>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-dot pending"></div>
-                                    <div class="timeline-content">
-                                        <div class="timeline-title">Giao hàng thành công</div>
-                                        <div class="timeline-time">Chờ xác nhận</div>
-                                    </div>
-                                </div>
+                            <div class="order-timeline" id="modalOrderTimeline">
+
                             </div>
                         </div>
 
@@ -2135,12 +2063,16 @@
                                     <span class="summary-value" id="modalSubtotal">0 ₫</span>
                                 </div>
                                 <div class="summary-row">
-                                    <span class="summary-label">Phí vận chuyển</span>
-                                    <span class="summary-value" id="modalShippingFee">0 ₫</span>
-                                </div>
-                                <div class="summary-row">
                                     <span class="summary-label">Giảm giá</span>
                                     <span class="summary-value" id="modalDiscount" style="color: var(--danger-color);">-0 ₫</span>
+                                </div>
+                                <div class="summary-row" id="modalVatContainer">
+                                    <span class="summary-label">VAT</span>
+                                    <span class="summary-value" id="modalVat">0 ₫</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Phí vận chuyển</span>
+                                    <span class="summary-value" id="modalShippingFee">0 ₫</span>
                                 </div>
                                 <div class="summary-row">
                                     <span class="summary-label">Tổng cộng</span>
@@ -2207,7 +2139,6 @@
                 </div>
             </div>
         </section>
-
         <!-- Change Password Section -->
         <section class="content-section" id="password">
             <div class="section-header">
@@ -2260,9 +2191,7 @@
                 </div>
             </form>
         </section>
-
-
-                <!-- Wishlist Section -->
+        <!-- Wishlist Section -->
         <section class="content-section" id="wishlist">
             <div class="section-header">
                 <h2 class="section-title">Sản Phẩm Yêu Thích</h2>
@@ -3563,14 +3492,70 @@
     }
     function cancelOrder(id) {
         showToast('warning', 'Xác nhận hủy đơn', 'Bạn có chắc muốn hủy đơn hàng #' + id + '?', true, () => {
-            showToast('success', 'Đã hủy', 'Đơn hàng #' + id + ' đã được hủy thành công!');
-            // TODO: Gọi API hủy đơn ở đây (fetch POST /orders/cancel/{id})
+            // Lấy token CSRF từ thẻ meta (quan trọng cho Spring Security)
+            const token = document.querySelector("meta[name='_csrf']").getAttribute("content");
+            const header = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
+
+            // Gửi request xóa đơn hàng
+            fetch(`/orders/delete/${id}`, {
+                method: 'POST',
+                headers: {
+                    [header]: token // 2. Gửi kèm CSRF token trong header
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        showToast('success', 'Đã hủy', 'Đơn hàng #' + id + ' đã được hủy thành công!');
+                        // Tải lại trang để cập nhật danh sách
+                        location.reload();
+                    } else {
+                        // Xử lý lỗi từ server (ví dụ: đơn hàng không ở trạng thái PENDING)
+                        showToast('fail', 'Thất bại', 'Không thể xóa đơn hàng này. Có thể đơn hàng đã được xử lý.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi gửi request:', error);
+                    showToast('fail', 'Thất bại', 'Đã xảy ra lỗi kết nối. Vui lòng thử lại!');
+                });
         });
     }
 
     function reorder(id) {
         showToast('info', 'Mua lại', 'Đang thêm sản phẩm từ đơn #' + id + ' vào giỏ hàng...');
-        window.location.href = '/checkout/{id}'
+
+        // Lấy CSRF token (quan trọng!)
+        const token = document.querySelector("meta[name='_csrf']").getAttribute("content");
+        const header = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
+
+        // Gửi request POST đến backend để xử lý việc thêm vào giỏ
+        fetch(`/cart/reorder/${id}`, { // ⭐️ SỬA 1: Endpoint mới
+            method: 'POST',
+            headers: {
+                [header]: token, // Gửi kèm CSRF token
+                'Content-Type': 'application/json' // Báo cho server biết là gửi JSON (nếu cần)
+            },
+            // Bạn có thể gửi thêm dữ liệu nếu cần trong body
+            // body: JSON.stringify({ someData: 'value' })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    // Nếu server trả về lỗi (ví dụ: sản phẩm hết hàng)
+                    return response.json().then(errData => {
+                        throw new Error(errData.message || 'Không thể thêm sản phẩm vào giỏ.');
+                    });
+                }
+                return response.json(); // Xử lý response thành công
+            })
+            .then(data => {
+                // ⭐️ SỬA 2: Chuyển hướng đến giỏ hàng sau khi thành công
+                showToast('success', 'Thành công', data.message || 'Đã thêm sản phẩm vào giỏ!');
+                window.location.href = '/cart'; // Chuyển hướng đến trang giỏ hàng
+            })
+            .catch(error => {
+                // ⭐️ SỬA 3: Hiển thị lỗi cụ thể hơn
+                console.error('Lỗi khi mua lại:', error);
+                showToast('error', 'Thất bại', error.message || 'Đã xảy ra lỗi. Vui lòng thử lại!');
+            });
     }
 
     function reviewOrder(id) {
@@ -3615,6 +3600,18 @@
             return 'Lỗi giá';
         }
     }
+    function getDisplayStatusText(status) {
+        switch(status) {
+            case 'PENDING': return 'Chờ xác nhận';
+            case 'PAID': return 'Đang xử lý';
+            case 'SHIPPING': return 'Đang giao';
+            case 'DELIVERED': return 'Đã giao hàng';
+            case 'COMPLETED': return 'Hoàn thành';
+            case 'CANCELLED': return 'Đã hủy';
+            case 'RETURNED': return 'Trả hàng';
+            default: return status || 'N/A'; // Trả về trạng thái gốc hoặc N/A nếu không khớp
+        }
+    }
 
     // <<< HÀM QUAN TRỌNG: SHOW MODAL VÀ BINDING DỮ LIỆU >>>
     async function showOrderDetailModal(orderId) { // Nhận orderId làm tham số
@@ -3629,9 +3626,9 @@
 
         // Lấy các element cần cập nhật (chỉ cần lấy 1 lần)
         const modalOrderIdEl = orderDetailModal.querySelector('.order-id-section h2');
-        const modalOrderDateEl = orderDetailModal.querySelector('.order-date span'); // Lấy span bên trong
-        const modalOrderStatusBadgeEl = orderDetailModal.querySelector('.order-status-badge');
-        const modalOrderStatusTextEl = orderDetailModal.querySelector('.order-status-badge span'); // Giả sử có span cho text
+        const modalOrderDateEl = orderDetailModal.querySelector('#modalOrderDate'); // Đã sửa: lấy span
+        const modalOrderStatusBadgeEl = orderDetailModal.querySelector('#modalOrderStatusBadge');
+        // const modalOrderStatusTextEl = orderDetailModal.querySelector('#modalOrderStatusText'); // Không cần lấy riêng text nữa
         const modalConsigneeEl = orderDetailModal.querySelector('#modalOrderConsignee'); // Sử dụng ID đã thêm
         const modalPhoneEl = orderDetailModal.querySelector('#modalOrderPhone');
         const modalAddressEl = orderDetailModal.querySelector('#modalOrderAddress');
@@ -3648,6 +3645,8 @@
         const modalDiscountContainerEl = orderDetailModal.querySelector('#modalDiscount')?.parentElement; // Lấy div cha của discount
         const modalDiscountEl = orderDetailModal.querySelector('#modalDiscount');
         const modalFinalTotalEl = orderDetailModal.querySelector('#modalFinalTotal');
+        const modalVatContainerEl = orderDetailModal.querySelector('#modalVatContainer');
+        const modalVatEl = orderDetailModal.querySelector('#modalVat');
         const modalCancelButton = orderDetailModal.querySelector('#modalCancelButton'); // Nút hủy trong modal
         const modalTimelineContainerEl = orderDetailModal.querySelector('#modalOrderTimeline'); // Container timeline
 
@@ -3672,9 +3671,6 @@
             }
 
             const orderData = await response.json(); // Chuyển response thành JSON
-            // const responseText = await response.text();
-            // console.log("Raw Response Text:", responseText); // In ra console
-            // const orderData = JSON.parse(responseText); // Thử parse thủ công
             // --- 3. Binding dữ liệu vào Modal ---
 
             // Header
@@ -3693,7 +3689,8 @@
                 else if(orderData.status === 'DELIVERED') statusIcon = 'fa-check-circle';
                 else if(orderData.status === 'CANCELLED') statusIcon = 'fa-times-circle';
                 else if(orderData.status === 'RETURNED') statusIcon = 'fa-undo';
-                modalOrderStatusBadgeEl.innerHTML = `<i class="fas ${statusIcon}"></i> <span>${orderData.displayStatus || 'N/A'}</span>`; // Cập nhật cả icon và text
+                const statusText = getDisplayStatusText(orderData.status);
+                modalOrderStatusBadgeEl.innerHTML = `<i class="fas ${statusIcon}"></i> <span>${statusText || 'N/A'}</span>`; // Cập nhật cả icon và text
             }
 
 
@@ -3740,18 +3737,20 @@
                     orderData.items.forEach(item => {
                         const itemDiv = document.createElement('div');
                         itemDiv.className = 'product-item';
-
-                        const imageUrl = item.product?.imageUrls?.[0] || '/images/default-product.png'; // Ảnh mặc định nếu ko có
-                        const productName = item.product?.name || 'Sản phẩm không xác định';
-                        const productPrice = item.product?.price || 0; // Giá gốc nếu cần
+                        const product = item.product || {};
+                        const imageUrl = product.imageUrls?.[0] || '/images/default-product.png'; // Ảnh mặc định nếu ko có
+                        const productPrice = product.price || 0; // Giá gốc nếu cần
                         const itemQuantity = item.quantity || 0;
                         const itemTotalPrice = item.totalPrice || 0;
-
-                        // Thêm nhiều chi tiết hơn nếu có trong 'item.product'
-                        // Ví dụ: Lấy mã SP, trọng lượng,... (cần backend trả về)
-                        // const productCode = item.product?.serialNumber || 'N/A';
-                        // const productWeight = item.product?.weight || 'N/A';
-
+                        const displayNameParts = [
+                            product.name,
+                            product.gemstone,
+                            product.material
+                        ];
+                        const productName = displayNameParts
+                                .filter(part => part && String(part).trim() !== '')
+                                .join(' ')
+                            || 'Sản phẩm không xác định';
                         itemDiv.innerHTML = `
                         <div class="product-image">
                             <img src="${imageUrl}" alt="${productName}">
@@ -3779,35 +3778,98 @@
             // Lịch sử đơn hàng (Timeline - Ví dụ đơn giản, bạn có thể cần fetch riêng nếu phức tạp)
             if(modalTimelineContainerEl){
                 modalTimelineContainerEl.innerHTML = ''; // Xóa loading
-                // Tạo timeline dựa trên trạng thái hiện tại (ví dụ đơn giản)
-                const timelineData = [
-                    { title: 'Đơn hàng đã được đặt', time: formatDateTime(orderData.createdAt), status: 'completed' }
-                ];
-                // Thêm các bước khác dựa trên status
-                if(['PAID', 'SHIPPING', 'DELIVERED', 'RETURNED', 'CANCELLED'].includes(orderData.status)) {
-                    timelineData.push({ title: 'Đã xác nhận đơn hàng', time: '...', status: 'completed'}); // Cần thời gian thực tế
-                } else {
-                    timelineData.push({ title: 'Chờ xác nhận', time: '...', status: 'pending'});
-                }
-                // Thêm các trạng thái tiếp theo... (Shipping, Delivered) tương tự
 
-                timelineData.forEach(item => {
+                // 1. Định nghĩa các luồng (flow)
+                // Luồng chuẩn (happy path)
+                const baseFlow = ['PENDING', 'PAID', 'SHIPPING', 'DELIVERED', 'COMPLETED'];
+                const currentStatus = orderData.status;
+
+                // 2. Xây dựng "luồng hiển thị" (relevantFlow) dựa trên trạng thái hiện tại
+                let relevantFlow = [...baseFlow]; // Bắt đầu bằng luồng chuẩn
+
+                if (currentStatus === 'CANCELLED') {
+                    // Nếu bị HỦY, timeline chỉ hiển thị các bước ĐÃ xảy ra + bước HỦY
+                    let lastGoodStatusIndex = -1;
+                    if (orderData.statusHistory && orderData.statusHistory.length > 1) {
+                        // Lấy trạng thái ngay trước 'CANCELLED'
+                        const lastGoodStatus = orderData.statusHistory[orderData.statusHistory.length - 2].status;
+                        lastGoodStatusIndex = baseFlow.indexOf(lastGoodStatus);
+                    }
+                    // Cắt luồng chuẩn (ví dụ: nếu hủy ở 'PAID', chỉ lấy 'PENDING', 'PAID')
+                    relevantFlow = baseFlow.slice(0, lastGoodStatusIndex + 1);
+                    relevantFlow.push('CANCELLED'); // Thêm 'CANCELLED' vào cuối
+
+                } else if (currentStatus === 'RETURNED') {
+                    // Nếu TRẢ HÀNG, hiển thị toàn bộ luồng chuẩn + 'RETURNED'
+                    relevantFlow.push('RETURNED');
+                }
+
+                // 3. Tìm vị trí (index) của trạng thái hiện tại trong luồng
+                const currentStepIndex = relevantFlow.indexOf(currentStatus);
+
+                // 4. Map dữ liệu lịch sử (timestamp, notes) để tra cứu nhanh
+                const historyMap = new Map();
+                if (orderData.statusHistory) {
+                    orderData.statusHistory.forEach(item => {
+                        historyMap.set(item.status, {
+                            timestamp: item.timestamp,
+                        });
+                    });
+                }
+
+                // 5. Lặp qua LUỒNG ĐÃ XÂY DỰNG (relevantFlow) để tạo HTML
+                relevantFlow.forEach((status, index) => {
                     const timelineItemDiv = document.createElement('div');
                     timelineItemDiv.className = 'timeline-item';
+
+                    let dotClass = ''; // Sẽ là 'completed', '' (vàng), hoặc 'pending'
+                    let timelineTime = 'Chưa cập nhật';
+                    // 6. Lấy dữ liệu lịch sử (thời gian, ghi chú) nếu bước này đã xảy ra
+                    const historyData = historyMap.get(status);
+                    if (historyData) {
+                        timelineTime = formatDateTime(historyData.timestamp);
+                    }
+
+                    // 7. Quyết định MÀU SẮC (dotClass) dựa trên VỊ TRÍ (index)
+                    if (index < currentStepIndex) {
+                        // Các bước TRƯỚC bước hiện tại -> MÀU XANH
+                        dotClass = 'completed';
+                    } else if (index === currentStepIndex) {
+                        // CHÍNH LÀ bước hiện tại
+                        if (currentStatus === 'PENDING') {
+                            dotClass = ''; // Xám (vì đang chờ)
+                        } else if (currentStatus === 'PAID' || currentStatus === 'SHIPPING') {
+                            dotClass = ''; // Vàng (mặc định, không class)
+                        } else {
+                            // COMPLETED, DELIVERED, CANCELLED, RETURNED (các bước cuối)
+                            dotClass = 'completed'; // Xanh
+                        }
+                    } else {
+                        // Các bước TƯƠNG LAI (chưa xảy ra) -> MÀU XÁM
+                        dotClass = 'pending';
+                    }
+
+                    // Lấy tên hiển thị (ví dụ: 'PENDING' -> 'Chờ xác nhận')
+                    const timelineTitle = getDisplayStatusText(status);
+
+                    // 8. Tạo HTML
                     timelineItemDiv.innerHTML = `
-                     <div class="timeline-dot ${item.status}"></div>
-                     <div class="timeline-content">
-                         <div class="timeline-title">${item.title}</div>
-                         <div class="timeline-time">${item.time}</div>
-                     </div>
-                 `;
+                        <div class="timeline-dot ${dotClass}"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">${timelineTitle}</div>
+                            <div class="timeline-time">${timelineTime}</div>
+                        </div>
+                    `;
                     modalTimelineContainerEl.appendChild(timelineItemDiv);
                 });
+
             }
 
 
+
             // Tổng kết đơn hàng
-            const subtotal = (orderData.totalAmount || 0) - (orderData.shippingFee || 0) + (orderData.discount || 0);
+            const subtotal = ((orderData.totalAmount || 0) - (orderData.shippingFee || 0))/(1.1*0.8);
+            const vatAmount = (subtotal - (orderData.discount || 0))*0.1;
             if (modalSubtotalEl) modalSubtotalEl.textContent = formatCurrency(subtotal);
             if (modalShippingFeeEl) modalShippingFeeEl.textContent = formatCurrency(orderData.shippingFee || 0);
             if (modalDiscountContainerEl) {
@@ -3819,7 +3881,7 @@
                 }
             }
             if (modalFinalTotalEl) modalFinalTotalEl.textContent = formatCurrency(orderData.totalAmount || 0);
-
+            if (modalVatEl) modalVatEl.textContent = formatCurrency(vatAmount);
             // Nút Hủy đơn trong Footer
             if(modalCancelButton){
                 if (orderData.status === 'PENDING' || orderData.status === 'PAID') {
@@ -3953,7 +4015,6 @@
             showToast('error', 'Lỗi kết nối', 'Không thể kết nối tới máy chủ.');
         }
     });
-
 </script>
 </body>
 </html>

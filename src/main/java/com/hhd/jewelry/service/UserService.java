@@ -12,6 +12,5 @@ public interface UserService {
     boolean existsByPhoneAndIdNot(String phone, Integer id);
     void save(User user);
     void delete(User user);
-
     void updatePassword(String email, String newPassword);
 }

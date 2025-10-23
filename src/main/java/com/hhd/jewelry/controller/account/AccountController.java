@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.data.domain.Page;
@@ -210,9 +211,6 @@ public class AccountController {
         }
         request.getSession(true);
     }
-
-
-
     // ✅ Gửi OTP tới email đăng ký
     @PostMapping("/account/request-otp")
     @ResponseBody

@@ -314,13 +314,13 @@
             text-decoration: none;
         }
 
-        .card-btn.add-cart {
+        .card-btn.add-to-cart-btn {
             background: linear-gradient(135deg, var(--primary-gold) 0%, var(--light-gold) 100%);
             color: var(--dark-text);
             box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
         }
 
-        .card-btn.add-cart:hover {
+        .card-btn.add-to-cart-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
         }
@@ -467,7 +467,7 @@
                 <div class="card-buttons">
                     <form th:action="@{/cart/add/{sn}(sn=${product.serialNumber})}" method="post" style="display: inline; flex: 1;">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                        <button type="submit" class="card-btn add-cart">
+                        <button type="submit" class="card-btn add-to-cart-btn">
                             <i class="fas fa-shopping-cart"></i>
                             Thêm vào giỏ
                         </button>
@@ -493,7 +493,7 @@
         </a>
     </div>
 </div>
-
+<script th:src="@{/js/home.js}"></script>
 <script>
     // Toggle wishlist
     async function toggleWishlist(btn) {
