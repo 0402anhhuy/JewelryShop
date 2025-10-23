@@ -3,14 +3,18 @@ package com.hhd.jewelry.controller.client;
 import com.hhd.jewelry.entity.*;
 import com.hhd.jewelry.entity.Collection;
 import com.hhd.jewelry.repository.*;
+import com.hhd.jewelry.service.OrderService;
 import com.hhd.jewelry.service.specification.ProductSpecs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
@@ -26,7 +30,7 @@ public class ProductController {
     private final CollectionRepository collectionRepository;
     private final UserRepository userRepository;
     private final WishlistRepository wishlistRepository;
-
+    private final OrderService orderService;
     @GetMapping("/products")
     public String products(
             @RequestParam(value = "q", required = false) String q,
@@ -136,7 +140,16 @@ public class ProductController {
 
         return "client_1/product/show";
     }
-
+    @PostMapping("/orders/delete/{orderId}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable Integer orderId) {
+        try {
+            orderService.deleteById(orderId);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            // Trả về 400 Bad Request nếu logic không cho phép xóa (VD: sai trạng thái)
+            return ResponseEntity.badRequest().build();
+        }
+    }
     private Sort parseSort(String sort) {
         return switch (sort) {
             case "priceAsc" -> Sort.by(Sort.Direction.ASC, "price");
