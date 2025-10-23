@@ -18,4 +18,19 @@ public class CartItemServiceImpl implements CartItemService {
     public int deleteSelectedByUser(User user) {
          return cartItemRepository.deleteSelectedByUser(user);
     }
+
+    @Override
+    public boolean existsById(Integer itemId) {
+        return cartItemRepository.existsById(itemId);
+    }
+
+    @Override
+    public void deleteById(Integer itemId) {
+        cartItemRepository.deleteById(itemId);
+    }
+
+    @Override
+    public List<CartItem> findAllByCart_CartId(Integer id) {
+        return cartItemRepository.findAllByCart_CartId(id);
+    }
 }
