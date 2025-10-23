@@ -91,4 +91,20 @@ public class WishlistController {
 
         return "redirect:/wishlist";
     }
+    @PostMapping("/remove/account/{productId}")
+    public String removeWishlistFromAccount(@PathVariable Integer productId, Authentication auth) {
+        if (auth == null) {
+            return "redirect:/login";
+        }
+
+        User user = userRepository.findByEmail(auth.getName()).orElse(null);
+        Product product = productRepository.findById(Long.valueOf(productId)).orElse(null);
+
+        if (user != null && product != null) {
+            Optional<Wishlist> existing = wishlistRepository.findByUserAndProduct(user, product);
+            existing.ifPresent(wishlistRepository::delete);
+        }
+
+        return "redirect:/account";
+    }
 }
