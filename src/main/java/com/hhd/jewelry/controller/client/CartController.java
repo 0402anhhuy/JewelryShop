@@ -4,10 +4,12 @@ import com.hhd.jewelry.dto.CheckoutDto;
 import com.hhd.jewelry.entity.*;
 import com.hhd.jewelry.repository.*;
 import com.hhd.jewelry.service.*;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -26,13 +28,12 @@ import java.util.stream.Collectors;
 public class CartController {
 
     private final ProductService productService;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final CartRepository cartRepository;
     private final AddressService addressService;
-    private final OrderItemRepository orderItemRepository;
-    private final CartItemRepository cartItemRepository;
     private final OrderService orderService;
     private final CartItemService cartItemService;
+    private final CartService cartService;
     private final VNPayService vnPayService;
     private final MomoService momoService;
     private static final double VAT_RATE = 0.1;
@@ -44,7 +45,7 @@ public class CartController {
             return "redirect:/login";
         }
         String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElse(null);
+        User user = userService.findByEmail(email).orElse(null);
         if (user == null) {
             return "redirect:/login?error=user_not_found";
         }
@@ -96,7 +97,7 @@ public class CartController {
 
         productService.AddProductToCart(auth.getName(), p.getSerialNumber());
 
-        var user = userRepository.findByEmail(auth.getName()).orElse(null);
+        var user = userService.findByEmail(auth.getName()).orElse(null);
         var cart = (user == null) ? null : cartRepository.findByUser(user);
 
         int count = 0;
@@ -123,7 +124,7 @@ public class CartController {
             }
             if (qty == null || qty <= 0) qty = 1;
 
-            User user = userRepository.findByEmail(auth.getName()).orElse(null);
+            User user = userService.findByEmail(auth.getName()).orElse(null);
             if (user == null) return Map.of("ok", false, "reason", "no_user");
 
             Cart cart = cartRepository.findByUser(user);
@@ -203,12 +204,12 @@ public class CartController {
                 return Map.of("ok", false, "reason", "unauthenticated");
             }
 
-            if (!cartItemRepository.existsById(itemId)) {
+            if (!cartItemService.existsById(itemId)) {
                 return Map.of("ok", false, "reason", "item_not_found");
             }
-            cartItemRepository.deleteById(itemId);
+            cartItemService.deleteById(itemId);
 
-            User user = userRepository.findByEmail(auth.getName()).orElse(null);
+            User user = userService.findByEmail(auth.getName()).orElse(null);
             if (user == null) return Map.of("ok", false, "reason", "no_user");
 
             Cart cart = cartRepository.findByUser(user);
@@ -244,6 +245,49 @@ public class CartController {
             return Map.of("ok", false, "reason", "Lỗi hệ thống: " + e.getMessage());
         }
     }
+    @PostMapping("/cart/reorder/{id}")
+    @ResponseBody
+    public ResponseEntity<?> reoderItems(@PathVariable("id") Integer orderId, Authentication authentication){
+        if (authentication == null || !authentication.isAuthenticated()) {
+            // Chưa đăng nhập, trả về lỗi 401 Unauthorized
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "Vui lòng đăng nhập để thực hiện chức năng này."));
+        }
+        User user = userService.findByEmail(authentication.getName()).orElse(null); // Hoặc cách bạn lấy user
+        try {
+            // 2. Gọi Service để xử lý logic nghiệp vụ
+            boolean success = cartService.addItemsFromOrderToCartAndSelect(orderId, user);
+
+            if (success) {
+                // 3. Trả về thành công
+                // Bạn có thể trả thêm số lượng giỏ hàng mới nếu muốn cập nhật badge
+                // int updatedCartCount = cartService.getCartItemCount(user);
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "message", "Đã thêm sản phẩm vào giỏ hàng thành công!"
+                        // "cartCount", updatedCartCount // Tùy chọn
+                ));
+            } else {
+                // Trường hợp service trả về false (ít xảy ra nếu dùng Exception)
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("success", false, "message", "Đã xảy ra lỗi không xác định."));
+            }
+
+        } catch (EntityNotFoundException e) {
+            // 4. Bắt lỗi: Đơn hàng không tồn tại
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        } catch (IllegalStateException e) {
+            // 5. Bắt lỗi: Hết hàng / Sản phẩm không tồn tại
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST) // Hoặc CONFLICT (409) tùy ngữ cảnh
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        } catch (Exception e) {
+            // 6. Bắt lỗi chung khác
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau."));
+        }
+    }
+
     @PostMapping("/cart/prepare-checkout")
     public ResponseEntity<?> prepareCheckout(@RequestParam String cartId,
                                              @RequestParam(required = false) String couponCode,
@@ -289,8 +333,8 @@ public class CartController {
             model.addAttribute("tax", tax);
             model.addAttribute("total", total);
         }
-        User user = userRepository.findByEmail(auth.getName()).orElse(null);
-        List<CartItem> allItems = cartItemRepository.findAllByCart_CartId(id);
+        User user = userService.findByEmail(auth.getName()).orElse(null);
+        List<CartItem> allItems = cartItemService.findAllByCart_CartId(id);
         List<Address> allAddress = addressService.getAddressesByUser(user);
         // Chỉ lấy các sản phẩm ĐƯỢC CHỌN để thanh toán
         List<CartItem> selectedItems = allItems.stream()
@@ -310,7 +354,7 @@ public class CartController {
     // *** ĐÃ HOÀN THIỆN: Tính toán tổng tiền ban đầu cho "Mua ngay" ***
     @GetMapping("/checkout/{serialNumber}")
     public String getCheckout(Model model, @PathVariable("serialNumber") String serialNumber, Authentication auth) {
-        User user = userRepository.findByEmail(auth.getName()).orElse(null);
+        User user = userService.findByEmail(auth.getName()).orElse(null);
         boolean isNotNewMember = true;
         if (user != null) {
             model.addAttribute("user", user);
@@ -367,9 +411,9 @@ public class CartController {
     @Transactional
     public String confirmCheckout(@Valid @ModelAttribute CheckoutDto form, BindingResult errors,
                                   Model model, Authentication auth, HttpServletRequest request) throws Exception {
-        User user = userRepository.findByEmail(auth.getName()).orElse(null);
+        User user = userService.findByEmail(auth.getName()).orElse(null);
         if (user == null) throw new IllegalStateException("Người dùng không tồn tại!");
-// --- VALIDATION ĐỊA CHỈ ---
+        // --- VALIDATION ĐỊA CHỈ ---
         boolean hasOtherErrors = errors.hasErrors() && !(errors.getErrorCount() == 1 && errors.hasFieldErrors("selectedAddressId"));
         boolean noAddressSelected = form.getSelectedAddressId() == null;
 
@@ -382,104 +426,8 @@ public class CartController {
             reloadCheckoutModelOnError(model, form, user);
             return "client_1/product/checkout";
         }
-            // --- LẤY ĐỊA CHỈ ĐÃ CHỌN ---
-                Address selectedAddress = addressService.getAddressByIdAndUser(form.getSelectedAddressId(), user)
-                .orElseThrow(() -> {
-                    // Trường hợp ID không hợp lệ hoặc không thuộc về user
-                    errors.rejectValue("selectedAddressId", "Invalid", "Địa chỉ đã chọn không hợp lệ.");
-                    // Ném exception để dừng xử lý và rollback transaction
-                    return new IllegalStateException("Địa chỉ không hợp lệ hoặc không thuộc về người dùng!");
-                });
-        // Tạo đơn hàng (nhưng chưa set tổng tiền vội)
-        Order order = new Order();
-        order.setUser(user);
-        order.setStatus(Order.Status.PENDING); // Trạng thái ban đầu
-        order.setCreatedAt(LocalDateTime.now());
-        order.setPaid(false);
-        order.setMethodPay(form.getPaymentMethod());
-        order.setNote(form.getNote());
-        order.setConsignee(selectedAddress.getReceiverName());
-        order.setShippingPhone(selectedAddress.getPhone());
-        order.setShippingAddressLine(selectedAddress.getAddressLine());
-        order.setShippingWard(selectedAddress.getWard());
-        order.setShippingDistrict(selectedAddress.getDistrict());
-        order.setShippingCity(selectedAddress.getCity());
-        order.setCouponCode(form.getCouponCode());
-        order.setShippingName(form.getShippingName());
-        order.setShippingFee(form.getShippingFee());
-        order.setDiscount(form.getDiscount());
-        order.setTax(form.getTax());
-        // --- BẮT ĐẦU TÍNH TOÁN PHÍA SERVER ---
-
-        // Bước 1: Tạo danh sách OrderItem và tính giá chính xác
-        List<OrderItem> items = new ArrayList<>();
-
-        // Trường hợp Mua ngay
-        if (form.getSerialNumber() != null && !form.getSerialNumber().isEmpty()) {
-            Product product = productService.getProductBySerialNumber(form.getSerialNumber());
-            if (product == null) throw new IllegalStateException("Sản phẩm không tồn tại!");
-
-            long price = product.getPrice() != null ? product.getPrice() : 0;
-            int originalDiscount = product.getDiscount() != null ? product.getDiscount() : 0;
-            int discountPercent = Math.min(originalDiscount, 100);
-            long finalPrice = price - (price * discountPercent / 100);
-
-            OrderItem oi = new OrderItem();
-            oi.setOrder(order);
-            oi.setProduct(product);
-            oi.setQuantity(1);
-            oi.setUnitPrice(BigDecimal.valueOf(finalPrice)); // Giá đã giảm
-            oi.setTotalPrice(BigDecimal.valueOf(finalPrice)); // Tổng = giá * 1
-            items.add(oi);
-        }
-        // Trường hợp Mua từ giỏ hàng
-        else if (form.getCartId() != null) {
-            Cart cart = cartRepository.findById(form.getCartId()).orElse(null);
-            if (cart == null) throw new IllegalStateException("Giỏ hàng không tồn tại!");
-
-            // Chỉ xử lý các sản phẩm được CHỌN
-            List<CartItem> selectedItems = cart.getItems().stream()
-                    .filter(CartItem::isSelected)
-                    .collect(Collectors.toList());
-
-            if (selectedItems.isEmpty()) throw new IllegalStateException("Không có sản phẩm nào được chọn trong giỏ hàng!");
-
-            for (CartItem ci : selectedItems) {
-                Product product = ci.getProduct();
-                int qty = Math.max(1, ci.getQuantity());
-
-                long price = product.getPrice() != null ? product.getPrice() : 0;
-                int originalDiscount = product.getDiscount() != null ? product.getDiscount() : 0;
-                int discountPercent = Math.min(originalDiscount, 100);
-                long finalPrice = price - (price * discountPercent / 100);
-
-                OrderItem oi = new OrderItem();
-                oi.setOrder(order);
-                oi.setProduct(product);
-                oi.setQuantity(qty);
-                oi.setUnitPrice(BigDecimal.valueOf(finalPrice)); // Giá đã giảm
-                oi.setTotalPrice(BigDecimal.valueOf(finalPrice).multiply(BigDecimal.valueOf(qty)));
-                items.add(oi);
-            }
-        }
-
-        if (items.isEmpty()) throw new IllegalStateException("Không có sản phẩm hợp lệ!");
-
-        orderItemRepository.saveAll(items);
-        order.setItems(items);
-        if(form.getShippingName().equalsIgnoreCase("Nhận tại cửa hàng")){
-            order.setShippingMethod(Order.ShippingMethod.STORE_PICKUP);
-        }
-
-        // TỔNG TIỀN CUỐI CÙNG (do server tính, bỏ qua form.getTotal())
         long totalAmount = form.getTotal();
-        if (totalAmount < 0) totalAmount = 0;
-
-        // Bước 3: Cập nhật tổng tiền chính xác vào đơn hàng
-        order.setTotalAmount(totalAmount);
-        orderService.save(order);
-
-        // --- KẾT THÚC TÍNH TOÁN PHÍA SERVER ---
+        Order order = orderService.createNewOrder(user, form);
 
         // Bước 4: Xử lý thanh toán với TỔNG TIỀN ĐÚNG
         String paymentMethod = form.getPaymentMethod();
@@ -496,10 +444,6 @@ public class CartController {
             String momoUrl = momoService.createMomoPayment(order.getId(), totalAmount, orderInfo, request);
             return "redirect:" + momoUrl;
         } else {
-            // COD - Thanh toán khi nhận hàng
-            order.setStatus(Order.Status.PENDING);
-            orderService.save(order);
-
             // Xóa các sản phẩm đã chọn khỏi giỏ hàng nếu thanh toán từ giỏ
             if (form.getCartId() != null) {
                 if(cartItemService.deleteSelectedByUser(user) == 1){
@@ -517,7 +461,7 @@ public class CartController {
 
         // Nạp lại cart items
         if (form.getCartId() != null) {
-            List<CartItem> allItems = cartItemRepository.findAllByCart_CartId(form.getCartId());
+            List<CartItem> allItems = cartItemService.findAllByCart_CartId(form.getCartId());
             model.addAttribute("carts", allItems.stream().filter(CartItem::isSelected).collect(Collectors.toList()));
         } else if (form.getSerialNumber() != null) {
             Product product = productService.getProductBySerialNumber(form.getSerialNumber());
