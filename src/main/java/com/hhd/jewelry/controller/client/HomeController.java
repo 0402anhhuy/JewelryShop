@@ -75,4 +75,6 @@ public class HomeController {
 
         return "client_1/homepage/home";
     }
+
+
 }
