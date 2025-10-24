@@ -867,7 +867,9 @@
         <button class="tab-btn active" data-tab="description">Mô tả sản phẩm</button>
         <button class="tab-btn" data-tab="specs">Thông số kỹ thuật</button>
         <button class="tab-btn" data-tab="care">Hướng dẫn bảo quản</button>
-        <button class="tab-btn" data-tab="reviews">Đánh giá (0)</button>
+        <button class="tab-btn" data-tab="reviews">
+            Đánh giá (<span th:text="${reviews != null ? reviews.size() : 0}">0</span>)
+        </button>
     </div>
 
     <div class="tab-content active" id="description">
@@ -919,9 +921,132 @@
 
     <div class="tab-content" id="reviews">
         <h3>Đánh giá từ khách hàng</h3>
-        <p>Chưa có đánh giá nào cho sản phẩm này. Hãy là người đầu tiên đánh giá!</p>
+
+        <div th:if="${reviews != null and reviews.size() > 0}"
+             style="background: var(--secondary-color); padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+            <div style="display: flex; gap: 40px; align-items: center;">
+                <!-- Rating summary -->
+                <div style="text-align: center;">
+                    <div style="font-size: 48px; font-weight: 700; color: var(--primary-color);"
+                         th:text="${#numbers.formatDecimal(averageRating, 1, 1)}">0.0</div>
+                    <div class="stars" style="font-size: 24px; color: #ffa500; margin: 10px 0;">
+                        ⭐⭐⭐⭐⭐
+                    </div>
+                    <div style="color: #666; font-size: 14px;">
+                        <span th:text="${reviews.size()}">0</span> đánh giá
+                    </div>
+                </div>
+
+                <!-- Rating bars -->
+                <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <span style="font-size: 14px; color: #666; width: 60px;">5 ⭐</span>
+                        <div style="flex: 1; height: 8px; background: #ddd; border-radius: 4px; overflow: hidden;">
+                            <div th:with="count=${ratingCounts[5]}, total=${reviews.size()},
+                                      percent=${total > 0 ? (count * 100.0 / total) : 0}"
+                                 style="height: 100%; background: var(--primary-color);"
+                                 th:style="'width: ' + ${percent} + '%'"></div>
+                        </div>
+                        <span style="font-size: 14px; color: #666; width: 40px;" th:text="${ratingCounts[5]}">0</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <span style="font-size: 14px; color: #666; width: 60px;">4 ⭐</span>
+                        <div style="flex: 1; height: 8px; background: #ddd; border-radius: 4px; overflow: hidden;">
+                            <div th:with="count=${ratingCounts[4]}, total=${reviews.size()},
+                                      percent=${total > 0 ? (count * 100.0 / total) : 0}"
+                                 style="height: 100%; background: var(--primary-color);"
+                                 th:style="'width: ' + ${percent} + '%'"></div>
+                        </div>
+                        <span style="font-size: 14px; color: #666; width: 40px;" th:text="${ratingCounts[4]}">0</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <span style="font-size: 14px; color: #666; width: 60px;">3 ⭐</span>
+                        <div style="flex: 1; height: 8px; background: #ddd; border-radius: 4px; overflow: hidden;">
+                            <div th:with="count=${ratingCounts[3]}, total=${reviews.size()},
+                                      percent=${total > 0 ? (count * 100.0 / total) : 0}"
+                                 style="height: 100%; background: var(--primary-color);"
+                                 th:style="'width: ' + ${percent} + '%'"></div>
+                        </div>
+                        <span style="font-size: 14px; color: #666; width: 40px;" th:text="${ratingCounts[3]}">0</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <span style="font-size: 14px; color: #666; width: 60px;">2 ⭐</span>
+                        <div style="flex: 1; height: 8px; background: #ddd; border-radius: 4px; overflow: hidden;">
+                            <div th:with="count=${ratingCounts[2]}, total=${reviews.size()},
+                                      percent=${total > 0 ? (count * 100.0 / total) : 0}"
+                                 style="height: 100%; background: var(--primary-color);"
+                                 th:style="'width: ' + ${percent} + '%'"></div>
+                        </div>
+                        <span style="font-size: 14px; color: #666; width: 40px;" th:text="${ratingCounts[2]}">0</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <span style="font-size: 14px; color: #666; width: 60px;">1 ⭐</span>
+                        <div style="flex: 1; height: 8px; background: #ddd; border-radius: 4px; overflow: hidden;">
+                            <div th:with="count=${ratingCounts[1]}, total=${reviews.size()},
+                                      percent=${total > 0 ? (count * 100.0 / total) : 0}"
+                                 style="height: 100%; background: var(--primary-color);"
+                                 th:style="'width: ' + ${percent} + '%'"></div>
+                        </div>
+                        <span style="font-size: 14px; color: #666; width: 40px;" th:text="${ratingCounts[1]}">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Danh sách đánh giá -->
+        <div th:if="${reviews != null and reviews.size() > 0}">
+            <div th:each="review : ${reviews}"
+                 style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background: white; margin-bottom: 15px;">
+
+                <!-- Header -->
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                            <span th:text="${review.user != null ? #strings.substring(review.user.fullName, 0, 1) : 'U'}">U</span>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600;" th:text="${review.user != null ? review.user.fullName : 'Khách hàng'}">User</div>
+                            <div style="color: #ffa500; font-size: 14px;">
+                                <span th:text="${#strings.repeat('⭐', review.rating)}">⭐⭐⭐⭐⭐</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="font-size: 13px; color: #999;" th:if="${review.createdAt != null}">
+                        <span th:text="${#temporals.format(review.createdAt, 'dd/MM/yyyy')}">01/01/2024</span>
+                    </div>
+                </div>
+
+                <!-- Comment -->
+                <div th:if="${review.comment != null}" style="color: #555; line-height: 1.6;">
+                    <p th:text="${review.comment}">Bình luận</p>
+                </div>
+
+                <!-- Images -->
+                <!-- Images -->
+                <div th:if="${review.mediaPaths != null and review.mediaPaths.size() > 0}"
+                     style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
+                    <img th:each="media : ${review.mediaPaths}"
+                         th:src="@{${media}}"
+                         alt="Review"
+                         style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;"
+                         onerror="this.style.display='none'">
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty state -->
+        <div th:if="${reviews == null or reviews.size() == 0}"
+             style="text-align: center; padding: 40px 20px; color: #999;">
+            <i class="far fa-star" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
+            <p style="font-size: 16px;">Chưa có đánh giá nào cho sản phẩm này.</p>
+            <p style="font-size: 14px;">Hãy là người đầu tiên đánh giá!</p>
+        </div>
     </div>
-</div>
+
 <script th:src="@{/js/home.js}"></script>
 <script>
     // Thumbnail navigation
@@ -1055,6 +1180,35 @@
     // Size guide
     document.querySelector('.size-guide').addEventListener('click', function() {
         alert('Hướng dẫn đo size lắc tay:\n\n1. Dùng thước dây đo quanh cổ tay\n2. Cộng thêm 1-2cm cho thoải mái\n3. Đối chiếu với bảng size');
+    });
+
+    function viewMedia(element) {
+        const modal = document.createElement('div');
+        modal.className = 'review-media-modal show';
+
+        const mediaElement = element.querySelector('img, video');
+        if (mediaElement) {
+            const clone = mediaElement.cloneNode(true);
+            clone.style.maxWidth = '90%';
+            clone.style.maxHeight = '90vh';
+            if (clone.tagName === 'VIDEO') {
+                clone.controls = true;
+                clone.autoplay = true;
+            }
+            modal.appendChild(clone);
+        }
+
+        modal.addEventListener('click', () => modal.remove());
+        document.body.appendChild(modal);
+    }
+
+    // Cập nhật số lượng đánh giá trên tab
+    document.addEventListener('DOMContentLoaded', function() {
+        const reviewCount = [[${reviews != null ? reviews.size() : 0}]];
+        const reviewTab = document.querySelector('[data-tab="reviews"]');
+        if (reviewTab) {
+            reviewTab.textContent = `Đánh giá (${reviewCount})`;
+        }
     });
 </script>
 <footer th:replace="~{client_1/layout/chatbox :: none}"></footer>
