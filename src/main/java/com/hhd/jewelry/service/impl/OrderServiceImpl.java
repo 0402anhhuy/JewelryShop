@@ -2,20 +2,24 @@ package com.hhd.jewelry.service.impl;
 
 import com.hhd.jewelry.dto.CheckoutDto;
 import com.hhd.jewelry.entity.*;
-import com.hhd.jewelry.repository.CartRepository;
-import com.hhd.jewelry.repository.OrderItemRepository;
-import com.hhd.jewelry.repository.OrderRepository;
+import com.hhd.jewelry.repository.*;
 import com.hhd.jewelry.service.AddressService;
 import com.hhd.jewelry.service.OrderService;
 import com.hhd.jewelry.service.ProductService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.nio.file.*;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -27,6 +31,8 @@ public class OrderServiceImpl implements OrderService {
     private final CartRepository cartRepository;
     private final ProductService productService;
     private final OrderItemRepository orderItemRepository;
+    private final ProductRepository productRepository;
+    private final ProductReviewRepository reviewRepo;
     @Override
     public void save(Order order) {
         orderRepository.save(order);
@@ -155,5 +161,83 @@ public class OrderServiceImpl implements OrderService {
                 .build();
         order.getStatusHistory().add(newHistoryEntry);
         return orderRepository.save(order);
+    }
+
+    @Override
+    public Order findById(Integer id) {
+        return orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng có ID = " + id));
+    }
+
+    @Override
+    @Transactional
+    public void saveAllReviews(ReviewRequest request, Map<Integer, List<MultipartFile>> filesMap) {
+        // Lấy đơn hàng
+        Order order = orderRepository.findById(request.getOrderId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng có ID = " + request.getOrderId()));
+
+        User user = order.getUser();
+
+        // Lặp qua từng review
+        request.getReviews().forEach(r -> {
+            // Tìm sản phẩm theo itemId (product.id)
+            Product product = productRepository.findById(Long.valueOf(r.getItemId()))
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm có ID = " + r.getItemId()));
+
+            // Tạo review
+            ProductReview review = ProductReview.builder()
+                    .order(order)
+                    .user(user)
+                    .product(product)
+                    .rating(r.getRating())
+                    .comment(r.getComment())
+                    .build();
+
+            // Xử lý upload files nếu có
+            if (filesMap.containsKey(r.getItemId())) {
+                List<MultipartFile> files = filesMap.get(r.getItemId());
+                List<String> savedPaths = uploadFiles(files, Long.valueOf(product.getId()));
+                review.setMediaPaths(savedPaths);
+            }
+
+            reviewRepo.save(review);
+        });
+    }
+
+    // 🔹 Method upload files (tự implement logic upload)
+    private List<String> uploadFiles(List<MultipartFile> files, Long productId) {
+        List<String> paths = new ArrayList<>();
+
+        // ✅ Đường dẫn cố định
+        String uploadDir = "src/main/resources/static/images/reviews/";
+
+        for (MultipartFile file : files) {
+            if (!file.isEmpty()) {
+                try {
+                    String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+                    // Tạo thư mục reviews/{productId}/
+                    File folder = new File(uploadDir + productId);
+                    if (!folder.exists()) {
+                        folder.mkdirs(); // Tạo tất cả thư mục cha
+                    }
+
+                    // Lưu file
+                    File destFile = new File(folder, fileName);
+                    file.transferTo(destFile);
+
+                    // Lưu web path vào DB
+                    String webPath = "/images/reviews/" + productId + "/" + fileName;
+                    paths.add(webPath);
+
+                    System.out.println("✅ Saved: " + destFile.getAbsolutePath());
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return paths;
     }
 }

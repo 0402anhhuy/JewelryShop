@@ -1,13 +1,12 @@
 package com.hhd.jewelry.controller.account;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hhd.jewelry.dto.ProfileDto;
-import com.hhd.jewelry.entity.Address;
-import com.hhd.jewelry.entity.Order;
-import com.hhd.jewelry.entity.User;
-import com.hhd.jewelry.entity.Wishlist;
+import com.hhd.jewelry.entity.*;
+import com.hhd.jewelry.repository.OrderRepository;
 import com.hhd.jewelry.service.*;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -24,9 +23,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
@@ -48,6 +49,9 @@ public class AccountController {
     private static final Logger log = LoggerFactory.getLogger(AccountController.class);
 
     private final OtpService otpService;
+    private final ReviewService reviewService;
+    private final OrderRepository orderRepository;
+
     @GetMapping("/account")
     public String getAccountPage(
             Authentication auth,
@@ -248,4 +252,71 @@ public class AccountController {
         userService.updatePassword(email, newPassword);
         return "SUCCESS";
     }
+
+    // 🔹 Controller
+    @PostMapping("/reviews/submit")
+    public ResponseEntity<String> submitReview(
+            @RequestParam("orderId") Integer orderId,
+            @RequestParam("reviews") String reviewsJson,
+            @RequestParam MultiValueMap<String, MultipartFile> allFiles) {
+
+        try {
+            // ====== BƯỚC 1: Kiểm tra đơn hàng đã review chưa ======
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+
+            // Kiểm tra status
+            if (!order.getStatus().name().equals("COMPLETED")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Chỉ có thể đánh giá đơn hàng đã hoàn thành!");
+            }
+
+            // Kiểm tra đã review chưa
+            if (order.getIsReviewed() != null && order.getIsReviewed()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Đơn hàng này đã được đánh giá trước đó!");
+            }
+
+            // ====== BƯỚC 2: Parse JSON và xử lý files ======
+            ObjectMapper mapper = new ObjectMapper();
+            List<ItemReview> reviews = mapper.readValue(reviewsJson,
+                    new TypeReference<List<ItemReview>>() {});
+
+            Map<Integer, List<MultipartFile>> filesMap = new HashMap<>();
+            allFiles.forEach((key, files) -> {
+                if (key.startsWith("files_")) {
+                    Integer productId = Integer.parseInt(key.substring(6));
+                    filesMap.put(productId, files);
+                }
+            });
+
+            ReviewRequest request = ReviewRequest.builder()
+                    .orderId(orderId)
+                    .reviews(reviews)
+                    .build();
+
+            // ====== BƯỚC 3: Lưu reviews ======
+            orderService.saveAllReviews(request, filesMap);
+
+            // ====== BƯỚC 4: Đánh dấu đơn hàng đã review ======
+            order.setIsReviewed(true);
+            orderRepository.save(order);
+
+            return ResponseEntity.ok("Cảm ơn bạn đã đánh giá!");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Lỗi: " + e.getMessage());
+        }
+    }
+    // 🔹 Hiển thị trang đánh giá đơn hàng
+    @GetMapping("/reviews/order/{id}")
+    public String reviewOrderPage(@PathVariable Integer id, Model model) {
+        Order order = orderService.findById(id);
+        model.addAttribute("order", order);
+        return "client_1/homepage/review-order"; // trỏ đến file review-order.html
+    }
+
+
 }
