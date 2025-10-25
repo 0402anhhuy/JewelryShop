@@ -150,6 +150,15 @@ public class ProductController {
             return ResponseEntity.badRequest().build();
         }
     }
+    @PostMapping("/orders/confirm-delivery/{id}")
+    public ResponseEntity<?> confirmDelivery(@PathVariable Integer id) {
+        try {
+            Order order = orderService.updateOrderStatus(id, Order.Status.COMPLETED);
+            return ResponseEntity.ok().build();
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body("Không thể xác nhận đơn hàng: " + e.getMessage());
+        }
+    }
     private Sort parseSort(String sort) {
         return switch (sort) {
             case "priceAsc" -> Sort.by(Sort.Direction.ASC, "price");
