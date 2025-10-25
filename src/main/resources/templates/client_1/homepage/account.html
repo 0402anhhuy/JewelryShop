@@ -1690,6 +1690,21 @@
         .btn-danger:hover {
             background: #c82333;
         }
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+        .btn-success:hover {
+            background: #0c6c40;
+        }
+
+        .btn-warning{
+            background: var(--warning-color);
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #b68b10;
+        }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -1950,6 +1965,12 @@
                                     th:if="${order.status.name() == 'PENDING' or order.status.name() == 'PAID'}"
                                     th:onclick="'cancelOrder(' + ${order.id} + ')'">
                                 <i class="fas fa-times"></i> Hủy đơn
+                            </button>
+
+                            <button class="btn btn-success btn-sm"
+                                    th:if="${order.status.name() == 'DELIVERED'}"
+                                    th:onclick="'confirmDelivered(' + ${order.id} + ')'">
+                                <i class="fas fa-check"></i> Đã nhận được hàng
                             </button>
 
                             <button class="btn btn-warning btn-sm"
@@ -3547,6 +3568,40 @@
                     showToast('fail', 'Thất bại', 'Đã xảy ra lỗi kết nối. Vui lòng thử lại!');
                 });
         });
+    }
+    function confirmDelivered(id){
+        showToast('warning',
+            'Xác nhận đã nhận hàng',
+            'Bạn có chắc đã nhận được đơn hàng #' + id + '? Đơn hàng sẽ được chuyển sang trạng thái "Hoàn thành".',
+            true,
+            () => {
+                const token = document.querySelector("meta[name='_csrf']").getAttribute("content");
+                const header = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
+                showToast('info', 'Đang xử lý', 'Đang xác nhận đơn hàng của bạn...');
+                fetch(`/orders/confirm-delivery/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        [header]: token // Gửi kèm CSRF token
+                    }
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            // 4. Thành công
+                            showToast('success', 'Thành công', 'Đã xác nhận nhận hàng. Đơn hàng #' + id + ' đã hoàn thành!');
+
+                            location.reload();
+                        } else {
+                            // 5. Lỗi từ server (ví dụ: đơn hàng không hợp lệ)
+                            showToast('error', 'Thất bại', 'Không thể xác nhận đơn hàng. Vui lòng thử lại.');
+                        }
+                    })
+                    .catch(error => {
+                        // 6. Lỗi mạng
+                        console.error('Lỗi khi gửi request xác nhận:', error);
+                        showToast('error', 'Lỗi kết nối', 'Đã xảy ra lỗi kết nối. Vui lòng thử lại!');
+                    });
+            }
+        );
     }
 
     function reorder(id) {
