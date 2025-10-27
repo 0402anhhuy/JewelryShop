@@ -1,0 +1,134 @@
+/* ============ Root tokens ============ */
+:root{
+    --auth-bg: #f8fafc;
+    --card-radius: 18px;
+    --shadow: 0 8px 28px rgba(0,0,0,.08);
+
+    /* PNJ gold */
+    --gold-1:#d4a017;
+    --gold-2:#f0c14b;
+    --gold-border:#b68b10;
+}
+
+/* ============ Layout chung cho login/register ============ */
+.auth-wrap, .login-wrap{              /* hỗ trợ tên cũ & mới */
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: var(--auth-bg);
+}
+
+.auth-card, .login-card{
+    width: 100%;
+    max-width: 760px;                   /* form rộng vừa phải */
+    background: #fff;
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow);
+}
+
+/* ============ Brand & logo ============ */
+.brand{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-logo {
+    height: 40px;
+    max-height: 40px;
+    width: auto !important;
+    object-fit: contain;
+    display: inline-block;
+}
+
+.brand-name{
+    font-size: 1.25rem;
+    line-height: 1.1;
+}
+
+/* ============ Form controls ============ */
+.form-label{
+    font-weight: 600;
+}
+
+.form-control,
+.form-select{
+    border-radius: 10px;
+}
+
+.form-select:disabled,
+.form-control:disabled{
+    background-color:#eef1f5;
+    opacity:1;
+}
+
+/* điều chỉnh vị trí icon valid/invalid của Bootstrap */
+.form-control.is-valid,
+.form-select.is-valid{
+    background-position: right calc(.375em + .1875rem) center;
+}
+.form-control.is-invalid,
+.form-select.is-invalid{
+    background-position: right calc(.375em + .1875rem) center;
+}
+
+/* spacing cho feedback để không nhảy layout */
+.valid-feedback,
+.invalid-feedback{
+    margin-top:.25rem;
+}
+
+/* group ẩn/hiện động (địa chỉ) */
+.d-none{ display:none !important; }
+
+/* ============ Buttons ============ */
+.btn-gold{
+    background: linear-gradient(180deg, var(--gold-2), var(--gold-1));
+    border:1px solid var(--gold-border);
+    color:#222;
+    font-weight:600;
+}
+.btn-gold:hover{
+    filter: brightness(.97);
+    color:#111;
+}
+
+/* ============ Utilities ============ */
+.subtle{ color:#6b7280; } /* text-muted tuỳ biến */
+
+@media (max-width:576px){
+    .auth-card, .login-card{ border-radius: 12px; }
+}
+
+/* ===== Quy tắc chống “đúp” feedback ===== */
+#registerForm .valid-feedback,
+#registerForm .invalid-feedback { display: none !important; }
+
+/* Chưa có trạng thái -> ẩn cả hai */
+#registerForm .form-control:not(.is-valid):not(.is-invalid) ~ .valid-feedback,
+#registerForm .form-control:not(.is-valid):not(.is-invalid) ~ .invalid-feedback,
+#registerForm .form-select:not(.is-valid):not(.is-invalid) ~ .valid-feedback,
+#registerForm .form-select:not(.is-valid):not(.is-invalid) ~ .invalid-feedback {
+    display: none !important;
+}
+
+/* Đang INVALID -> chỉ hiện lỗi đỏ */
+#registerForm .form-control.is-invalid ~ .invalid-feedback,
+#registerForm .form-select.is-invalid ~ .invalid-feedback { display: block !important; }
+#registerForm .form-control.is-invalid ~ .valid-feedback,
+#registerForm .form-select.is-invalid ~ .valid-feedback { display: none !important; }
+
+/* Đang VALID -> chỉ hiện hợp lệ xanh */
+#registerForm .form-control.is-valid ~ .valid-feedback,
+#registerForm .form-select.is-valid ~ .valid-feedback { display: block !important; }
+#registerForm .form-control.is-valid ~ .invalid-feedback,
+#registerForm .form-select.is-valid ~ .invalid-feedback { display: none !important; }
+/* Mặc định ẩn feedback; chỉ JS sẽ bật lên */
+#registerForm .valid-feedback,
+#registerForm .invalid-feedback { display: none; }
+
+/* Phòng hờ: nếu có class trạng thái mà JS không bắt kịp */
+#registerForm .form-control.is-invalid ~ .valid-feedback,
+#registerForm .form-select.is-invalid ~ .valid-feedback { display: none !important; }
+#registerForm .form-control.is-valid   ~ .invalid-feedback,
+#registerForm .form-select.is-valid   ~ .invalid-feedback { display: none !important; }

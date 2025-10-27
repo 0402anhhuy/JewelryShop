@@ -1,0 +1,388 @@
+:root {
+    --accent: #007bff;
+    --bg: #f4f8ff;
+    --hover: #e6f0ff;
+}
+
+/* Reset layout */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Segoe UI', sans-serif;
+    background: var(--bg);
+}
+
+.layout {
+    display: flex;
+    height: 100vh;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+    background: #0d6efd;
+    width: 230px;
+    height: 100vh;              /* ✅ chiếm toàn màn hình */
+    position: fixed;            /* ✅ cố định khi cuộn */
+    top: 0;
+    left: 0;
+    padding: 20px 15px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+    overflow-y: auto;           /* ✅ thêm thanh cuộn riêng nếu menu dài */
+    z-index: 1000;              /* ✅ đảm bảo nằm trên nội dung */
+}
+
+.layout {
+    display: flex;
+    height: 100%;
+}
+
+.main-content {
+    margin-left: 230px; /* ✅ trừ chiều rộng sidebar */
+    width: calc(100% - 230px);
+    min-height: 100vh;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+}
+.sidebar .brand {
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+
+.sidebar .nav-link {
+    color: #fff !important;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
+    opacity: .9;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background: rgba(255, 255, 255, 0.25);
+    opacity: 1;
+    font-weight: 600;
+}
+
+/* --- Header (Topbar) --- */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #0d6efd;
+    padding: 15px 25px;
+    color: #fff;
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.topbar * {
+    color: #fff !important;
+}
+
+.topbar .btn-logout {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid #fff;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.topbar .btn-logout:hover {
+    background: #fff;
+    color: #0d6efd !important;
+}
+
+/* --- Section / Table --- */
+.section {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.table-box {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+th {
+    background: #eaf2ff;
+    color: #333;
+}
+
+tr:hover {
+    background: var(--hover);
+}
+
+.empty {
+    text-align: center;
+    color: #888;
+    padding: 15px;
+}
+
+/* --- Footer --- */
+.footer {
+    text-align: center;
+    color: #777;
+    margin-top: auto;
+    padding: 15px;
+    border-top: 1px solid #eee;
+    font-size: 0.9rem;
+}
+
+/* --- Buttons / Actions --- */
+.actions {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    margin: 0 2px;
+}
+
+.btn-action.view {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.btn-action.view:hover {
+    background: #1976d2;
+    color: white;
+}
+
+.btn-action.edit {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.btn-action.edit:hover {
+    background-color: #99ccff;
+    transform: translateY(-2px);
+}
+
+.btn-action.delete {
+    background-color: #ffd6d6;
+    color: #b71c1c;
+}
+
+.btn-action.delete:hover {
+    background-color: #ffb3b3;
+    transform: translateY(-2px);
+}
+
+.btn-action:active {
+    transform: scale(0.95);
+}
+.upload-box {
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 10px;
+    transition: all 0.3s;
+}
+.upload-box:hover { border-color: #0d6efd; background: #e7f1ff; }
+.preview-container {
+    min-height: 150px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: white; border-radius: 6px; padding: 10px;
+}
+.preview-container img {
+    max-width: 100%; max-height: 150px; object-fit: cover; border-radius: 6px;
+}
+.badge-action {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border-radius: 6px;
+    display: inline-block;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Màu cho từng loại action */
+.action-LOGIN {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+.action-LOGOUT {
+    background: linear-gradient(135deg, #6c757d 0%, #868e96 100%);
+    color: white;
+}
+.action-REGISTER {
+    background: linear-gradient(135deg, #17a2b8 0%, #20c9e3 100%);
+    color: white;
+}
+.action-CREATE_USER {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+}
+.action-UPDATE_USER {
+    background: linear-gradient(135deg, #ffc107 0%, #ffca2c 100%);
+    color: #000;
+}
+.action-UPDATE_PROFILE {
+    background: linear-gradient(135deg, #fd7e14 0%, #ff922b 100%);
+    color: white;
+}
+.action-DELETE_USER {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+}
+.action-RESET_PASSWORD {
+    background: linear-gradient(135deg, #e83e8c 0%, #d63384 100%);
+    color: white;
+}
+.action-CHANGE_PASSWORD {
+    background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
+    color: white;
+}
+.action-ACTIVATE_USER {
+    background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+    color: white;
+}
+.action-DEACTIVATE_USER {
+    background: linear-gradient(135deg, #868e96 0%, #6c757d 100%);
+    color: white;
+}
+
+/* Hover effect */
+.badge-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Badge cho Role */
+.role-badge {
+    padding: 0.35rem 0.65rem;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+/* Table styling */
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.01);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.admin-name {
+    font-weight: 500;
+    color: #495057;
+}
+
+.detail-text {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.time-text {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+/* Thu nhỏ và tinh gọn nút lọc + tất cả */
+.btn-filter, .btn-reset {
+    font-size: 0.9rem;         /* chữ nhỏ hơn một chút */
+    padding: 6px 14px;         /* giảm padding */
+    border-radius: 8px;        /* bo góc nhẹ hơn */
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+/* Nút Lọc (xanh) */
+.btn-filter {
+    background-color: #0d6efd;
+    color: #fff;
+    border: none;
+}
+.btn-filter:hover {
+    background-color: #0b5ed7;
+}
+
+/* Gộp style cho hai nút */
+.btn-filter, .btn-reset {
+    font-size: 0.9rem;
+    padding: 6px 16px;
+    min-width: 90px;           /* ✅ 2 nút đều nhau */
+    height: 38px;              /* ✅ khớp với input date */
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Nút Lọc (xanh) */
+.btn-filter {
+    background-color: #0d6efd;
+    color: #fff;
+    border: none;
+    margin-left: -4px;         /* ✅ xích sát về bên trái */
+}
+.btn-filter:hover {
+    background-color: #0b5ed7;
+}
+
+/* Nút Tất cả (xám) */
+.btn-reset {
+    background-color: #6c757d;
+    color: #fff;
+    border: none;
+}
+.btn-reset:hover {
+    background-color: #5a6268;
+}

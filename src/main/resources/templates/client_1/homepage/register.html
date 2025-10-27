@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta th:name="_csrf" th:content="${_csrf.token}"/>
+    <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>Đăng Ký Tài Khoản - LuxuryGems</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary-color: #d4af37;
+            --secondary-color: #f8f5e6;
+            --accent-color: #2c2c2c;
+            --light-color: #ffffff;
+            --dark-color: #1a1a1a;
+            --text-color: #333333;
+            --border-radius: 12px;
+            --error-color: #dc3545;
+            --success-color: #28a745;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f9f7f0 0%, #f0ece1 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .register-container {
+            max-width: 1100px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* Left Side - Banner */
+        .register-banner {
+            flex: 1;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.95) 0%, rgba(26, 26, 26, 0.95) 100%),
+            url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800') center/cover;
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: white;
+            position: relative;
+        }
+
+        .register-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(212, 175, 55, 0.3) 0%, transparent 60%);
+        }
+
+        .banner-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .banner-logo {
+            font-size: 42px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .banner-logo span {
+            color: var(--primary-color);
+        }
+
+        .banner-title {
+            font-size: 32px;
+            font-weight: 300;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        .banner-description {
+            font-size: 16px;
+            opacity: 0.9;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .banner-features {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+        }
+
+        .feature-item i {
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+        }
+
+        /* Right Side - Form */
+        .register-form-section {
+            flex: 1;
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-header {
+            margin-bottom: 40px;
+        }
+
+        .form-title {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 10px;
+        }
+
+        .form-subtitle {
+            color: #666;
+            font-size: 15px;
+        }
+
+        .form-subtitle a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .form-subtitle a:hover {
+            text-decoration: underline;
+        }
+
+        /* Form Groups */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 8px;
+        }
+
+        .form-label .required {
+            color: var(--error-color);
+        }
+
+        .input-wrapper {
+            position: relative;
+            transition: all 0.3s ease;
+            min-height: 50px;
+            isolation: isolate;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 27px;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 16px;
+            transition: color 0.3s ease;
+            pointer-events: none;
+        }
+
+        .form-input {
+            width: 100%;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: none !important;
+            padding: 14px 1.5rem 14px 45px;
+            height: 50px; /* Chiều cao cố định */
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+        }
+
+        .form-input::placeholder{
+            color: #999;
+        }
+
+        input[type="date"].form-input::-webkit-calendar-picker-indicator {
+            opacity: 0;
+            position: absolute;
+            right: 0;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+
+        .toggle-password:hover {
+            color: var(--primary-color);
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        #otpHelp {
+            margin-top: 6px;
+            font-size: 13px;
+            transition: color 0.3s ease;
+        }
+
+        #otpHelp.text-success {
+            color: #28a745;
+        }
+
+        #otpHelp.text-error {
+            color: #dc3545;
+        }
+
+        #otpHelp.text-warning {
+            color: #ffc107;
+        }
+
+        #address[readonly] {
+            background-color: #f8f9fa;
+            border-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        /* Password Strength */
+        .password-strength {
+            margin-top: 8px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .strength-bar {
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            margin-bottom: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .strength-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .strength-bar.weak::after {
+            width: 33%;
+            background: #dc3545;
+        }
+
+        .strength-bar.medium::after {
+            width: 66%;
+            background: #ffc107;
+        }
+
+        .strength-bar.strong::after {
+            width: 100%;
+            background: #28a745;
+        }
+
+        .strength-text {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Name Row */
+        .name-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        /* Checkbox */
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-top: 4px;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
+        .checkbox-label {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .checkbox-label a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .checkbox-label a:hover {
+            text-decoration: underline;
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #f4d47c 100%);
+            color: var(--dark-color);
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 30px 0;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .divider::before {
+            margin-right: 15px;
+        }
+
+        .divider::after {
+            margin-left: 15px;
+        }
+
+        /* Social Login */
+        .social-login {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .social-btn:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .social-btn.google {
+            color: #db4437;
+        }
+
+        .social-btn.facebook {
+            color: #1877f2;
+        }
+
+        .social-btn i {
+            font-size: 20px;
+        }
+
+        .address-grid-2x2 {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .address-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .address-col {
+            width: 100%;
+        }
+
+        #address {
+            min-height: 40px;
+            resize: none;
+            overflow-y: hidden;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.4;
+            padding-top: 12px;
+            padding-bottom: 12px;
+            transition: height 0.3s ease;
+        }
+
+        /* Back to Home */
+        .back-home {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .back-home:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-5px);
+        }
+
+        /* ===== Toast Notification Styles ===== */
+        .custom-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 9999;
+            transform: translateX(400px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            max-width: 400px;
+            font-size: 14px;
+        }
+
+        .custom-toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .custom-toast i {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .custom-toast.toast-success {
+            border-left: 4px solid #28a745;
+        }
+
+        .custom-toast.toast-success i {
+            color: #28a745;
+        }
+
+        .custom-toast.toast-error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .custom-toast.toast-error i {
+            color: #dc3545;
+        }
+
+        .custom-toast.toast-warning {
+            border-left: 4px solid #ffc107;
+        }
+
+        .custom-toast.toast-warning i {
+            color: #ffc107;
+        }
+
+        .custom-toast.toast-info {
+            border-left: 4px solid #17a2b8;
+        }
+
+        .custom-toast.toast-info i {
+            color: #17a2b8;
+        }
+
+        /* ===== Input Validation Styles ===== */
+        .input-wrapper.input-valid {
+            animation: borderPulseGreen 0.6s ease;
+        }
+
+        .input-wrapper.input-valid .form-input {
+            border-color: #28a745 !important;
+            background-color: #f8fff9;
+        }
+
+        .input-wrapper.input-valid .input-icon {
+            color: #28a745;
+        }
+
+        .input-wrapper.input-error {
+            animation: borderShake 0.4s ease, borderPulseRed 0.6s ease;
+        }
+
+        .input-wrapper.input-error .form-input {
+            border-color: #dc3545 !important;
+            background-color: #fff8f8;
+        }
+
+        .input-wrapper.input-error .input-icon {
+            color: #dc3545;
+        }
+
+        /* Valid/Invalid state for inputs */
+        .form-input.is-valid {
+            border-color: #28a745;
+            padding-right: 40px;
+        }
+
+        .form-input.is-invalid {
+            border-color: #dc3545;
+            padding-right: 40px;
+        }
+
+        /* ===== Animations ===== */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes borderPulseGreen {
+            0% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 6px rgba(40, 167, 69, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+            }
+        }
+
+        @keyframes borderPulseRed {
+            0% {
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 6px rgba(220, 53, 69, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+            }
+        }
+
+        @keyframes borderShake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-5px);
+            }
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        /* ===== Responsive Toast for Mobile ===== */
+        @media (max-width: 768px) {
+            .custom-toast {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: calc(100% - 20px);
+                transform: translateY(-100px);
+            }
+
+            .custom-toast.show {
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== Focus states ===== */
+        .input-wrapper.input-valid .form-input:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.15);
+        }
+
+        .input-wrapper.input-error .form-input:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15);
+        }
+
+        .form-input.is-valid {
+            border-color: #28a745;
+        }
+
+        .form-input.is-invalid {
+            border-color: #dc3545;
+        }
+
+        .otp-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .otp-input {
+            padding-right: 120px; /* Tạo khoảng trống cho nút */
+        }
+
+        .resend-otp-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 12px;
+            color: #333;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .resend-otp-btn:hover {
+            background: #e9ecef;
+            border-color: #ccc;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .register-container {
+                flex-direction: column;
+            }
+
+            .register-banner {
+                padding: 40px 30px;
+                min-height: 300px;
+            }
+
+            .banner-logo {
+                font-size: 32px;
+            }
+
+            .banner-title {
+                font-size: 26px;
+            }
+
+            .register-form-section {
+                padding: 40px 30px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            .register-banner {
+                padding: 30px 20px;
+            }
+
+            .register-form-section {
+                padding: 30px 20px;
+            }
+
+            .form-title {
+                font-size: 26px;
+            }
+
+            .name-row {
+                grid-template-columns: 1fr;
+            }
+
+            .social-login {
+                flex-direction: column;
+            }
+
+            .back-home {
+                top: 15px;
+                left: 15px;
+                padding: 8px 15px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="register-container">
+    <div class="register-container">
+        <!-- Left Side - Banner -->
+        <div class="register-banner">
+            <a th:href="@{/}" class="back-home">
+                <i class="fas fa-arrow-left"></i> Trang chủ
+            </a>
+
+            <div class="banner-content">
+                <div class="banner-logo">LUXURY<span>GEMS</span></div>
+                <h2 class="banner-title">Khám phá vẻ đẹp vượt thời gian</h2>
+                <p class="banner-description">
+                    Tham gia cộng đồng những người yêu thích trang sức cao cấp.
+                    Trải nghiệm mua sắm đẳng cấp với dịch vụ hoàn hảo.
+                </p>
+
+                <div class="banner-features">
+                    <div class="feature-item">
+                        <i class="fas fa-gem"></i>
+                        <span>Sản phẩm chính hãng 100%</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-shipping-fast"></i>
+                        <span>Miễn phí giao hàng toàn quốc</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-certificate"></i>
+                        <span>Bảo hành trọn đời</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-gift"></i>
+                        <span>Ưu đãi độc quyền cho thành viên</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Form -->
+        <div class="register-form-section">
+            <div class="form-header">
+                <h1 class="form-title">Đăng Ký Tài Khoản</h1>
+                <p class="form-subtitle">
+                    Đã có tài khoản? <a th:href="@{/login}">Đăng nhập ngay</a>
+                </p>
+            </div>
+
+            <form th:action="@{/register}" method="post" th:object="${form}" id="registerForm">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                <!-- Full Name -->
+                <div class="name-row">
+                    <div class="form-group">
+                        <label class="form-label">Họ và tên <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="input-icon fas fa-user"></i>
+                            <input type="text" id="fullName" th:field="*{fullName}" class="form-input" placeholder="Nguyễn Văn A" required>
+                        </div>
+                        <span th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="error-message show"></span>
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Email <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <i class="input-icon fas fa-envelope"></i>
+                        <input type="email" id="email" class="form-input" th:field="*{email}" placeholder="example@gmail.com" required>
+                        <small id="otpHelp" class="form-text text-muted"></small>
+                    </div>
+                </div>
+
+                <!-- Phone -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Số điện thoại <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <i class="input-icon fas fa-phone"></i>
+                        <input type="tel" id="phone" class="form-input" th:field="*{phone}" placeholder="0912345678" required>
+                    </div>
+                    <span class="error-message" id="phoneError" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}">Số điện thoại không hợp lệ</span>
+                </div>
+
+                <!-- Gender -->
+                <div class="form-group">
+                    <label class="form-label">Giới tính</label>
+                    <div class="input-wrapper">
+                        <i class="input-icon fas fa-venus-mars"></i>
+                        <select id="gender" class="form-input" th:field="*{gender}">
+                            <option value="">-- Chọn giới tính --</option>
+                            <option value="MALE">Nam</option>
+                            <option value="FEMALE">Nữ</option>
+                            <option value="OTHER">Khác</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Date of Birth -->
+                <div class="form-group">
+                    <label class="form-label">Ngày sinh</label>
+                    <div class="input-wrapper">
+                        <i class="input-icon fas fa-calendar-alt"></i>
+                        <input type="date" id="dateOfBirth" class="form-input" th:field="*{dateOfBirth}">
+                    </div>
+                </div>
+
+                <!-- Address -->
+                <div class="form-group">
+                    <label class="form-label">Địa chỉ</label>
+
+                    <!-- Hàng 1: Tỉnh/Thành phố và Quận/Huyện -->
+                    <div class="address-grid-2x2">
+                        <div class="address-row">
+                            <div class="address-col">
+                                <div class="input-wrapper">
+                                    <i class="input-icon fas fa-map-marker-alt"></i>
+                                    <select id="province" class="form-input">
+                                        <option value="">- Chọn Tỉnh/Thành -</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="address-col">
+                                <div class="input-wrapper">
+                                    <i class="input-icon fas fa-map-marker-alt"></i>
+                                    <select id="district" class="form-input">
+                                        <option value="">- Chọn Quận/Huyện -</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hàng 2: Phường/Xã và Số nhà/Thôn -->
+                        <div class="address-row">
+                            <div class="address-col">
+                                <div class="input-wrapper">
+                                    <i class="input-icon fas fa-map-marker-alt"></i>
+                                    <select id="ward" class="form-input">
+                                        <option value="">- Chọn Phường/Xã -</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="address-col">
+                                <div class="input-wrapper">
+                                    <i class="input-icon fas fa-home"></i>
+                                    <input type="text" id="street" class="form-input" placeholder="Số nhà/Thôn">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Địa chỉ đầy đủ -->
+                    <div class="input-wrapper" style="margin-top: 10px;">
+                        <i class="input-icon fas fa-map-marker-alt"></i>
+                        <textarea id="address" class="form-input" th:field="*{address}" placeholder="Địa chỉ" readonly></textarea>
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Mật khẩu <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <i class="input-icon fas fa-lock"></i>
+                        <input type="password" id="password" class="form-input" th:field="*{password}" placeholder="••••••••" required>
+                        <button type="button" class="toggle-password" onclick="togglePassword('password')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <span class="error-message" id="passwordError" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Mật khẩu phải có ít nhất 8 ký tự</span>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Xác nhận mật khẩu <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <i class="input-icon fas fa-lock"></i>
+                        <input type="password" id="confirmPassword" class="form-input" th:field="*{confirmPassword}" placeholder="••••••••" required>
+                        <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <span class="error-message" id="confirmPasswordError" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}">Mật khẩu không khớp</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mã OTP <span class="required">*</span></label>
+                    <div class="input-wrapper otp-wrapper">
+                        <i class="input-icon fas fa-key"></i>
+                        <input type="text" id="otp" class="form-input otp-input" th:field="*{otp}" placeholder="Nhập mã OTP được gửi đến email" required>
+                        <button type="button" class="resend-otp-btn" id="resendOtpBtn">
+                            Gửi lại OTP
+                        </button>
+                    </div>
+                    <span class="error-message" th:if="${#fields.hasErrors('otp')}" th:errors="*{otp}">OTP không hợp lệ</span>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="terms" required>
+                    <label class="checkbox-label" for="terms">
+                        Tôi đồng ý với <a href="#">Điều khoản sử dụng</a> và <a href="#">Chính sách bảo mật</a> của LuxuryGems
+                    </label>
+                </div>
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-user-plus"></i> Đăng ký
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('registerForm');
+        const submitBtn = form.querySelector('.submit-btn');
+        const email = document.getElementById('email');
+        const help = document.getElementById('otpHelp');
+        const resendOtpBtn = document.getElementById('resendOtpBtn');
+
+        // ===== Toast Notification System =====
+        function showToast(message, type = 'info', title = '') {
+            const existingToast = document.querySelector('.custom-toast');
+            if (existingToast) existingToast.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `custom-toast toast-${type}`;
+
+            const icons = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+
+            const titleHtml = title ? `<strong>${title}</strong><br>` : '';
+
+            toast.innerHTML = `
+        <i class="${icons[type] || icons.info}"></i>
+        <span>${titleHtml}${message}</span>
+    `;
+
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ===== Hiển thị Toast từ Server (RedirectAttributes) =====
+        const toastType = /*[[${toastType}]]*/ null;
+        const toastTitle = /*[[${toastTitle}]]*/ null;
+        const toastMessage = /*[[${toastMessage}]]*/ null;
+
+        if (toastType && toastMessage) {
+            showToast(toastMessage, toastType, toastTitle || '');
+        }
+
+        // ===== Email Validation =====
+        function validateEmail(emailValue) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(emailValue);
+        }
+
+        // Validate email khi blur (rời khỏi ô)
+        email.addEventListener('blur', () => {
+            const value = email.value.trim();
+
+            if (value === '') {
+                return;
+            }
+
+            if (!validateEmail(value)) {
+                showToast('Email không hợp lệ', 'error');
+            }
+        });
+
+        // ===== Password Visibility Toggle =====
+        window.togglePassword = function(fieldId) {
+            const input = document.getElementById(fieldId);
+            if (!input) return;
+            const button = input.parentElement.querySelector('.toggle-password');
+            const icon = button?.querySelector('i');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                }
+            } else {
+                input.type = 'password';
+                if (icon) {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
+        };
+
+        // ===== Password Strength Checker =====
+        const passwordInput = document.getElementById('password');
+        if (passwordInput) {
+            let strengthContainer = document.getElementById('passwordStrength');
+            let strengthBar, strengthText;
+
+            if (!strengthContainer) {
+                strengthContainer = document.createElement('div');
+                strengthContainer.id = 'passwordStrength';
+                strengthContainer.className = 'password-strength';
+                strengthContainer.innerHTML = `
+            <div class="strength-bar"></div>
+            <span id="strengthText" class="strength-text"></span>
+        `;
+                passwordInput.parentElement.parentElement.appendChild(strengthContainer);
+            }
+
+            strengthBar = strengthContainer.querySelector('.strength-bar');
+            strengthText = strengthContainer.querySelector('#strengthText');
+
+            passwordInput.addEventListener('input', function(e) {
+                const password = e.target.value;
+                if (password.length === 0) {
+                    strengthContainer.style.display = 'none';
+                    return;
+                }
+                strengthContainer.style.display = 'block';
+
+                let strength = 0;
+                if (password.length >= 8) strength++;
+                if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+                if (/[0-9]/.test(password)) strength++;
+                if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+                strengthBar.className = 'strength-bar';
+                if (strength <= 2) {
+                    strengthBar.classList.add('weak');
+                    strengthText.textContent = 'Mật khẩu yếu';
+                    strengthText.style.color = '#dc3545';
+                } else if (strength === 3) {
+                    strengthBar.classList.add('medium');
+                    strengthText.textContent = 'Mật khẩu trung bình';
+                    strengthText.style.color = '#ffc107';
+                } else {
+                    strengthBar.classList.add('strong');
+                    strengthText.textContent = 'Mật khẩu mạnh';
+                    strengthText.style.color = '#28a745';
+                }
+            });
+        }
+
+        // ===== Spinner Functions =====
+        function showSpinner() {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang xử lý...`;
+        }
+
+        function hideSpinner() {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fas fa-user-plus"></i> Đăng ký`;
+        }
+
+        // ===== OTP Resend Functionality =====
+        let otpCooldown = 0;
+        let otpTimer = null;
+
+        function updateResendOtpButton() {
+            if (otpCooldown > 0) {
+                resendOtpBtn.disabled = true;
+                resendOtpBtn.textContent = `Gửi lại (${otpCooldown}s)`;
+                resendOtpBtn.style.opacity = '0.6';
+                otpCooldown--;
+                otpTimer = setTimeout(updateResendOtpButton, 1000);
+            } else {
+                resendOtpBtn.disabled = false;
+                resendOtpBtn.textContent = 'Gửi lại OTP';
+                resendOtpBtn.style.opacity = '1';
+                clearTimeout(otpTimer);
+            }
+        }
+
+        async function sendOtp(emailValue, isResend = false) {
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+            try {
+                if (isResend) {
+                    showToast('Đang gửi lại OTP...', 'info');
+                }
+
+                const resp = await fetch('/register/request-otp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        [header]: token
+                    },
+                    body: new URLSearchParams({ email: emailValue })
+                });
+
+                const text = await resp.text();
+
+                if (text === 'OK') {
+                    const message = isResend ? 'OTP đã được gửi lại đến ' + emailValue : 'OTP đã được gửi đến ' + emailValue;
+                    showToast(message, 'success');
+
+                    if (isResend) {
+                        otpCooldown = 60;
+                        updateResendOtpButton();
+                    }
+                }
+                else if (text === 'EXISTS') {
+                    showToast('Email đã tồn tại. Vui lòng chọn email khác', 'error');
+                }
+                else if (text === 'INVALID_EMAIL') {
+                    showToast('Email không hợp lệ', 'error');
+                }
+                else {
+                    showToast('Gửi OTP thất bại: ' + text, 'error');
+                }
+            } catch (err) {
+                showToast('Lỗi khi gửi OTP: ' + err.message, 'error');
+            }
+        }
+
+        // Event listener for resend OTP button
+        resendOtpBtn?.addEventListener('click', () => {
+            const emailValue = email.value.trim();
+
+            if (!emailValue) {
+                showToast('Vui lòng nhập email trước khi gửi lại OTP', 'error');
+                return;
+            }
+
+            // Sử dụng regex để validate tất cả email hợp lệ
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(emailValue)) {
+                showToast('Email không hợp lệ', 'error');
+                return;
+            }
+
+            sendOtp(emailValue, true);
+        });
+
+        // ===== OTP Auto-Send Logic =====
+        let debounceTimer = null;
+
+        email.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            const value = email.value.trim();
+
+            // Sử dụng regex để validate tất cả email hợp lệ
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) {
+                return;
+            }
+
+            if (otpCooldown > 0) {
+                showToast('Vui lòng đợi một lúc trước khi gửi lại OTP.', 'warning');
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                sendOtp(value, false);
+            }, 1000);
+        });
+
+        // Kích hoạt nút gửi lại OTP khi thay đổi email (vẫn còn cooldown)
+        email?.addEventListener('input', () => {
+            if (otpCooldown > 0) {
+                const currentEmail = email.value.trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!currentEmail || !emailRegex.test(currentEmail)) {
+                    otpCooldown = 0;
+                    updateResendOtpButton();
+                }
+            }
+        });
+
+        // ===== Form Submit =====
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+
+            let invalid = false;
+            const fields = form.querySelectorAll('input, select, textarea');
+
+            fields.forEach(f => {
+                if (!f.checkValidity()) {
+                    invalid = true;
+                }
+            });
+
+            if (!document.getElementById('terms').checked) {
+                invalid = true;
+                showToast('Bạn phải đồng ý điều khoản', 'error');
+            }
+
+            if (invalid) {
+                hideSpinner();
+                showToast('Vui lòng kiểm tra lại thông tin!', 'error');
+                return;
+            }
+
+            showSpinner();
+            showToast('Đang xử lý đăng ký...', 'info');
+
+            setTimeout(() => {
+                form.submit();
+            }, 2000);
+        });
+
+        // ===== Social Login =====
+        const googleBtn = document.querySelector('.social-btn.google');
+        const facebookBtn = document.querySelector('.social-btn.facebook');
+
+        googleBtn?.addEventListener('click', () => {
+            showToast('Đang chuyển đến đăng ký với Google...', 'info');
+        });
+
+        facebookBtn?.addEventListener('click', () => {
+            showToast('Đang chuyển đến đăng ký với Facebook...', 'info');
+        });
+
+        // ===== Address Picker Integration =====
+        function initAddressPickerIntegration() {
+            const provinceEl = document.getElementById('province');
+            const districtEl = document.getElementById('district');
+            const wardEl = document.getElementById('ward');
+            const streetEl = document.getElementById('street');
+            const addressEl = document.getElementById('address');
+
+            if (!provinceEl || !districtEl || !wardEl || !addressEl) {
+                console.warn('Address picker elements not found');
+                return;
+            }
+
+            // Tạo các hidden fields nếu cần
+            let provinceNameHidden = document.getElementById('provinceNameHidden');
+            let districtNameHidden = document.getElementById('districtNameHidden');
+            let wardNameHidden = document.getElementById('wardNameHidden');
+
+            if (!provinceNameHidden) {
+                provinceNameHidden = document.createElement('input');
+                provinceNameHidden.type = 'hidden';
+                provinceNameHidden.id = 'provinceNameHidden';
+                provinceNameHidden.name = 'provinceName';
+                document.getElementById('registerForm').appendChild(provinceNameHidden);
+            }
+
+            if (!districtNameHidden) {
+                districtNameHidden = document.createElement('input');
+                districtNameHidden.type = 'hidden';
+                districtNameHidden.id = 'districtNameHidden';
+                districtNameHidden.name = 'districtName';
+                document.getElementById('registerForm').appendChild(districtNameHidden);
+            }
+
+            if (!wardNameHidden) {
+                wardNameHidden = document.createElement('input');
+                wardNameHidden.type = 'hidden';
+                wardNameHidden.id = 'wardNameHidden';
+                wardNameHidden.name = 'wardName';
+                document.getElementById('registerForm').appendChild(wardNameHidden);
+            }
+
+            // Gọi hàm initAddressPicker
+            initAddressPicker({
+                provinceEl: provinceEl,
+                districtEl: districtEl,
+                wardEl: wardEl,
+                streetEl: streetEl,
+                addressEl: addressEl,
+                provinceNameHidden: provinceNameHidden,
+                districtNameHidden: districtNameHidden,
+                wardNameHidden: wardNameHidden
+            });
+        }
+
+        function initAddressPicker({
+                                       provinceEl, districtEl, wardEl, streetEl, addressEl,
+                                       provinceNameHidden, districtNameHidden, wardNameHidden
+                                   }) {
+            const apiUrl = 'https://provinces.open-api.vn/api';
+
+            // Reset các select
+            function resetSelect(select, placeholder) {
+                select.innerHTML = `<option value="">${placeholder}</option>`;
+                select.disabled = true;
+            }
+
+            // Lấy text của option được chọn
+            function getSelectedText(select) {
+                return select.options[select.selectedIndex]?.text || '';
+            }
+
+            // Cập nhật địa chỉ đầy đủ
+            function autoResizeAddress() {
+                const addressEl = document.getElementById('address');
+
+                // Reset về chiều cao mặc định
+                addressEl.style.height = '50px';
+
+                // Tính chiều cao thực tế cần thiết
+                const scrollHeight = addressEl.scrollHeight;
+
+                // Chỉ tăng chiều cao nếu nội dung vượt quá chiều cao mặc định
+                if (scrollHeight > 50) {
+                    addressEl.style.height = scrollHeight + 'px';
+                }
+            }
+
+            function updateFullAddress() {
+                const province = getSelectedText(provinceEl);
+                const district = getSelectedText(districtEl);
+                const ward = getSelectedText(wardEl);
+                const street = streetEl?.value.trim() || '';
+
+                if (provinceNameHidden) provinceNameHidden.value = province;
+                if (districtNameHidden) districtNameHidden.value = district;
+                if (wardNameHidden) wardNameHidden.value = ward;
+
+                // Lọc bỏ các giá trị placeholder không mong muốn
+                const addressParts = [street, ward, district, province].filter(part => {
+                    return part &&
+                        !part.startsWith('- Chọn') &&
+                        !part.startsWith('-Chọn') &&
+                        part !== '-Đang tải... -' &&
+                        part !== '- Đang tải... -' &&
+                        part !== '- Lỗi tải dữ liệu -';
+                });
+
+                addressEl.value = addressParts.join(', ');
+
+                // Tự động điều chỉnh chiều cao
+                autoResizeAddress();
+            }
+
+            // Load tỉnh/thành phố
+            async function loadProvinces() {
+                try {
+                    resetSelect(provinceEl, '- Chọn Tỉnh/Thành -');
+                    resetSelect(districtEl, '- Chọn Quận/Huyện -');
+                    resetSelect(wardEl, '- Chọn Phường/Xã -');
+
+                    const response = await fetch(`${apiUrl}/?depth=1`);
+                    const provinces = await response.json();
+
+                    provinces.forEach(province => {
+                        const option = document.createElement('option');
+                        option.value = province.code;
+                        option.textContent = province.name;
+                        provinceEl.appendChild(option);
+                    });
+
+                    provinceEl.disabled = false;
+                } catch (error) {
+                    console.error('Lỗi khi load tỉnh/thành:', error);
+                    provinceEl.innerHTML = '<option value="">- Lỗi tải dữ liệu -</option>';
+                }
+            }
+
+            // Load quận/huyện theo tỉnh
+            async function loadDistricts(provinceCode) {
+                try {
+                    resetSelect(districtEl, '- Đang tải... -');
+                    resetSelect(wardEl, '- Chọn Quận/Huyện trước -');
+
+                    if (!provinceCode) {
+                        resetSelect(districtEl, '- Chọn Quận/Huyện -');
+                        return;
+                    }
+
+                    const response = await fetch(`${apiUrl}/p/${provinceCode}?depth=2`);
+                    const province = await response.json();
+
+                    resetSelect(districtEl, '- Chọn Quận/Huyện -');
+
+                    province.districts.forEach(district => {
+                        const option = document.createElement('option');
+                        option.value = district.code;
+                        option.textContent = district.name;
+                        districtEl.appendChild(option);
+                    });
+
+                    districtEl.disabled = false;
+                    updateFullAddress();
+                } catch (error) {
+                    console.error('Lỗi khi load quận/huyện:', error);
+                    districtEl.innerHTML = '<option value="">- Lỗi tải dữ liệu -</option>';
+                }
+            }
+
+            // Load phường/xã theo quận/huyện
+            async function loadWards(districtCode) {
+                try {
+                    resetSelect(wardEl, '- Đang tải... -');
+
+                    if (!districtCode) {
+                        resetSelect(wardEl, '- Chọn Phường/Xã -');
+                        return;
+                    }
+
+                    const response = await fetch(`${apiUrl}/d/${districtCode}?depth=2`);
+                    const district = await response.json();
+
+                    resetSelect(wardEl, '- Chọn Phường/Xã -');
+
+                    district.wards.forEach(ward => {
+                        const option = document.createElement('option');
+                        option.value = ward.code;
+                        option.textContent = ward.name;
+                        wardEl.appendChild(option);
+                    });
+
+                    wardEl.disabled = false;
+                    updateFullAddress();
+                } catch (error) {
+                    console.error('Lỗi khi load phường/xã:', error);
+                    wardEl.innerHTML = '<option value="">- Lỗi tải dữ liệu -</option>';
+                }
+            }
+
+            // Thêm event listeners
+            provinceEl.addEventListener('change', function() {
+                loadDistricts(this.value);
+            });
+
+            districtEl.addEventListener('change', function() {
+                loadWards(this.value);
+            });
+
+            wardEl.addEventListener('change', function() {
+                updateFullAddress();
+            });
+
+            streetEl?.addEventListener('input', function() {
+                updateFullAddress();
+            });
+
+            loadProvinces();
+        }
+
+        initAddressPickerIntegration();
+    });
+</script>
+</body>
+</html>

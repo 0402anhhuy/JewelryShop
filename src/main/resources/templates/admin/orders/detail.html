@@ -1,0 +1,88 @@
+<!-- admin/orders/detail.html -->
+<div id="content" th:fragment="content">
+    <!-- 🧾 Thông tin đơn hàng -->
+    <div class="mb-4 border-bottom pb-2">
+        <h5 class="fw-bold text-primary mb-2">
+            <i class="bi bi-receipt"></i>
+            Đơn hàng #<span th:text="${order.id}"></span>
+        </h5>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Khách hàng:</strong>
+                    <span th:text="${order.user != null ? order.user.fullName : 'Khách ẩn danh'}"></span>
+                </p>
+                <p><strong>Số điện thoại:</strong>
+                    <span th:text="${order.user != null ? order.user.phone : 'Không có'}"></span>
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p><strong>Ngày tạo:</strong>
+                    <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                </p>
+                <p>
+                    <strong>Trạng thái:</strong>
+                    <span th:switch="${order.status?.name()}">
+                        <span th:case="'PENDING'" class="badge bg-warning text-dark">Đang xử lý</span>
+                        <span th:case="'PAID'" class="badge bg-primary">Đã thanh toán</span>
+                        <span th:case="'SHIPPING'" class="badge bg-info text-dark">Đang giao</span>
+                        <span th:case="'DELIVERED'" class="badge bg-success">Đã giao hàng</span>
+                        <span th:case="'COMPLETED'" class="badge bg-success">Hoàn Thành</span>
+                        <span th:case="'CANCELLED'" class="badge bg-secondary">Đã hủy</span>
+                        <span th:case="'RETURNED'" class="badge bg-danger">Trả hàng</span>
+                        <span th:case="*" class="badge bg-light text-dark">Không xác định</span>
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🛒 Danh sách sản phẩm trong đơn (OrderItems) -->
+    <table class="table table-bordered align-middle">
+        <thead class="table-light">
+        <tr>
+            <th>#</th>
+            <th>Sản phẩm</th>
+            <th>Số lượng</th>
+            <th>Đơn giá</th>
+            <th>Thành tiền</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item, stat : ${items}">
+            <td th:text="${stat.index + 1}"></td>
+            <td>
+                <div class="d-flex align-items-center">
+                    <img th:src="${item.product != null && item.product.imageUrls != null && !item.product.imageUrls.isEmpty() ? item.product.imageUrls[0] : '/images/no-image.png'}"
+                         alt="Ảnh"
+                         class="me-2 rounded"
+                         style="width:50px; height:50px; object-fit:cover;">
+                    <span th:text="${item.product != null ? item.product.name : 'Sản phẩm đã xóa'}"></span>
+                </div>
+            </td>
+            <td th:text="${item.quantity}"></td>
+            <td th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'POINT', 0, 'COMMA')} + ' ₫'"></td>
+            <td th:text="${#numbers.formatDecimal(item.totalPrice, 0, 'POINT', 0, 'COMMA')} + ' ₫'"></td>
+        </tr>
+
+        <tr th:if="${#lists.isEmpty(items)}">
+            <td colspan="5" class="text-center text-muted">Không có sản phẩm nào trong đơn hàng này</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- 💰 Tổng tiền -->
+    <div class="text-end mt-3">
+        <h5>
+            Tổng cộng:
+            <span class="fw-bold text-danger"
+                  th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'COMMA')} + ' ₫'"></span>
+        </h5>
+    </div>
+
+    <!-- 🔘 Nút thao tác -->
+    <div class="text-end mt-4">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle"></i> Đóng
+        </button>
+    </div>
+</div>

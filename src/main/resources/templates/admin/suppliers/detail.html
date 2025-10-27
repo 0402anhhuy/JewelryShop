@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- ✅ Fragment modal chi tiết nhà cung cấp -->
+<div th:fragment="detailModal(s)">
+    <div class="modal fade" th:id="'detailModal' + ${s.id}" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-vcard me-2"></i> Thông tin nhà cung cấp
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Tên:</strong> <span th:text="${s.name}"></span></p>
+                            <p><strong>Email:</strong> <span th:text="${s.email}"></span></p>
+                            <p><strong>Điện thoại:</strong> <span th:text="${s.phone}"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Địa chỉ:</strong> <span th:text="${s.address}"></span></p>
+                            <p><strong>Số sản phẩm cung cấp:</strong>
+                                <span class="badge bg-primary" th:text="${s.productCount != null ? s.productCount : 0}"></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Đóng
+                    </button>
+                    <a th:href="@{'/admin/suppliers/form/' + ${s.id}}" class="btn btn-warning">
+                        <i class="bi bi-pencil-square"></i> Chỉnh sửa
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+body{background:#f5f6f8}
+.checkout-wrap{max-width:1100px;margin:30px auto}
+.card-ck{border-radius:14px;overflow:hidden}
+.card-ck .card-header{background:#fafafa}
+.prod-img{width:64px;height:64px;object-fit:contain;border:1px solid #eee;border-radius:8px;background:#fff}
+.price{font-weight:700;color:#d4a017}
+.totals-box{background:#fafafa;border-radius:12px;padding:16px}
+.btn-pay{height:50px;border-radius:10px;background:#003366;color:#fff;font-weight:600}
+.btn-pay:hover{opacity:.9}
+.small-muted{color:#6b7280}
+.hr-light{border-color:#eee;opacity:1}

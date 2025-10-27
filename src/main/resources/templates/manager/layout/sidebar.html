@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside th:fragment="sidebar" class="sidebar">
+    <!-- Brand -->
+    <div class="brand py-4 text-center fw-bold border-bottom">
+        <i class="bi bi-gem me-2"></i> Quản lý
+    </div>
+
+    <!-- Menu -->
+    <ul class="nav flex-column px-2 mt-3">
+        <li class="nav-item">
+            <a th:href="@{/manager/dashboard}"
+               class="nav-link text-white d-flex align-items-center"
+               th:classappend="${page}=='dashboard' ? ' active fw-semibold' : ''">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a th:href="@{/manager/orders}"
+               class="nav-link text-white d-flex align-items-center"
+               th:classappend="${page}=='orders' ? ' active fw-semibold' : ''">
+                <i class="bi bi-receipt-cutoff me-2"></i> Đơn hàng
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a th:href="@{/manager/products}"
+               class="nav-link text-white d-flex align-items-center"
+               th:classappend="${page}=='products' ? ' active fw-semibold' : ''">
+                <i class="bi bi-bag-heart me-2"></i> Sản phẩm
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a th:href="@{/manager/collections}"
+               class="nav-link text-white d-flex align-items-center"
+               th:classappend="${page}=='categories' ? ' active fw-semibold' : ''">
+                <i class="bi bi-folder2-open me-2"></i> Bộ sưu tập
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a th:href="@{/manager/suppliers}"
+               class="nav-link text-white d-flex align-items-center"
+               th:classappend="${page}=='suppliers' ? ' active fw-semibold' : ''">
+                <i class="bi bi-truck me-2"></i> Nhà cung cấp
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a th:href="@{/manager/stocks}"
+               class="nav-link text-white d-flex align-items-center"
+               th:classappend="${page}=='inventory' ? ' active fw-semibold' : ''">
+                <i class="bi bi-box-seam me-2"></i> Kho &amp; Xuất/Nhập
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a th:href="@{/manager/shippers}"
+               class="nav-link text-white d-flex align-items-center"
+               th:classappend="${page}=='shippers' ? ' active fw-semibold' : ''">
+                <i class="bi bi-bicycle me-2"></i> Shipper
+            </a>
+        </li>
+    </ul>
+</aside>
+</body>
+</html>

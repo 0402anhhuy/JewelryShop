@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Trang Chủ - Jewelry Store</title>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+</head>
+<body>
+<header th:replace="~{client_1/layout/header :: header}"></header>
+
+<!-- Collections Section -->
+<section class="collections container my-4 text-center">
+    <h2 class="section-title">Collections</h2>
+    <div class="collection-wrap position-relative mt-3">
+        <button class="carousel-btn prev-btn collection-prev"><i class="fas fa-chevron-left"></i></button>
+        <div class="collection-track" id="collectionTrack">
+            <a th:each="col : ${collections}"
+               th:href="@{/(collectionName=${col.name})}"
+               class="collection-item"
+               th:classappend="${selectedCollection != null && selectedCollection == col.name} ? 'active' : ''"
+               th:attr="data-collection-id=${col.id}"
+               style="text-decoration: none; color: inherit; display: block;">
+                <img th:src="@{${col.imageUrl}}" th:alt="${col.name}"/>
+            </a>
+        </div>
+        <button class="carousel-btn next-btn collection-next"><i class="fas fa-chevron-right"></i></button>
+    </div>
+    <div class="collection-dots mt-3" id="collectionDots"></div>
+</section>
+
+<!-- New Arrivals Section - WITH SORT FILTER -->
+<section class="new-arrivals" id="new-arrivals">
+    <div class="container">
+        <div class="arrivals-container">
+            <div class="arrivals-content">
+                <div class="arrivals-header">
+                    <h2 class="section-title">
+                        COLLECTION - [[${selectedCollection}]]
+                    </h2>
+                    <div class="sort-filter">
+                        <span class="filter-label">Sort by</span>
+                        <select class="filter-select"
+                                th:attr="data-selected-collection=${selectedCollection}"
+                                onchange="applySortFilter(this.value, this.dataset.selectedCollection)"
+                                th:value="${selectedSort}">
+                            <option value="newest" th:selected="${selectedSort == 'newest' or selectedSort == null}">Newest</option>
+                            <option value="priceAsc" th:selected="${selectedSort == 'priceAsc'}">Price: Low to High</option>
+                            <option value="priceDesc" th:selected="${selectedSort == 'priceDesc'}">Price: High to Low</option>
+                            <option value="bestSelling" th:selected="${selectedSort == 'bestSelling'}">Best Selling</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Product List -->
+                <div class="products-grid">
+                    <div class="product-card" th:each="product : ${products}">
+                        <div class="product-image">
+                            <span class="product-badge">NEW</span>
+                            <img th:src="@{${product.imageUrls[0]}}" class="arrivals-image" alt="Ảnh sản phẩm">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title" th:text="${product.displayName}">
+                                Lắc tay trẻ em Vàng 10K Doraemon
+                            </h3>
+                            <div class="product-price">
+                                <span class="current-price" th:text="${#numbers.formatDecimal(product.price,0,'COMMA',0,'POINT')} + ' đ'">
+                                    5.546.000 đ
+                                </span>
+                            </div>
+                            <div class="product-sold" th:text="${product.order + ' đã bán'}">45 đã bán</div>
+                        </div>
+                    </div>
+                    <!-- No Products Message -->
+                    <div th:if="${#lists.isEmpty(products)}" class="text-center w-100" style="padding: 60px 20px;">
+                        <i class="fas fa-inbox" style="font-size: 64px; color: #ccc; margin-bottom: 20px;"></i>
+                        <h3 style="color: #666;">No products found</h3>
+                        <p style="color: #999;">Try selecting a different collection or clear the filter</p>
+                        <a th:href="@{/}" class="btn btn-primary mt-3">View All Products</a>
+                    </div>
+                </div>
+                <!-- Pagination -->
+                <div class="pagination">
+                    <button class="page-btn" onclick="window.location.href='#new-arrivals'">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <span class="page-dots">...</span>
+                    <button class="page-btn">8</button>
+                    <button class="page-btn" onclick="window.location.href='#new-arrivals'">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- Banner động theo Collection -->
+            <div class="arrivals-banner">
+                <h3 class="banner-title"
+                    th:text="${selectedCollection != null ? selectedCollection + ' Edition' : 'Wedding Edition'}">
+                    Wedding Edition
+                </h3>
+                <div class="banner-image">
+                    <img th:if="${selectedImage != null}"
+                         th:src="@{${selectedImage}}"
+                         th:alt="${selectedCollection}"
+                         style="width:100%;height:auto;object-fit:cover;border-radius:12px;"
+                         onerror="this.onerror=null;this.src='/images/default.jpg';">
+                    <i th:if="${selectedImage == null}" class="fas fa-ring"></i>
+                </div>
+                <a th:href="@{/products(collectionName=${selectedCollection})}"
+                   style="text-decoration: none;">
+                    <button class="banner-btn">Explore Collection</button>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Trending Now Section -->
+<section class="trending">
+    <div class="container">
+        <h2 class="section-title">Trending Now</h2>
+        <div class="carousel-container">
+            <div class="carousel">
+                <div class="carousel-track" id="trending-carousel">
+                    <div class="carousel-item" th:each="product : ${products}" th:if="${productStat.index < 6}">
+                        <div class="product-card">
+                            <div class="product-image">
+                                <img th:src="@{${product.imageUrls[0]}}" th:alt="${product.name}">
+                            </div>
+                            <p class="product-category" th:text="${product.category.name}">Nhẫn</p>
+                            <h3 class="product-title" th:text="${product.name}">Nhẫn Kim cương Vàng trắng 14K</h3>
+                            <p class="product-price" th:text="${#numbers.formatDecimal(product.price,0,'COMMA',0,'POINT')} + ' đ'">15.750.000 đ</p>
+                            <a th:href="@{/products/detail/{serialNumber}(serialNumber=${product.serialNumber})}" style="text-decoration: none;">
+                                <button class="buy-now-btn">Mua ngay</button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-btn prev-btn" id="trending-prev"><i class="fas fa-chevron-left"></i></button>
+            <button class="carousel-btn next-btn" id="trending-next"><i class="fas fa-chevron-right"></i></button>
+            <div class="carousel-indicators" id="trending-indicators"></div>
+        </div>
+    </div>
+</section>
+
+<!-- Magazine Section -->
+<section class="magazine-section">
+    <div class="container">
+        <div class="magazine-grid">
+            <article class="magazine-feature" style="background-image: url('https://images.unsplash.com/photo-1518544882777-8f4b7b4f7b2a?auto=format&fit=crop&w=1200&q=60')">
+                <div class="feature-content">
+                    <div class="kicker">Tips</div>
+                    <h3>Trend Alert: Statement Pearl Earrings for Everyone</h3>
+                    <p>Discover the latest trend in the fashion world: pearl earrings. Elevate your attire with the exquisite pieces that exude elegance and glamour.</p>
+                    <div class="magazine-meta">Jane Thompson &bull; May 10, 2023</div>
+                </div>
+            </article>
+
+            <div class="magazine-side">
+                <div class="magazine-small" style="background-image: url('https://images.unsplash.com/photo-1548095115-45697e2b7bdf?auto=format&fit=crop&w=800&q=60')"></div>
+                <div class="magazine-small" style="background-image: url('https://images.unsplash.com/photo-1520975916457-5b0b0b3b8b77?auto=format&fit=crop&w=800&q=60')"></div>
+            </div>
+
+            <aside class="magazine-right">
+                <div class="magazine-article">
+                    <div class="thumb" style="background-image: url('https://images.unsplash.com/photo-1513682121747-1b6c7b1c9a9d?auto=format&fit=crop&w=600&q=60')"></div>
+                    <div>
+                        <div class="magazine-meta">Guide</div>
+                        <h4>How to Choose the Perfect Engagement Ring for Your Beloved One</h4>
+                        <p>Unlock the secrets to finding the perfect symbol of everlasting love.</p>
+                    </div>
+                </div>
+
+                <div class="magazine-article">
+                    <div class="thumb" style="background-image: url('https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=600&q=60')"></div>
+                    <div>
+                        <div class="magazine-meta">Tips</div>
+                        <h4>Caring for Your Jewelry: Maintenance and Cleaning Complete Guide</h4>
+                        <p>Discover the essential of maintenance and cleaning.</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="extra-blog-faq container">
+    <section class="faq-section">
+        <h2>Questions</h2>
+        <div class="faq-container">
+
+            <div class="faq-item">
+                <div class="faq-question">Sản phẩm của quý khách có chứng nhận kiểm định không?</div>
+                <div class="faq-answer">Có, tất cả các sản phẩm kim cương và đá quý của chúng tôi đều được **kiểm định và cấp chứng thư** bởi các tổ chức uy tín (như GIA, PNJ Lab, hoặc các tổ chức độc lập khác), đảm bảo chất lượng và nguồn gốc.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Chính sách đổi trả và bảo hành sản phẩm như thế nào?</div>
+                <div class="faq-answer">Chúng tôi áp dụng chính sách **đổi trả trong vòng 7 ngày** nếu sản phẩm còn nguyên vẹn. Mọi sản phẩm đều được **bảo hành trọn đời** về vệ sinh, làm mới, và bảo hành các lỗi kỹ thuật trong 12 tháng đầu tiên.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Làm sao để biết chính xác cỡ nhẫn/vòng tay của tôi khi mua online?</div>
+                <div class="faq-answer">Quý khách có thể tham khảo **Hướng dẫn đo size** chi tiết trên trang sản phẩm. Chúng tôi cung cấp công cụ đo size in được và hướng dẫn đo bằng thước/dây. Xin liên hệ Zalo/Hotline để được hỗ trợ đo chính xác nhất.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Tôi có thể yêu cầu thiết kế hoặc khắc tên riêng lên trang sức không?</div>
+                <div class="faq-answer">Chúng tôi **cung cấp dịch vụ thiết kế riêng (bespoke)** và **khắc laser miễn phí** theo yêu cầu (tên, ngày kỷ niệm) cho hầu hết các sản phẩm. Vui lòng ghi chú trong đơn hàng hoặc liên hệ Bộ phận Thiết kế.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Nguồn gốc kim loại quý và đá quý có đạo đức không?</div>
+                <div class="faq-answer">Chúng tôi cam kết sử dụng **kim loại và đá quý được khai thác có trách nhiệm** (Ethically Sourced) và tuân thủ các quy tắc quốc tế về nguồn gốc kim cương không xung đột (Kimberley Process).</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Thời gian giao hàng và các phương thức thanh toán là gì?</div>
+                <div class="faq-answer">Chúng tôi chấp nhận thanh toán qua thẻ tín dụng/ATM, **chuyển khoản ngân hàng,** hoặc **COD** (Thanh toán khi nhận hàng). Thời gian giao hàng trong nước là 2-4 ngày làm việc.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Quý khách có hỗ trợ gói quà tặng cho các dịp đặc biệt không?</div>
+                <div class="faq-answer">Có. Tất cả các đơn hàng đều đi kèm hộp đựng sang trọng. Quý khách có thể chọn **Dịch vụ gói quà tặng cao cấp** và **Thêm lời nhắn cá nhân hóa** miễn phí tại trang Thanh toán.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Thông tin cá nhân và thanh toán của tôi có được bảo mật không?</div>
+                <div class="faq-answer">Chúng tôi sử dụng **công nghệ mã hóa SSL** cấp độ cao nhất và các cổng thanh toán an toàn để bảo vệ tuyệt đối dữ liệu và giao dịch của quý khách.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Tôi có thể xem trực tiếp sản phẩm tại cửa hàng không?</div>
+                <div class="faq-answer">Có. Quý khách vui lòng kiểm tra **Danh sách cửa hàng** trên trang Liên hệ để tìm địa chỉ gần nhất. Chúng tôi luôn sẵn lòng đón tiếp quý khách.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Hiện tại cửa hàng có chương trình khuyến mãi nào không?</div>
+                <div class="faq-answer">Để xem các **ưu đãi và mã giảm giá mới nhất**, vui lòng truy cập trang chủ hoặc trang Khuyến mãi. Hãy đăng ký nhận bản tin để không bỏ lỡ bất kỳ chương trình nào.</div>
+            </div>
+        </div>
+    </section>
+</section>
+<footer th:replace="~{client_1/layout/footer :: footer}"></footer>
+<script th:src="@{/js/style.js}"></script>
+<script>
+    function applySortFilter(sortValue, collectionName) {
+        let url = '/?sort=' + sortValue;
+        if (collectionName && collectionName !== 'null') {
+            url += '&collectionName=' + encodeURIComponent(collectionName);
+        }
+        window.location.href = url;
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const collectionParam = urlParams.get('collectionName');
+
+        if (collectionParam) {
+            setTimeout(function() {
+                const newArrivalsSection = document.getElementById('new-arrivals');
+                if (newArrivalsSection) {
+                    newArrivalsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 300);
+        }
+    });
+
+    // Highlight active collection
+    document.querySelectorAll('.collection-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            document.querySelectorAll('.collection-item').forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    document.querySelectorAll('.faq-question').forEach(question => {
+        question.addEventListener('click', function() {
+            const item = this.parentElement;
+            const answer = item.querySelector('.faq-answer');
+            const isActive = item.classList.contains('active');
+
+            // Close all other items
+            document.querySelectorAll('.faq-item').forEach(i => {
+                i.classList.remove('active');
+                i.querySelector('.faq-answer').style.maxHeight = null;
+            });
+
+            // Toggle current item
+            if (!isActive) {
+                item.classList.add('active');
+                answer.style.maxHeight = answer.scrollHeight + 'px';
+            }
+        });
+    });
+
+    // Collection carousel
+    const collectionTrack = document.getElementById('collectionTrack');
+    const collectionPrev = document.querySelector('.collection-prev');
+    const collectionNext = document.querySelector('.collection-next');
+
+    if (collectionTrack) {
+        let currentIndex = 0;
+        const itemsToShow = 4;
+        const items = collectionTrack.querySelectorAll('.collection-item');
+        const totalItems = items.length;
+
+        collectionNext?.addEventListener('click', () => {
+            if (currentIndex < totalItems - itemsToShow) {
+                currentIndex++;
+                updateCarousel();
+            }
+        });
+
+        collectionPrev?.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCarousel();
+            }
+        });
+
+        function updateCarousel() {
+            const offset = currentIndex * (100 / itemsToShow);
+            collectionTrack.style.transform = `translateX(-${offset}%)`;
+        }
+    }
+
+    // Trending carousel
+    const trendingTrack = document.getElementById('trending-carousel');
+    const trendingPrev = document.getElementById('trending-prev');
+    const trendingNext = document.getElementById('trending-next');
+
+    if (trendingTrack) {
+        let trendingIndex = 0;
+        const trendingItems = trendingTrack.querySelectorAll('.carousel-item');
+        const trendingTotal = trendingItems.length;
+
+        trendingNext?.addEventListener('click', () => {
+            if (trendingIndex < trendingTotal - 3) {
+                trendingIndex++;
+                updateTrendingCarousel();
+            }
+        });
+
+        trendingPrev?.addEventListener('click', () => {
+            if (trendingIndex > 0) {
+                trendingIndex--;
+                updateTrendingCarousel();
+            }
+        });
+
+        function updateTrendingCarousel() {
+            const offset = trendingIndex * (100 / 3);
+            trendingTrack.style.transform = `translateX(-${offset}%)`;
+        }
+    }
+</script>
+<script>
+    const heroSlider = {
+        currentSlide: 0,
+        slides: [],
+        indicators: [],
+        autoPlayInterval: null,
+
+        init() {
+            this.slides = document.querySelectorAll('.hero-slide');
+            this.indicators = document.querySelectorAll('.hero-indicators .indicator');
+            this.startAutoPlay();
+        },
+
+        goTo(index) {
+            this.slides[this.currentSlide].classList.remove('active');
+            this.indicators[this.currentSlide].classList.remove('active');
+
+            this.currentSlide = index;
+
+            this.slides[this.currentSlide].classList.add('active');
+            this.indicators[this.currentSlide].classList.add('active');
+        },
+
+        next() {
+            const nextIndex = (this.currentSlide + 1) % this.slides.length;
+            this.goTo(nextIndex);
+        },
+
+        prev() {
+            const prevIndex = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
+            this.goTo(prevIndex);
+        },
+
+        startAutoPlay() {
+            this.autoPlayInterval = setInterval(() => {
+                this.next();
+            }, 5000);
+        },
+
+        stopAutoPlay() {
+            clearInterval(this.autoPlayInterval);
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        heroSlider.init();
+    });
+</script>
+<footer th:replace="~{client_1/layout/chatbox :: none}"></footer>
+</body>
+</html>

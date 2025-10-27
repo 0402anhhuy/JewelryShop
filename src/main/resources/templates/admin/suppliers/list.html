@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nhà cung cấp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+
+<body>
+<div class="d-flex">
+    <!-- Sidebar -->
+    <div th:replace="~{admin/layout/sidebar :: sidebar}"></div>
+
+    <!-- Main content -->
+    <div class="main-content">
+        <div th:replace="~{admin/layout/header :: header}"></div>
+
+        <main class="p-4 flex-grow-1 bg-light">
+            <h3 class="mb-4 fw-bold text-primary">
+                <i class="bi bi-truck"></i> Danh sách nhà cung cấp
+            </h3>
+
+            <!-- Thanh công cụ -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div></div>
+                <a th:href="@{/admin/suppliers/form}" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> Thêm nhà cung cấp
+                </a>
+            </div>
+
+            <!-- Bảng dữ liệu -->
+            <div class="table-responsive bg-white shadow-sm rounded">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Tên nhà cung cấp</th>
+                        <th>Email</th>
+                        <th>Điện thoại</th>
+                        <th>Địa chỉ</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="s, i : ${suppliers}">
+                        <td th:text="${i.count}"></td>
+                        <td th:text="${s.name}"></td>
+                        <td th:text="${s.email}"></td>
+                        <td th:text="${s.phone}"></td>
+                        <td th:text="${s.address}"></td>
+                        <td class="text-center">
+                            <!-- 👁 Xem chi tiết -->
+                            <button class="btn btn-sm btn-outline-primary me-1"
+                                    data-bs-toggle="modal"
+                                    th:data-bs-target="'#detailModal' + ${s.id}">
+                                <i class="bi bi-eye"></i>
+                            </button>
+
+                            <!-- ✏ Sửa -->
+                            <a th:href="@{'/admin/suppliers/form/' + ${s.id}}"
+                               class="btn btn-sm btn-outline-warning me-1">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            <!-- 🗑 Xóa -->
+                            <a th:href="@{'/admin/suppliers/delete/' + ${s.id}}"
+                               class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('Bạn có chắc muốn xóa nhà cung cấp này không?')">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${suppliers == null or suppliers.size() == 0}">
+                        <td colspan="6" class="text-center text-muted py-3 fst-italic">
+                            Chưa có nhà cung cấp nào được thêm
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Modal chi tiết nhà cung cấp -->
+            <div th:if="${suppliers != null}" th:each="s : ${suppliers}">
+                <div th:replace="~{admin/suppliers/detail :: detailModal(s=${s})}"></div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <div th:replace="~{admin/layout/footer :: footer}"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

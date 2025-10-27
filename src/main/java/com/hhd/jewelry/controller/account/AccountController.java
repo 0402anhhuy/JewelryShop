@@ -1,0 +1,251 @@
+package com.hhd.jewelry.controller.account;
+
+import com.hhd.jewelry.dto.ProfileDto;
+import com.hhd.jewelry.entity.Address;
+import com.hhd.jewelry.entity.Order;
+import com.hhd.jewelry.entity.User;
+import com.hhd.jewelry.entity.Wishlist;
+import com.hhd.jewelry.service.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.stream.Collectors;
+
+@Controller
+@RequiredArgsConstructor
+public class AccountController {
+
+    private final UserService userService;
+    private final WishlistService wishlistService;
+    private final AddressService addressService;
+    private final OrderService orderService;
+    private static final Logger log = LoggerFactory.getLogger(AccountController.class);
+
+    private final OtpService otpService;
+    @GetMapping("/account")
+    public String getAccountPage(
+            Authentication auth,
+            Model model,
+            @RequestParam(defaultValue = "0") int wishlistPage,
+            @RequestParam(defaultValue = "8") int wishlistSize) {
+
+        // SỬA: Kiểm tra Optional trước khi dùng orElseThrow()
+        Optional<User> userOpt = userService.findByEmail(auth.getName());
+
+        if (userOpt.isEmpty()) {
+            // Xử lý khi không tìm thấy user - có thể do email đã đổi
+            SecurityContextHolder.clearContext();
+            return "redirect:/login?error=session_expired";
+        }
+
+        User user = userOpt.get();
+        model.addAttribute("user", user);
+
+        if (!model.containsAttribute("form")) {
+            ProfileDto form = new ProfileDto();
+            form.setFullName(user.getFullName());
+            form.setEmail(user.getEmail());
+            form.setPhone(user.getPhone());
+            form.setGender(user.getGender());
+            form.setDateOfBirth(user.getDateOfBirth());
+            model.addAttribute("form", form);
+        }
+
+        List<Address> addresses = addressService.getAddressByUserId(user.getId());
+        model.addAttribute("addresses", addresses);
+
+        Page<Wishlist> wishlistItems = wishlistService.getWishlistByUserId(
+                user.getId(), PageRequest.of(wishlistPage, wishlistSize, Sort.by("id").descending())
+        );
+        model.addAttribute("wishlistItems", wishlistItems);
+        model.addAttribute("wishlistPage", wishlistPage);
+        model.addAttribute("wishlistTotalPages", wishlistItems.getTotalPages());
+
+        return "client_1/homepage/account";
+    }
+
+    // Thêm vào AccountController
+    @PostMapping("/account/update-ajax")
+    @ResponseBody
+    public Map<String, Object> updateProfileAjax(
+            Authentication auth,
+            @Valid @ModelAttribute("form") ProfileDto form,
+            BindingResult br,
+            HttpServletRequest request) { // Thêm HttpServletRequest
+
+        Map<String, Object> response = new HashMap<>();
+
+        // SỬA: Kiểm tra Optional
+        Optional<User> userOpt = userService.findByEmail(auth.getName());
+        if (userOpt.isEmpty()) {
+            response.put("success", false);
+            response.put("toastType", "error");
+            response.put("toastTitle", "Lỗi phiên làm việc");
+            response.put("toastMessage", "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
+            return response;
+        }
+
+        User currentUser = userOpt.get();
+
+        // Validation checks
+        if (!form.getEmail().equals(currentUser.getEmail()) &&
+                userService.existsByEmailAndIdNot(form.getEmail(), currentUser.getId())) {
+            br.rejectValue("email", "Duplicated", "Email đã được dùng bởi tài khoản khác");
+        }
+
+        if (form.getPhone() != null && !form.getPhone().equals(currentUser.getPhone()) &&
+                userService.existsByPhoneAndIdNot(form.getPhone(), currentUser.getId())) {
+            br.rejectValue("phone", "Duplicated", "Số điện thoại đã được dùng.");
+        }
+
+        if (br.hasErrors()) {
+            response.put("success", false);
+            response.put("toastType", "error");
+            response.put("toastTitle", "Lỗi cập nhật");
+
+            String errorMessage = br.getFieldErrors().stream()
+                    .filter(error -> "email".equals(error.getField()) || "phone".equals(error.getField()))
+                    .map(FieldError::getDefaultMessage)
+                    .collect(Collectors.joining(", "));
+
+            if (errorMessage.isEmpty()) {
+                errorMessage = "Vui lòng kiểm tra lại thông tin!";
+            }
+
+            response.put("toastMessage", errorMessage);
+            response.put("errors", br.getFieldErrors().stream()
+                    .filter(error -> "email".equals(error.getField()) || "phone".equals(error.getField()))
+                    .collect(Collectors.toMap(
+                            FieldError::getField,
+                            FieldError::getDefaultMessage
+                    )));
+            return response;
+        }
+
+        try {
+            String oldEmail = currentUser.getEmail();
+            boolean emailChanged = !form.getEmail().equals(oldEmail);
+
+            // Cập nhật thông tin
+            currentUser.setEmail(form.getEmail());
+
+            if (form.getPhone() != null && !form.getPhone().trim().isEmpty()) {
+                currentUser.setPhone(form.getPhone());
+            }
+
+            userService.save(currentUser);
+
+            // Nếu email thay đổi, cập nhật authentication
+            if (emailChanged) {
+                updateAuthentication(currentUser.getEmail(), auth, request);
+                response.put("emailChanged", true);
+                response.put("redirectUrl", "/account");
+            }
+
+            response.put("success", true);
+            response.put("toastType", "success");
+            response.put("toastTitle", "Thành công");
+            response.put("toastMessage", "Cập nhật thông tin thành công!");
+            response.put("data", Map.of(
+                    "email", currentUser.getEmail(),
+                    "phone", currentUser.getPhone() != null ? currentUser.getPhone() : "",
+                    "gender", currentUser.getGender() != null ? currentUser.getGender() : ""
+            ));
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("toastType", "error");
+            response.put("toastTitle", "Lỗi hệ thống");
+            response.put("toastMessage", "Không thể cập nhật thông tin: " + e.getMessage());
+        }
+
+        return response;
+    }
+    @GetMapping("/account/orders/detail/{orderId}")
+    @Transactional(readOnly = true)
+    public ResponseEntity<Order> getOrderDetail(@PathVariable("orderId") Integer orderId) {
+        Order order = orderService.getOrderByOrderId(orderId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Không tìm thấy đơn hàng với ID: " + orderId));
+        int size = order.getItems().size();
+        return ResponseEntity.ok(order);
+    }
+    private void updateAuthentication(String newEmail, Authentication oldAuth, HttpServletRequest request) {
+        // Tạo authentication mới với email mới
+        UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(
+                newEmail,
+                oldAuth.getCredentials(),
+                oldAuth.getAuthorities()
+        );
+        SecurityContextHolder.getContext().setAuthentication(newAuth);
+
+        // Tạo session mới để tránh session fixation
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        request.getSession(true);
+    }
+    // ✅ Gửi OTP tới email đăng ký
+    @PostMapping("/account/request-otp")
+    @ResponseBody
+    public String requestOtp(@RequestParam("email") String email) {
+        String v = (email == null) ? "" : email.trim().toLowerCase();
+
+        if (v.isEmpty() || !v.endsWith("@gmail.com")) {
+            return "INVALID_EMAIL";
+        }
+        if (!userService.existsByEmail(v)) {
+            return "NOT_FOUND";
+        }
+
+        try {
+            otpService.sendOtp(v);
+            log.info("Sent OTP to {}", v);
+            return "OK";
+        } catch (Exception e) {
+            log.error("Send OTP failed for {}: {}", v, e.getMessage());
+            return "FAILED";
+        }
+    }
+
+    // ✅ Xử lý xác minh OTP và đổi mật khẩu
+    @PostMapping("/account/verify-otp")
+    @ResponseBody
+    public String verifyOtpAndChangePassword(@RequestParam String email,
+                                             @RequestParam String otp,
+                                             @RequestParam String newPassword) {
+        if (!userService.existsByEmail(email)) return "NOT_FOUND";
+
+        boolean valid = otpService.verify(email, otp);
+        if (!valid) return "INVALID";
+
+        userService.updatePassword(email, newPassword);
+        return "SUCCESS";
+    }
+}

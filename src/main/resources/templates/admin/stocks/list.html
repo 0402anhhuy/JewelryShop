@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Giao dịch kho</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+
+<body>
+<div class="d-flex">
+    <!-- Sidebar -->
+    <div th:replace="~{admin/layout/sidebar :: sidebar}"></div>
+
+    <!-- Main content -->
+    <div class="main-content">
+        <div th:replace="~{admin/layout/header :: header}"></div>
+
+        <main class="p-4 bg-light flex-grow-1">
+            <h4 class="fw-bold text-primary mb-4">📦 Quản lý giao dịch kho</h4>
+
+            <!-- Nút thêm -->
+            <div class="d-flex justify-content-end mb-3">
+                <a th:href="@{/admin/stocks/form}" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> Thêm giao dịch
+                </a>
+            </div>
+
+            <!-- Bảng danh sách -->
+            <div class="table-responsive bg-white shadow-sm rounded">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th style="width: 50px;">STT</th>
+                        <th>Sản phẩm</th>
+                        <th style="width: 130px;">Loại</th>
+                        <th style="width: 100px;">Số lượng</th>
+                        <th>Người thực hiện</th>
+                        <th style="width: 180px;">Thời gian</th>
+                        <th>Ghi chú</th>
+                        <th style="width: 100px;" class="text-center">Thao tác</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="m, stat : ${movements}">
+                        <td th:text="${stat.index + 1}"></td>
+
+                        <!-- 🧾 Tên sản phẩm (dùng displayName) -->
+                        <td>
+                            <strong th:text="${m.product.displayName}"></strong><br>
+                            <small class="text-muted" th:text="'Mã: ' + ${m.product.serialNumber}"></small>
+                        </td>
+
+                        <!-- 🔁 Loại giao dịch -->
+                        <td>
+                            <span th:classappend="${m.changeType.name() == 'IMPORT' ? 'badge bg-success' :
+                                (m.changeType.name() == 'SALE' ? 'badge bg-danger' : 'badge bg-warning text-dark')}"
+                                  th:text="${m.changeType.name() == 'IMPORT' ? 'Nhập kho' :
+                                (m.changeType.name() == 'SALE' ? 'Xuất kho' : 'Điều chỉnh')}">
+                            </span>
+                        </td>
+
+                        <!-- 📦 Số lượng -->
+                        <td th:text="${m.quantity}"></td>
+
+                        <!-- 👤 Người thực hiện -->
+                        <td th:text="${m.manager != null ? m.manager.fullName : '—'}"></td>
+
+
+                        <!-- 🕒 Thời gian -->
+                        <td th:text="${#temporals.format(m.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+
+                        <td th:text="${m.note}"></td>
+                        <!-- 🗑️ Thao tác -->
+                        <td class="text-center">
+                            <a th:href="@{'/admin/stocks/delete/' + ${m.id}}"
+                               class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('Xác nhận xóa giao dịch này?')"
+                               title="Xóa giao dịch">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${movements == null or movements.size() == 0}">
+                        <td colspan="7" class="text-center text-muted py-3">
+                            <i class="bi bi-inbox"></i> Chưa có giao dịch nào
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ⚡ Thông báo (flash message) -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show mt-3">
+                <i class="bi bi-check-circle me-2"></i> <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mt-3">
+                <i class="bi bi-exclamation-triangle me-2"></i> <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+        </main>
+    </div>
+</div>
+<div th:replace="~{admin/layout/footer :: footer}"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

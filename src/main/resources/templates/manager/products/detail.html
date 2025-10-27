@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- ✅ Fragment modal chi tiết sản phẩm -->
+<div th:fragment="detailModal(p)" th:if="${p != null}">
+    <div class="modal fade" th:id="'detailModal' + ${p.id}" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-info-circle-fill me-2"></i>Chi tiết sản phẩm
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Hình ảnh -->
+                        <div class="col-md-5">
+                            <div th:if="${p.imageUrls != null and !p.imageUrls.isEmpty()}">
+                                <div class="text-center mb-3">
+                                    <img th:src="@{${p.imageUrls[0]}}" alt="Product"
+                                         class="img-fluid rounded shadow"
+                                         id="mainImage"
+                                         style="max-height: 400px; object-fit: cover;">
+                                </div>
+                                <div class="d-flex gap-2 flex-wrap justify-content-center"
+                                     th:if="${p.imageUrls.size() > 1}">
+                                    <img th:each="img : ${p.imageUrls}"
+                                         th:src="@{${img}}"
+                                         alt="Thumbnail"
+                                         class="img-thumbnail"
+                                         style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;"
+                                         onclick="this.closest('.modal-body').querySelector('#mainImage').src = this.src">
+                                </div>
+                            </div>
+                            <div th:if="${p.imageUrls == null or p.imageUrls.isEmpty()}"
+                                 class="bg-light rounded p-5 text-center">
+                                <i class="bi bi-image fs-1 text-muted"></i>
+                                <p class="text-muted mt-2">Chưa có hình ảnh</p>
+                            </div>
+                        </div>
+
+                        <!-- Thông tin chi tiết -->
+                        <div class="col-md-7">
+                            <h3>
+                                <strong th:text="${p.displayName}"></strong><br>
+                                <small class="text-muted" th:text="'Mã: ' + ${p.serialNumber}"></small>
+                            </h3>
+                            <p class="text-muted mb-3">
+                                <span class="badge bg-secondary" th:text="'#' + ${p.serialNumber}"></span>
+                            </p>
+                            <div class="card border-0 shadow-sm mb-3">
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Giá bán</small>
+                                            <h4 class="text-primary fw-bold mb-0"
+                                                th:text="${#numbers.formatInteger(p.price, 0, 'POINT')} + ' ₫'"></h4>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Giảm giá</small>
+                                            <h4 class="mb-0">
+                                                <span class="badge bg-danger fs-6" th:if="${p.discount > 0}"
+                                                      th:text="'-' + ${p.discount} + '%'"></span>
+                                                <span class="text-muted" th:if="${p.discount == 0}">Không giảm</span>
+                                            </h4>
+                                        </div>
+                                        <div class="col-6" th:if="${p.discount > 0}">
+                                            <small class="text-muted d-block">Giá sau giảm</small>
+                                            <h5 class="text-success fw-bold mb-0"
+                                                th:text="${#numbers.formatInteger((p.price * (100 - p.discount)) / 100, 0, 'POINT')} + ' ₫'">
+                                            </h5>
+
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted d-block">Tồn kho</small>
+                                            <h5 class="mb-0">
+                                                <span th:class="${p.stockQuantity > 10 ? 'badge bg-success' : (p.stockQuantity > 0 ? 'badge bg-warning' : 'badge bg-danger')}"
+                                                      th:text="${p.stockQuantity} + ' sản phẩm'"></span>
+                                            </h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <table class="table table-sm">
+                                <tr>
+                                    <td class="fw-bold text-muted" style="width: 140px;"><i class="bi bi-tag me-2"></i>Danh mục</td>
+                                    <td th:text="${p.category != null ? p.category.name : '—'}"></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted"><i class="bi bi-collection me-2"></i>Bộ sưu tập</td>
+                                    <td th:text="${p.collection != null ? p.collection.name : '—'}"></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted"><i class="bi bi-gem me-2"></i>Chất liệu</td>
+                                    <td th:text="${p.material}"></td>
+                                </tr>
+                                <tr th:if="${p.gemstone != null and !p.gemstone.isEmpty()}">
+                                    <td class="fw-bold text-muted"><i class="bi bi-circle-fill me-2"></i>Đá quý</td>
+                                    <td th:text="${p.gemstone}"></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted"><i class="bi bi-award me-2"></i>Thương hiệu</td>
+                                    <td th:text="${p.brand}"></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted"><i class="bi bi-gender-ambiguous me-2"></i>Giới tính</td>
+                                    <td><span class="badge bg-info" th:text="${p.gender}"></span></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Đóng
+                    </button>
+                    <a th:href="@{'/manager/products/form/' + ${p.id}}" class="btn btn-warning">
+                        <i class="bi bi-pencil-square me-1"></i>Chỉnh sửa
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

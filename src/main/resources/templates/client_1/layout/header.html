@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+</head>
+<body>
+<header>
+    <div class="container">
+        <div class="top-header">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <label>
+                    <input type="text" placeholder="What are you looking for?">
+                </label>
+            </div>
+            <div class="header-logo">
+                <img th:src="@{/images/banner/logo.png}" alt="Jewelery Store Logo" class="header-logo-img">
+            </div>
+            <div class="header-icons">
+                <div th:if="${#authorization.expression('isAuthenticated()')}" style="display: contents;">
+                    <a th:href="@{/products}" aria-label="Products">
+                        <i class="fas fa-box-open"></i>
+                    </a>
+                    <a th:href="@{/cart}" aria-label="Cart">
+                        <i class="fas fa-shopping-bag"></i>
+                    </a>
+                    <div class="user-account" th:if="${currentUser != null}">
+                        <div class="user-avatar" th:text="${currentUser.fullName.substring(0,1).toUpperCase()}">N</div>
+                        <div class="user-dropdown">
+                            <div class="dropdown-header">
+                                <div class="dropdown-user-name">
+                                    <i class="fas fa-user-circle"></i>
+                                    <span th:text="${currentUser.fullName}">Nguyễn Văn A</span>
+                                </div>
+                            </div>
+                            <div class="dropdown-body">
+                                <a th:href="@{/account}" class="dropdown-menu-item">
+                                    <i class="far fa-solid fa-user"></i>
+                                    <span>Thông tin tài khoản</span>
+                                </a>
+                                <a th:href="@{/account#orders}" class="dropdown-menu-item">
+                                    <i class="fas fa-solid fa-box"></i>
+                                    <span>Đơn hàng của tôi</span>
+                                </a>
+                                <a th:href="@{/account#wishlist}" class="dropdown-menu-item">
+                                    <i class="far fa-solid fa-heart"></i>
+                                    <span>Danh sách yêu thích</span>
+                                </a>
+                            </div>
+                            <div class="dropdown-footer">
+                                <form th:action="@{/logout}" method="post" style="margin: 0;">
+                                    <button type="submit" class="logout-btn">
+                                        <i class="fas fa-right-from-bracket"></i>
+                                        <span>Đăng xuất</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${!#authorization.expression('isAuthenticated()')}" style="display: contents;">
+                    <a th:href="@{/products}" aria-label="Products" title="Sản phẩm"><i class="fas fa-box-open"></i></a>
+                    <a th:href="@{/cart}" aria-label="Cart" title="Giỏ hàng"><i class="fas fa-shopping-bag"></i></a>
+                    <a th:href="@{/account}" aria-label="Profile" title="Tài khoản"><i class="far fa-solid fa-user"></i></a>
+                    <a th:href="@{/login}" aria-label="Login" title="Đăng nhập"><i class="fas fa-right-to-bracket"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="main-header">
+            <a th:href="@{/}" class="nav-brand">Jewelry</a>
+            <ul class="nav-menu">
+                <li><a th:href="@{/products(catName='Nhẫn')}">Nhẫn</a></li>
+                <li><a th:href="@{/products(catName='Lắc tay')}">Lắc tay</a></li>
+                <li><a th:href="@{/products(catName='Bông tai')}">Bông tai</a></li>
+                <li><a th:href="@{/products(catName='Dây chuyền')}">Dây chuyền</a></li>
+                <li><a th:href="@{/products(catName='Đồng hồ')}">Đồng hồ</a></li>
+                <li><a th:href="@{/products(catName='Trang sức vàng')}">Trang sức vàng</a></li>
+            </ul>
+        </div>
+    </div>
+</header>
+</body>
+</html>
