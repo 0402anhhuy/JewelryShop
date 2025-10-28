@@ -65,6 +65,7 @@ public class CartServiceImpl implements CartService {
                 // Nếu chưa có -> tạo CartItem mới và ĐÁNH DẤU LÀ SELECTED
                 CartItem newCartItem = new CartItem();
                 newCartItem.setCart(cart);
+                newCartItem.setPrice(product.getPrice());
                 newCartItem.setProduct(product);
                 newCartItem.setQuantity(quantity);
                 newCartItem.setSelected(true); // Đánh dấu chọn

@@ -29,6 +29,40 @@ function cancelOrder(id) {
             });
     });
 }
+function confirmDelivered(id){
+    showToast('warning',
+        'Xác nhận đã nhận hàng',
+        'Bạn có chắc đã nhận được đơn hàng #' + id + '? Đơn hàng sẽ được chuyển sang trạng thái "Hoàn thành".',
+        true,
+        () => {
+            const token = document.querySelector("meta[name='_csrf']").getAttribute("content");
+            const header = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
+            showToast('info', 'Đang xử lý', 'Đang xác nhận đơn hàng của bạn...');
+            fetch(`/orders/confirm-delivery/${id}`, {
+                method: 'POST',
+                headers: {
+                    [header]: token // Gửi kèm CSRF token
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // 4. Thành công
+                        showToast('success', 'Thành công', 'Đã xác nhận nhận hàng. Đơn hàng #' + id + ' đã hoàn thành!');
+
+                        location.reload();
+                    } else {
+                        // 5. Lỗi từ server (ví dụ: đơn hàng không hợp lệ)
+                        showToast('error', 'Thất bại', 'Không thể xác nhận đơn hàng. Vui lòng thử lại.');
+                    }
+                })
+                .catch(error => {
+                    // 6. Lỗi mạng
+                    console.error('Lỗi khi gửi request xác nhận:', error);
+                    showToast('error', 'Lỗi kết nối', 'Đã xảy ra lỗi kết nối. Vui lòng thử lại!');
+                });
+        }
+    );
+}
 
 function reorder(id) {
     showToast('info', 'Mua lại', 'Đang thêm sản phẩm từ đơn #' + id + ' vào giỏ hàng...');
