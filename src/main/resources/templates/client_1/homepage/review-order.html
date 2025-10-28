@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đánh giá đơn hàng</title>
+
+    <!-- Bootstrap & FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary-color: #d4af37;
+            --secondary-color: #f8f5e6;
+            --accent-color: #2c2c2c;
+            --light-color: #ffffff;
+            --dark-color: #1a1a1a;
+            --text-color: #333333;
+            --border-radius: 12px;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f9f7f0 0%, #f0ece1 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-top: 120px;
+        }
+
+        /* Header */
+        .header {
+            background: var(--light-color);
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark-color);
+            letter-spacing: 2px;
+            text-decoration: none;
+        }
+
+        .brand span {
+            color: var(--primary-color);
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-link {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-color);
+            background: #f5f1f1;
+            overflow: hidden;
+            width: 48px;
+            transition: width 0.5s ease, color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            width: 120px;
+            color: var(--primary-color);
+        }
+
+        .nav-link i {
+            font-size: 1.2rem;
+            min-width: 24px;
+            text-align: center;
+            transition: transform 0.5s ease;
+        }
+
+        .nav-link:hover i {
+            transform: translateX(-8px);
+        }
+
+        .nav-link .nav-text {
+            font-size: 0.95rem;
+            font-weight: 600;
+            white-space: nowrap;
+            margin-left: 0.75rem;
+            opacity: 0;
+            transform: translateX(-5px);
+            transition: opacity 0.4s ease 0.15s, transform 0.5s ease 0.15s;
+        }
+
+        .nav-link:hover .nav-text {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .nav-link .badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #e74c3c;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        /* Main Container */
+        .account-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px 60px;
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        /* Sidebar */
+        .account-sidebar {
+            width: 280px;
+            flex-shrink: 0;
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            position: sticky;
+            top: 140px;
+        }
+
+        .user-profile {
+            text-align: center;
+            padding-bottom: 25px;
+            border-bottom: 2px solid var(--secondary-color);
+            margin-bottom: 25px;
+        }
+
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), #f4d47c);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 40px;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .user-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+        }
+
+        .user-email {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .account-menu {
+            list-style: none;
+        }
+
+        .menu-item {
+            margin-bottom: 5px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: #666;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 15px;
+        }
+
+        .menu-link i {
+            width: 20px;
+            font-size: 16px;
+        }
+
+        .menu-link:hover {
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        .menu-link.active {
+            background: linear-gradient(135deg, var(--primary-color), #f4d47c);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Review Content */
+        .review-content {
+            flex: 1;
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .review-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .review-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 15px;
+        }
+
+        .review-title i {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+
+        .order-info {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .order-info strong {
+            color: var(--dark-color);
+        }
+
+        /* Product Items */
+        .product-item {
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .product-item:last-child {
+            border-bottom: none;
+        }
+
+        .product-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .product-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: var(--secondary-color);
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-info h5 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+        }
+
+        .product-info small {
+            color: #666;
+        }
+
+        /* Star Rating */
+        .star-rating {
+            margin-bottom: 15px;
+        }
+
+        .star {
+            font-size: 1.5rem;
+            color: #ccc;
+            cursor: pointer;
+            transition: color 0.2s;
+            margin-right: 5px;
+        }
+
+        .star.selected {
+            color: #ffc107;
+        }
+
+        /* Form Elements */
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+            outline: none;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 8px;
+        }
+
+        .file-preview {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .file-preview img, .file-preview video {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        /* Submit Button */
+        .submit-section {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid var(--secondary-color);
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #f4d47c);
+            color: var(--dark-color);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .account-container {
+                flex-direction: column;
+            }
+
+            .account-sidebar {
+                width: 100%;
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+    <div class="header-content">
+        <a th:href="@{/}" class="brand">LUXURY<span>GEMS</span></a>
+        <div class="header-icons">
+            <a th:href="@{/products}" class="nav-link">
+                <i class="fas fa-box-open"></i>
+                <span class="nav-text">Products</span>
+            </a>
+            <a th:href="@{/cart}" class="nav-link">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="nav-text">Cart</span>
+                <span class="badge" th:if="${cartItemCount > 0}" th:text="${cartItemCount}">3</span>
+            </a>
+        </div>
+    </div>
+</header>
+
+<div class="account-container">
+    <!-- Sidebar -->
+    <aside class="account-sidebar">
+        <div class="user-profile">
+            <div class="user-avatar">
+                <span th:text="${user?.fullName != null ? #strings.substring(user.fullName, 0, 2) : 'US'}">US</span>
+            </div>
+            <div class="user-name" th:text="${user?.fullName ?: 'Người dùng'}">Người dùng</div>
+            <div class="user-email" th:text="${user?.email ?: 'Chưa có email'}">email@example.com</div>
+        </div>
+
+        <ul class="account-menu">
+            <li class="menu-item">
+                <a th:href="@{/account}" class="menu-link">
+                    <i class="fas fa-user"></i>
+                    <span>Thông tin cá nhân</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a th:href="@{/account?tab=orders}" class="menu-link active">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>Đơn hàng của tôi</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a th:href="@{/account?tab=addresses}" class="menu-link">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Địa chỉ giao hàng</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a th:href="@{/account?tab=wishlist}" class="menu-link">
+                    <i class="fas fa-heart"></i>
+                    <span>Sản phẩm yêu thích</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <form th:action="@{/logout}" method="post" style="margin:0;">
+                    <button type="submit" class="menu-link logout-link" onclick="return confirm('Bạn có chắc muốn đăng xuất?')">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Đăng xuất</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Review Content -->
+    <main class="review-content">
+        <div class="review-header">
+            <h3 class="review-title">
+                <i class="fas fa-star"></i>Đánh giá đơn hàng #<span th:text="${order.id}">1</span>
+            </h3>
+            <div class="order-info">
+                <div><strong>Ngày đặt:</strong> <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}"></span></div>
+                <div><strong>Tổng tiền:</strong> <span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}"></span> ₫</div>
+            </div>
+        </div>
+
+        <form id="reviewForm">
+            <!-- Loop qua từng sản phẩm trong đơn hàng -->
+            <div th:each="item, itemStat : ${order.items}" class="product-item">
+                <div class="product-header">
+                    <div class="product-image">
+                        <img th:src="@{${!item.product.imageUrls.isEmpty() ? item.product.imageUrls[0] : '/images/default-product.png'}}"
+                             th:alt="${item.product.name}"
+                             style="object-fit: cover;"
+                             onerror="this.src='/images/default-product.png'">
+                    </div>
+                    <div class="product-info">
+                        <h5 th:text="${item.product.name}">Tên sản phẩm</h5>
+                        <small>Số lượng: <span th:text="${item.quantity}"></span></small>
+                    </div>
+                </div>
+
+                <!-- Đánh giá sao -->
+                <div class="star-rating">
+                    <i class="fas fa-star star" th:attr="data-product-id=${item.product.id},data-value=1"></i>
+                    <i class="fas fa-star star" th:attr="data-product-id=${item.product.id},data-value=2"></i>
+                    <i class="fas fa-star star" th:attr="data-product-id=${item.product.id},data-value=3"></i>
+                    <i class="fas fa-star star" th:attr="data-product-id=${item.product.id},data-value=4"></i>
+                    <i class="fas fa-star star" th:attr="data-product-id=${item.product.id},data-value=5"></i>
+                </div>
+
+                <!-- Comment -->
+                <textarea class="form-control" rows="3" placeholder="Nhập nhận xét của bạn về sản phẩm này..."
+                          th:attr="id=${'comment-' + item.product.id}"></textarea>
+
+                <!-- Upload file -->
+                <div>
+                    <label class="form-label">
+                        <i class="fas fa-image me-1"></i>Đính kèm ảnh/video (tùy chọn)
+                    </label>
+                    <input type="file" th:attr="id=${'file-' + item.product.id}" multiple accept="image/*,video/*"
+                           class="form-control file-input">
+                    <div th:attr="id=${'preview-' + item.product.id}" class="file-preview"></div>
+                </div>
+            </div>
+
+            <div class="submit-section">
+                <button type="button" id="submitReviewBtn" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i>Gửi đánh giá
+                </button>
+            </div>
+        </form>
+    </main>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const orderId = /*[[${order.id}]]*/ 0;
+    const starRatings = {};
+    const uploadedFiles = {};
+
+    // ⭐ Xử lý chọn sao
+    document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('click', function() {
+            const productId = this.getAttribute('data-product-id');
+            const value = parseInt(this.getAttribute('data-value'));
+            starRatings[productId] = value;
+
+            document.querySelectorAll(`.star[data-product-id='${productId}']`).forEach(s => {
+                const starValue = parseInt(s.getAttribute('data-value'));
+                s.classList.toggle('selected', starValue <= value);
+            });
+        });
+    });
+
+    // 📷 Hiển thị preview file
+    document.querySelectorAll('.file-input').forEach(input => {
+        input.addEventListener('change', function() {
+            const productId = this.id.split('-')[1];
+            const previewDiv = document.getElementById(`preview-${productId}`);
+            previewDiv.innerHTML = '';
+
+            uploadedFiles[productId] = Array.from(this.files);
+
+            uploadedFiles[productId].forEach(file => {
+                const url = URL.createObjectURL(file);
+                const element = file.type.startsWith('video')
+                    ? `<video src="${url}" controls></video>`
+                    : `<img src="${url}" alt="preview">`;
+                previewDiv.insertAdjacentHTML('beforeend', element);
+            });
+        });
+    });
+
+    // 📨 Gửi đánh giá
+    document.getElementById('submitReviewBtn').addEventListener('click', async function() {
+        const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+        const reviews = [];
+        const comments = document.querySelectorAll('[id^="comment-"]');
+
+        comments.forEach(commentEl => {
+            const productId = commentEl.id.split('-')[1];
+            const rating = starRatings[productId] || 0;
+            const comment = commentEl.value.trim();
+
+            if (rating > 0 || comment) {
+                reviews.push({
+                    itemId: parseInt(productId),
+                    rating: rating,
+                    comment: comment
+                });
+            }
+        });
+
+        if (reviews.length === 0) {
+            alert('Vui lòng đánh giá ít nhất một sản phẩm!');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('orderId', orderId);
+        formData.append('reviews', JSON.stringify(reviews));
+
+        Object.keys(uploadedFiles).forEach(productId => {
+            uploadedFiles[productId].forEach(file => {
+                formData.append(`files_${productId}`, file);
+            });
+        });
+
+        try {
+            const response = await fetch('/reviews/submit', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    [csrfHeader]: csrfToken
+                }
+            });
+
+            if (response.ok) {
+                alert('✅ Cảm ơn bạn! Đánh giá của bạn đã được gửi thành công.');
+                window.location.href = '/account?tab=orders';
+            } else {
+                const errorText = await response.text();
+                console.error('Error:', errorText);
+                alert('❌ Lỗi khi gửi đánh giá. Vui lòng thử lại!');
+            }
+        } catch (error) {
+            console.error('Network error:', error);
+            alert('❌ Không thể kết nối đến máy chủ.');
+        }
+    });
+    /*]]>*/
+</script>
+</body>
+</html>

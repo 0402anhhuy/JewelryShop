@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,7 +32,6 @@ public class ProductController {
     private final UserRepository userRepository;
     private final WishlistRepository wishlistRepository;
     private final OrderService orderService;
-
     @GetMapping("/products")
     public String products(
             @RequestParam(value = "q", required = false) String q,
@@ -149,6 +149,15 @@ public class ProductController {
         } catch (IllegalStateException e) {
             // Trả về 400 Bad Request nếu logic không cho phép xóa (VD: sai trạng thái)
             return ResponseEntity.badRequest().build();
+        }
+    }
+    @PostMapping("/orders/confirm-delivery/{id}")
+    public ResponseEntity<?> confirmDelivery(@PathVariable Integer id) {
+        try {
+            Order order = orderService.updateOrderStatus(id, Order.Status.COMPLETED);
+            return ResponseEntity.ok().build();
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body("Không thể xác nhận đơn hàng: " + e.getMessage());
         }
     }
     private Sort parseSort(String sort) {

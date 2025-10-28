@@ -59,4 +59,6 @@ public class OrderItem {
         if (unitPrice == null) unitPrice = BigDecimal.ZERO;
         this.totalPrice = unitPrice.multiply(BigDecimal.valueOf(quantity));
     }
+    @OneToOne(mappedBy = "orderItem")
+    private ProductReview review;
 }

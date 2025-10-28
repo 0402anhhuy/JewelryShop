@@ -6,6 +6,7 @@ import com.hhd.jewelry.entity.User;
 import com.hhd.jewelry.repository.OrderRepository;
 import com.hhd.jewelry.repository.UserRepository;
 import com.hhd.jewelry.service.CartItemService;
+import com.hhd.jewelry.service.OrderService;
 import com.hhd.jewelry.service.ProductService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @AllArgsConstructor
 public class PaymentController {
     private final UserRepository userRepository;
-    private OrderRepository orderRepository;
+    private OrderService orderService;
     private MomoConfig momoConfig;
     private ProductService  productService;
     private CartItemService cartItemService;
@@ -30,30 +31,26 @@ public class PaymentController {
         if (orderIdStr != null && !orderIdStr.isEmpty()) {
             try {
                 Integer orderId = Integer.parseInt(orderIdStr);
-                Order order = orderRepository.findById(orderId).orElse(null);
+                Order order = orderService.findById(orderId);
 
                 if (order != null) {
                     if ("00".equals(status)) {
-                        order.setStatus(Order.Status.PAID);
-                        order.setPaid(true);
+                        order = orderService.updateOrderStatus(order.getId(), Order.Status.PAID);
+                        productService.updateStockForOrder(order);
                         try {
                             int deleted = cartItemService.deleteSelectedByUser(user);
-                            if(deleted>0){
-                                productService.updateStockForOrder(order);
-                                orderRepository.save(order); // Lưu trạng thái order sau khi cập nhật kho thành công
-                            }
                             model.addAttribute("status", "success");
                             model.addAttribute("message", "Thanh toán thành công!");
                         } catch (IllegalStateException e) {
                             // Xử lý khi kho không đủ hàng
-                            order.setStatus(Order.Status.CANCELLED);
-                            orderRepository.save(order);
+                            order = orderService.updateOrderStatus(order.getId(), Order.Status.CANCELLED);
+                            orderService.save(order);
                             model.addAttribute("status", "fail");
                             model.addAttribute("message", "Thanh toán thất bại: " + e.getMessage());
                         }
                     } else {
-                        order.setStatus(Order.Status.CANCELLED);
-                        orderRepository.save(order);
+                        order = orderService.updateOrderStatus(order.getId(), Order.Status.CANCELLED);
+                        orderService.save(order);
                         model.addAttribute("status", "fail");
                         model.addAttribute("message", "Thanh toán thất bại. Vui lòng thử lại.");
                     }
@@ -124,7 +121,7 @@ public class PaymentController {
         // 2. Kiểm tra kết quả giao dịch
         try {
             String orderIdDB = orderId.split("-")[0];
-            Order order = orderRepository.findById(Integer.parseInt(orderIdDB)).orElse(null);
+            Order order = orderService.findById(Integer.parseInt(orderIdDB));
 
             if (order == null) {
                 model.addAttribute("status", "fail");
@@ -133,26 +130,22 @@ public class PaymentController {
             }
 
             if ("0".equals(resultCode)) {
-                order.setStatus(Order.Status.PAID);
-                order.setPaid(true);
+                order = orderService.updateOrderStatus(order.getId(), Order.Status.PAID);
+                productService.updateStockForOrder(order);
                 try {
                     int deleted = cartItemService.deleteSelectedByUser(user);
-                    if(deleted>0){
-                        productService.updateStockForOrder(order);
-                        orderRepository.save(order); // Lưu trạng thái order sau khi cập nhật kho thành công
-                    }
                     model.addAttribute("status", "success");
                     model.addAttribute("message", "Thanh toán bằng MoMo thành công cho đơn hàng #" + orderId);
                 } catch (IllegalStateException e) {
                     // Xử lý khi kho không đủ hàng
-                    order.setStatus(Order.Status.CANCELLED);
-                    orderRepository.save(order);
+                    order = orderService.updateOrderStatus(order.getId(), Order.Status.CANCELLED);
+                    orderService.save(order);
                     model.addAttribute("status", "fail");
                     model.addAttribute("message", "Thanh toán thất bại: " + e.getMessage());
                 }
             } else {
-                order.setStatus(Order.Status.CANCELLED);
-                orderRepository.save(order);
+                order = orderService.updateOrderStatus(order.getId(), Order.Status.PAID);
+                orderService.save(order);
                 model.addAttribute("status", "fail");
                 model.addAttribute("message", "Thanh toán thất bại. " + message);
             }

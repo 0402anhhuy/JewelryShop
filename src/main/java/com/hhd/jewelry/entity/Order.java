@@ -77,7 +77,8 @@ public class Order {
 
     @Column(nullable = false)
     private String shippingAddressLine; // Địa chỉ chi tiết (số nhà, tên đường)
-
+    @Column(name = "is_reviewed")
+    private Boolean isReviewed = false;
     private String shippingWard; // Phường/Xã
 
     private String shippingDistrict; // Quận/Huyện

@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi Tiết Sản Phẩm</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-    <link rel="stylesheet" th:href="@{/css/footer.css}">
     <style>
         * {
             margin: 0;
@@ -48,11 +47,10 @@
         }
 
         .brand {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 700;
             color: var(--dark-color);
-            letter-spacing: 1px;
-            text-decoration: none;
+            letter-spacing: 2px;
         }
 
         .brand span { color: var(--primary-color); }
@@ -702,215 +700,43 @@
             text-decoration: none !important;
         }
 
-        /* User Account Dropdown Styles */
-        .user-account {
-            position: relative;
-            display: inline-block;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: var(--primary-color);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s ease;
-        }
-
-        .user-avatar:hover {
-            transform: scale(1.05);
-        }
-
-        .user-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            min-width: 250px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.2s ease;
-            z-index: 1000;
-        }
-
-        .user-account:hover .user-dropdown {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .dropdown-header {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .dropdown-user-name {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            color: var(--dark-color);
-        }
-
-        .dropdown-user-name i {
-            width: 16px;
-            text-align: center;
-            color: var(--primary-color);
-        }
-
-        .dropdown-body {
-            padding: 10px 0;
-        }
-
-        .dropdown-menu-item {
-            display: flex;
-            align-items: center;
-            padding: 10px 15px;
-            color: var(--text-color);
-            text-decoration: none;
-            transition: background-color 0.2s ease;
-        }
-
-        .dropdown-menu-item:hover {
-            background-color: var(--secondary-color);
-        }
-
-        .dropdown-menu-item i {
-            margin-right: 10px;
-            width: 20px;
-            text-align: center;
-        }
-
-        .dropdown-footer {
-            padding: 10px 15px;
-            border-top: 1px solid #eee;
-        }
-
-        .logout-btn {
-            background: none;
-            border: none;
-            color: var(--text-color);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            width: 100%;
-            padding: 0;
-            font-size: 14px;
-            transition: color 0.2s ease;
-        }
-
-        .logout-btn i {
-            margin-right: 10px;
-            width: 20px;
-            text-align: center;
-        }
-
-        .logout-btn {
-            width: 100%;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-
-        .logout-btn:hover {
-            background: #c0392b;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
-        }
     </style>
 </head>
 <body>
 <!-- Header -->
 <header class="header">
     <div class="header-content">
-        <a th:href="@{/}" class="brand">Jewelry</a>
+        <div class="brand">LUXURY<span>GEMS</span></div>
         <div class="header-icons">
-            <div th:if="${#authorization.expression('isAuthenticated()')}" style="display: contents;">
-                <a th:href="@{/products}" aria-label="Products">
-                    <i class="fas fa-box-open"></i>
-                </a>
-                <a th:href="@{/cart}" aria-label="Cart">
-                    <i class="fas fa-shopping-bag"></i>
-                </a>
-                <div class="user-account" th:if="${currentUser != null}">
-                    <div class="user-avatar" th:text="${currentUser.fullName.substring(0,1).toUpperCase()}">N</div>
-                    <div class="user-dropdown">
-                        <div class="dropdown-header">
-                            <div class="dropdown-user-name">
-                                <i class="fas fa-user-circle"></i>
-                                <span th:text="${currentUser.fullName}">Nguyễn Văn A</span>
-                            </div>
-                        </div>
-                        <div class="dropdown-body">
-                            <a th:href="@{/account}" class="dropdown-menu-item">
-                                <i class="far fa-solid fa-user"></i>
-                                <span>Thông tin tài khoản</span>
-                            </a>
-                            <a th:href="@{/account#orders}" class="dropdown-menu-item">
-                                <i class="fas fa-solid fa-box"></i>
-                                <span>Đơn hàng của tôi</span>
-                            </a>
-                            <a th:href="@{/account#wishlist}" class="dropdown-menu-item">
-                                <i class="far fa-solid fa-heart"></i>
-                                <span>Danh sách yêu thích</span>
-                            </a>
-                        </div>
-                        <div class="dropdown-footer">
-                            <form th:action="@{/logout}" method="post" style="margin: 0;">
-                                <button type="submit" class="logout-btn">
-                                    <i class="fas fa-right-from-bracket"></i>
-                                    <span>Đăng xuất</span>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div th:if="${!#authorization.expression('isAuthenticated()')}" style="display: contents;">
-                <a th:href="@{/products}" aria-label="Products" title="Sản phẩm"><i class="fas fa-box-open"></i></a>
-                <a th:href="@{/cart}" aria-label="Cart" title="Giỏ hàng"><i class="fas fa-shopping-bag"></i></a>
-                <a th:href="@{/account}" aria-label="Profile" title="Tài khoản"><i class="far fa-solid fa-user"></i></a>
-                <a th:href="@{/login}" aria-label="Login" title="Đăng nhập"><i class="fas fa-right-to-bracket"></i></a>
-            </div>
+            <a href="/" title="Trang chủ"><i class="fas fa-home"></i></a>
+            <a href="/wishlist" title="Yêu thích"><i class="far fa-heart"></i></a>
+            <a href="/cart" title="Giỏ hàng"><i class="fas fa-shopping-cart"></i></a>
+            <a href="/account" title="Tài khoản"><i class="far fa-user"></i></a>
         </div>
+
     </div>
 </header>
 
 <!-- Breadcrumb -->
 <div class="breadcrumb">
-    <a th:href="@{/}">Trang chủ</a> /
-    <a th:href="@{/products}">Sản phẩm</a> /
+    <a href="/home">Trang chủ</a> /
+    <a href="/products">Sản phẩm</a> /
     <span th:text="${product.name} +
 				   (${product.gemstone} != null ? ' ' + ${product.gemstone} : '') +
 				   ' ' + ${product.material} +
 				   ' ' + ${product.serialNumber}">
 		Lắc tay Đá ECZ Vàng 14K PNJ XM00Y000751
-    </span>
+		</span>
 </div>
 
 <!-- Product Container -->
 <div class="product-container">
+    <!-- Thumbnails -->
     <div class="thumbnail-wrapper">
         <button class="thumbnail-nav" id="thumbUp" disabled>
             <i class="fas fa-chevron-up"></i>
         </button>
+
         <div class="thumbnail-list">
             <div class="thumbnail-track" id="thumbTrack">
                 <div class="thumbnail" th:each="img, iterStat : ${product.imageUrls}">
@@ -918,10 +744,13 @@
                 </div>
             </div>
         </div>
+
         <button class="thumbnail-nav" id="thumbDown">
             <i class="fas fa-chevron-down"></i>
         </button>
     </div>
+
+    <!-- Main Image -->
     <div class="main-image-section">
         <div class="main-image" id="mainImageContainer">
                 <span class="new-badge">
@@ -934,7 +763,7 @@
         </div>
     </div>
 
-    <!-- Thông tin sản phẩm -->
+    <!-- Product Info -->
     <div class="product-info">
         <h1 class="product-title" th:text="${product.displayName}">Lắc tay Vàng Trắng Ý 18K PNJ 0000W061057</h1>
 
@@ -1022,6 +851,7 @@
                         Thêm vào giỏ hàng
                     </button>
                 </form>
+
                 <button class="btn-call">
                     Gọi ngay (miễn phí)
                     <small>(Nhận ngay ưu đãi)</small>
@@ -1037,7 +867,9 @@
         <button class="tab-btn active" data-tab="description">Mô tả sản phẩm</button>
         <button class="tab-btn" data-tab="specs">Thông số kỹ thuật</button>
         <button class="tab-btn" data-tab="care">Hướng dẫn bảo quản</button>
-        <button class="tab-btn" data-tab="reviews">Đánh giá (0)</button>
+        <button class="tab-btn" data-tab="reviews">
+            Đánh giá (<span th:text="${reviews != null ? reviews.size() : 0}">0</span>)
+        </button>
     </div>
 
     <div class="tab-content active" id="description">
@@ -1089,143 +921,296 @@
 
     <div class="tab-content" id="reviews">
         <h3>Đánh giá từ khách hàng</h3>
-        <p>Chưa có đánh giá nào cho sản phẩm này. Hãy là người đầu tiên đánh giá!</p>
+
+        <div th:if="${reviews != null and reviews.size() > 0}"
+             style="background: var(--secondary-color); padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+            <div style="display: flex; gap: 40px; align-items: center;">
+                <!-- Rating summary -->
+                <div style="text-align: center;">
+                    <div style="font-size: 48px; font-weight: 700; color: var(--primary-color);"
+                         th:text="${#numbers.formatDecimal(averageRating, 1, 1)}">0.0</div>
+                    <div class="stars" style="font-size: 24px; color: #ffa500; margin: 10px 0;">
+                        ⭐⭐⭐⭐⭐
+                    </div>
+                    <div style="color: #666; font-size: 14px;">
+                        <span th:text="${reviews.size()}">0</span> đánh giá
+                    </div>
+                </div>
+
+                <!-- Rating bars -->
+                <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <span style="font-size: 14px; color: #666; width: 60px;">5 ⭐</span>
+                        <div style="flex: 1; height: 8px; background: #ddd; border-radius: 4px; overflow: hidden;">
+                            <div th:with="count=${ratingCounts[5]}, total=${reviews.size()},
+                                      percent=${total > 0 ? (count * 100.0 / total) : 0}"
+                                 style="height: 100%; background: var(--primary-color);"
+                                 th:style="'width: ' + ${percent} + '%'"></div>
+                        </div>
+                        <span style="font-size: 14px; color: #666; width: 40px;" th:text="${ratingCounts[5]}">0</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <span style="font-size: 14px; color: #666; width: 60px;">4 ⭐</span>
+                        <div style="flex: 1; height: 8px; background: #ddd; border-radius: 4px; overflow: hidden;">
+                            <div th:with="count=${ratingCounts[4]}, total=${reviews.size()},
+                                      percent=${total > 0 ? (count * 100.0 / total) : 0}"
+                                 style="height: 100%; background: var(--primary-color);"
+                                 th:style="'width: ' + ${percent} + '%'"></div>
+                        </div>
+                        <span style="font-size: 14px; color: #666; width: 40px;" th:text="${ratingCounts[4]}">0</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <span style="font-size: 14px; color: #666; width: 60px;">3 ⭐</span>
+                        <div style="flex: 1; height: 8px; background: #ddd; border-radius: 4px; overflow: hidden;">
+                            <div th:with="count=${ratingCounts[3]}, total=${reviews.size()},
+                                      percent=${total > 0 ? (count * 100.0 / total) : 0}"
+                                 style="height: 100%; background: var(--primary-color);"
+                                 th:style="'width: ' + ${percent} + '%'"></div>
+                        </div>
+                        <span style="font-size: 14px; color: #666; width: 40px;" th:text="${ratingCounts[3]}">0</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <span style="font-size: 14px; color: #666; width: 60px;">2 ⭐</span>
+                        <div style="flex: 1; height: 8px; background: #ddd; border-radius: 4px; overflow: hidden;">
+                            <div th:with="count=${ratingCounts[2]}, total=${reviews.size()},
+                                      percent=${total > 0 ? (count * 100.0 / total) : 0}"
+                                 style="height: 100%; background: var(--primary-color);"
+                                 th:style="'width: ' + ${percent} + '%'"></div>
+                        </div>
+                        <span style="font-size: 14px; color: #666; width: 40px;" th:text="${ratingCounts[2]}">0</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <span style="font-size: 14px; color: #666; width: 60px;">1 ⭐</span>
+                        <div style="flex: 1; height: 8px; background: #ddd; border-radius: 4px; overflow: hidden;">
+                            <div th:with="count=${ratingCounts[1]}, total=${reviews.size()},
+                                      percent=${total > 0 ? (count * 100.0 / total) : 0}"
+                                 style="height: 100%; background: var(--primary-color);"
+                                 th:style="'width: ' + ${percent} + '%'"></div>
+                        </div>
+                        <span style="font-size: 14px; color: #666; width: 40px;" th:text="${ratingCounts[1]}">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Danh sách đánh giá -->
+        <div th:if="${reviews != null and reviews.size() > 0}">
+            <div th:each="review : ${reviews}"
+                 style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background: white; margin-bottom: 15px;">
+
+                <!-- Header -->
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                            <span th:text="${review.user != null ? #strings.substring(review.user.fullName, 0, 1) : 'U'}">U</span>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600;" th:text="${review.user != null ? review.user.fullName : 'Khách hàng'}">User</div>
+                            <div style="color: #ffa500; font-size: 14px;">
+                                <span th:text="${#strings.repeat('⭐', review.rating)}">⭐⭐⭐⭐⭐</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="font-size: 13px; color: #999;" th:if="${review.createdAt != null}">
+                        <span th:text="${#temporals.format(review.createdAt, 'dd/MM/yyyy')}">01/01/2024</span>
+                    </div>
+                </div>
+
+                <!-- Comment -->
+                <div th:if="${review.comment != null}" style="color: #555; line-height: 1.6;">
+                    <p th:text="${review.comment}">Bình luận</p>
+                </div>
+
+                <!-- Images -->
+                <!-- Images -->
+                <div th:if="${review.mediaPaths != null and review.mediaPaths.size() > 0}"
+                     style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
+                    <img th:each="media : ${review.mediaPaths}"
+                         th:src="@{${media}}"
+                         alt="Review"
+                         style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;"
+                         onerror="this.style.display='none'">
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty state -->
+        <div th:if="${reviews == null or reviews.size() == 0}"
+             style="text-align: center; padding: 40px 20px; color: #999;">
+            <i class="far fa-star" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
+            <p style="font-size: 16px;">Chưa có đánh giá nào cho sản phẩm này.</p>
+            <p style="font-size: 14px;">Hãy là người đầu tiên đánh giá!</p>
+        </div>
     </div>
-</div>
-<script th:src="@{/js/home.js}"></script>
-<script>
-    let currentThumbIndex = 0;
-    const thumbTrack = document.getElementById('thumbTrack');
-    const thumbnails = document.querySelectorAll('.thumbnail');
-    const thumbUp = document.getElementById('thumbUp');
-    const thumbDown = document.getElementById('thumbDown');
-    const maxVisibleThumbs = 4;
-    const thumbHeight = 110;
 
-    // Update thumbnail nav buttons
-    function updateThumbNav() {
-        thumbUp.disabled = currentThumbIndex === 0;
-        thumbDown.disabled = currentThumbIndex >= thumbnails.length - maxVisibleThumbs;
+    <script th:src="@{/js/home.js}"></script>
+    <script>
+        // Thumbnail navigation
+        let currentThumbIndex = 0;
+        const thumbTrack = document.getElementById('thumbTrack');
+        const thumbnails = document.querySelectorAll('.thumbnail');
+        const thumbUp = document.getElementById('thumbUp');
+        const thumbDown = document.getElementById('thumbDown');
+        const maxVisibleThumbs = 4;
+        const thumbHeight = 110; // 100px + 10px gap
 
-        if (thumbUp.disabled) thumbUp.classList.add('disabled');
-        else thumbUp.classList.remove('disabled');
+        // Update thumbnail nav buttons
+        function updateThumbNav() {
+            thumbUp.disabled = currentThumbIndex === 0;
+            thumbDown.disabled = currentThumbIndex >= thumbnails.length - maxVisibleThumbs;
 
-        if (thumbDown.disabled) thumbDown.classList.add('disabled');
-        else thumbDown.classList.remove('disabled');
-    }
+            if (thumbUp.disabled) thumbUp.classList.add('disabled');
+            else thumbUp.classList.remove('disabled');
 
-    // Scroll thumbnails up
-    thumbUp.addEventListener('click', function() {
-        if (currentThumbIndex > 0) {
-            currentThumbIndex--;
-            thumbTrack.style.transform = `translateY(-${currentThumbIndex * thumbHeight}px)`;
-            updateThumbNav();
+            if (thumbDown.disabled) thumbDown.classList.add('disabled');
+            else thumbDown.classList.remove('disabled');
         }
-    });
 
-    // Scroll thumbnails down
-    thumbDown.addEventListener('click', function() {
-        if (currentThumbIndex < thumbnails.length - maxVisibleThumbs) {
-            currentThumbIndex++;
-            thumbTrack.style.transform = `translateY(-${currentThumbIndex * thumbHeight}px)`;
-            updateThumbNav();
-        }
-    });
-
-    // Show/hide nav buttons based on number of thumbnails
-    if (thumbnails.length <= maxVisibleThumbs) {
-        thumbUp.style.display = 'none';
-        thumbDown.style.display = 'none';
-    }
-
-    // Initial update
-    updateThumbNav();
-
-    // Thumbnail click
-    const mainImageContainer = document.getElementById('mainImageContainer');
-    const mainImage = document.getElementById('mainImage');
-
-    thumbnails.forEach(thumb => {
-        thumb.addEventListener('click', function() {
-            thumbnails.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-
-            const imgSrc = this.querySelector('img').src;
-            mainImage.src = imgSrc.replace('w=200', 'w=800');
-        });
-    });
-
-    // Size selection
-    document.querySelectorAll('.size-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
-
-    // Tabs
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tabId = this.getAttribute('data-tab');
-
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
-            this.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-        });
-    });
-
-
-    // Add to Cart
-    document.querySelector('.btn-cart').addEventListener('click', function() {
-        const selectedSize = document.querySelector('.size-btn.active').textContent;
-        this.textContent = '✓ Đã thêm vào giỏ!';
-        this.style.background = '#28a745';
-        this.style.color = 'white';
-        this.style.borderColor = '#28a745';
-
-        setTimeout(() => {
-            this.textContent = 'Thêm vào giỏ hàng';
-            this.style.background = '';
-            this.style.color = '';
-            this.style.borderColor = '';
-        }, 2000);
-    });
-
-    // Call Now
-    document.querySelector('.btn-call').addEventListener('click', function() {
-        alert('Đang kết nối...\nHotline: 1900 xxxx');
-    });
-
-    // Zoom Icon
-    document.querySelector('.zoom-icon').addEventListener('click', function() {
-        alert('Mở gallery xem tất cả hình ảnh với zoom');
-    });
-
-    // Store items click
-    document.querySelectorAll('.store-item').forEach(item => {
-        item.addEventListener('click', function() {
-            const storeName = this.querySelector('.store-name').textContent;
-            alert('Xem thông tin chi nhánh:\n' + storeName);
-        });
-    });
-
-    // Promotion checkboxes
-    document.querySelectorAll('.promo-item input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            if (this.checked) {
-                const promoText = this.parentElement.textContent.trim();
-                console.log('Áp dụng ưu đãi:', promoText);
+        // Scroll thumbnails up
+        thumbUp.addEventListener('click', function() {
+            if (currentThumbIndex > 0) {
+                currentThumbIndex--;
+                thumbTrack.style.transform = `translateY(-${currentThumbIndex * thumbHeight}px)`;
+                updateThumbNav();
             }
         });
-    });
 
-    document.querySelector('.size-guide').addEventListener('click', function() {
-        alert('Hướng dẫn đo size lắc tay:\n\n1. Dùng thước dây đo quanh cổ tay\n2. Cộng thêm 1-2cm cho thoải mái\n3. Đối chiếu với bảng size');
-    });
-</script>
-<footer th:replace="~{client_1/layout/footer :: footer}"></footer>
-<footer th:replace="~{client_1/layout/chatbox :: none}"></footer>
+        // Scroll thumbnails down
+        thumbDown.addEventListener('click', function() {
+            if (currentThumbIndex < thumbnails.length - maxVisibleThumbs) {
+                currentThumbIndex++;
+                thumbTrack.style.transform = `translateY(-${currentThumbIndex * thumbHeight}px)`;
+                updateThumbNav();
+            }
+        });
+
+        // Show/hide nav buttons based on number of thumbnails
+        if (thumbnails.length <= maxVisibleThumbs) {
+            thumbUp.style.display = 'none';
+            thumbDown.style.display = 'none';
+        }
+
+        // Initial update
+        updateThumbNav();
+
+        // Thumbnail click
+        const mainImageContainer = document.getElementById('mainImageContainer');
+        const mainImage = document.getElementById('mainImage');
+
+        thumbnails.forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                thumbnails.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+
+                const imgSrc = this.querySelector('img').src;
+                mainImage.src = imgSrc.replace('w=200', 'w=800');
+            });
+        });
+
+        // Size selection
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Tabs
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                this.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+
+        // Add to Cart
+        document.querySelector('.btn-cart').addEventListener('click', function() {
+            const selectedSize = document.querySelector('.size-btn.active').textContent;
+            this.textContent = '✓ Đã thêm vào giỏ!';
+            this.style.background = '#28a745';
+            this.style.color = 'white';
+            this.style.borderColor = '#28a745';
+
+            setTimeout(() => {
+                this.textContent = 'Thêm vào giỏ hàng';
+                this.style.background = '';
+                this.style.color = '';
+                this.style.borderColor = '';
+            }, 2000);
+        });
+
+        // Call Now
+        document.querySelector('.btn-call').addEventListener('click', function() {
+            alert('Đang kết nối...\nHotline: 1900 xxxx');
+        });
+
+        // Zoom Icon
+        document.querySelector('.zoom-icon').addEventListener('click', function() {
+            alert('Mở gallery xem tất cả hình ảnh với zoom');
+        });
+
+        // Store items click
+        document.querySelectorAll('.store-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const storeName = this.querySelector('.store-name').textContent;
+                alert('Xem thông tin chi nhánh:\n' + storeName);
+            });
+        });
+
+        // Promotion checkboxes
+        document.querySelectorAll('.promo-item input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    const promoText = this.parentElement.textContent.trim();
+                    console.log('Áp dụng ưu đãi:', promoText);
+                }
+            });
+        });
+
+        // Size guide
+        document.querySelector('.size-guide').addEventListener('click', function() {
+            alert('Hướng dẫn đo size lắc tay:\n\n1. Dùng thước dây đo quanh cổ tay\n2. Cộng thêm 1-2cm cho thoải mái\n3. Đối chiếu với bảng size');
+        });
+
+        function viewMedia(element) {
+            const modal = document.createElement('div');
+            modal.className = 'review-media-modal show';
+
+            const mediaElement = element.querySelector('img, video');
+            if (mediaElement) {
+                const clone = mediaElement.cloneNode(true);
+                clone.style.maxWidth = '90%';
+                clone.style.maxHeight = '90vh';
+                if (clone.tagName === 'VIDEO') {
+                    clone.controls = true;
+                    clone.autoplay = true;
+                }
+                modal.appendChild(clone);
+            }
+
+            modal.addEventListener('click', () => modal.remove());
+            document.body.appendChild(modal);
+        }
+
+        // Cập nhật số lượng đánh giá trên tab
+        document.addEventListener('DOMContentLoaded', function() {
+            const reviewCount = [[${reviews != null ? reviews.size() : 0}]];
+            const reviewTab = document.querySelector('[data-tab="reviews"]');
+            if (reviewTab) {
+                reviewTab.textContent = `Đánh giá (${reviewCount})`;
+            }
+        });
+    </script>
+    <footer th:replace="~{client_1/layout/chatbox :: none}"></footer>
 </body>
 </html>
