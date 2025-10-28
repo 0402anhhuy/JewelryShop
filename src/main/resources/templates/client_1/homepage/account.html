@@ -1656,7 +1656,21 @@
         .btn-danger:hover {
             background: #c82333;
         }
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+        .btn-success:hover {
+            background: #0c6c40;
+        }
 
+        .btn-warning{
+            background: var(--warning-color);
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #b68b10;
+        }
         /* Demo Button */
         .demo-btn {
             position: fixed;
@@ -1944,7 +1958,11 @@
                                     th:onclick="'cancelOrder(' + ${order.id} + ')'">
                                 <i class="fas fa-times"></i> Hủy đơn
                             </button>
-
+                            <button class="btn btn-success btn-sm"
+                                    th:if="${order.status.name() == 'DELIVERED'}"
+                                    th:onclick="'confirmDelivered(' + ${order.id} + ')'">
+                                <i class="fas fa-check"></i> Đã nhận được hàng
+                            </button>
                             <button class="btn btn-warning btn-sm"
                                     th:if="${order.status.name() == 'COMPLETED'}"
                                     th:onclick="'reorder(' + ${order.id} + ')'">
