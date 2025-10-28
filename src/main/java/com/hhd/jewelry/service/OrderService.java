@@ -10,16 +10,19 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface OrderService {
-    void save(Order order);
-    boolean existsOrderByUser(User user);
-    @Transactional
-    void deleteById(Integer id);
+    Order findById(Integer id);
     Optional<Order> getOrderByOrderId(Integer orderId);
+    boolean existsOrderByUser(User user);
+
     @Transactional
     Order createNewOrder(User user, CheckoutDto form);
+
     @Transactional
     Order updateOrderStatus(Integer orderId, Order.Status newStatus);
-    Order findById(Integer id);
+
+    @Transactional
+    void deleteById(Integer id);
 
     void saveAllReviews(ReviewRequest request, Map<Integer, List<MultipartFile>> filesMap);
+    void save(Order order);
 }

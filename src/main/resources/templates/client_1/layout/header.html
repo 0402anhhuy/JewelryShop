@@ -20,12 +20,12 @@
             </div>
             <div class="header-icons">
                 <div th:if="${#authorization.expression('isAuthenticated()')}" style="display: contents;">
-                    <a th:href="@{/products}" aria-label="Products">
+                    <a th:href="@{/products}" aria-label="Products" title="Sản phẩm">
                         <i class="fas fa-box-open"></i>
                     </a>
-                    <a th:href="@{/cart}" aria-label="Cart">
-                        <i class="fas fa-shopping-bag"></i>
-                    </a>
+                    <a th:href="@{/cart}" title="Giỏ hàng"><i class="fas fa-shopping-bag">
+                        <span class="cart-badge" th:text="${cartSize ?: 0}">0</span>
+                    </i></a>
                     <div class="user-account" th:if="${currentUser != null}">
                         <div class="user-avatar" th:text="${currentUser.fullName.substring(0,1).toUpperCase()}">N</div>
                         <div class="user-dropdown">

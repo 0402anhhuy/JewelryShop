@@ -1,11 +1,15 @@
 package com.hhd.jewelry.controller.client;
 
+import com.hhd.jewelry.entity.Cart;
 import com.hhd.jewelry.entity.Product;
 import com.hhd.jewelry.entity.ProductReview;
-import com.hhd.jewelry.repository.ProductRepository;
+import com.hhd.jewelry.entity.User;
+import com.hhd.jewelry.service.CartService;
 import com.hhd.jewelry.service.ProductService;
+import com.hhd.jewelry.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,58 +20,67 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/products")
 public class DetailProductController {
     private final ProductService productService;
-    private final ProductRepository productRepository;
+    private final CartService cartService;
+    private final UserService userService;
 
     @GetMapping("/detail/{serialNumber}")
     public String productDetail(@PathVariable String serialNumber,
                                 HttpSession session,
-                                Model model) {
-        // Lấy product
-        Product product = productRepository.findBySerialNumber(serialNumber)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+                                Model model,
+                                Authentication auth) {
 
-        // Force trigger lazy loading nếu cần
+        // Lấy product
+        Product product = productService.getProductBySerialNumber(serialNumber);
+
+        int cartSize = 0;
+        if (auth != null && auth.isAuthenticated()) {
+            Optional<User> userOpt = userService.findByEmail(auth.getName());
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                Cart cart = cartService.getCartByUser(user);
+                if (cart != null && cart.getItems() != null) {
+                    cartSize = cart.getItems().stream()
+                            .map(item -> item.getQuantity() != null ? item.getQuantity() : 0)
+                            .reduce(0, Integer::sum);
+                }
+            }
+        }
+        model.addAttribute("cartSize", cartSize);
+
         List<ProductReview> reviews = new ArrayList<>();
         try {
             if (product.getReviews() != null) {
-                product.getReviews().size(); // Trigger lazy loading
+                product.getReviews().size();
                 reviews = new ArrayList<>(product.getReviews());
 
-                // ===== THÊM ĐOẠN NÀY ĐỂ FIX ĐƯỜNG DẪN ẢNH =====
+                // Fix đường dẫn ảnh reviews (Giữ nguyên)
                 reviews.forEach(review -> {
                     if (review.getMediaPaths() != null && !review.getMediaPaths().isEmpty()) {
-                        List<String> fixedPaths = new ArrayList<>();
-                        for (String path : review.getMediaPaths()) {
-                            // Chuyển từ "uploads/reviews/..." sang "/images/reviews/..."
-                            String fixedPath = path.replace("uploads/reviews/", "/images/reviews/");
-                            fixedPaths.add(fixedPath);
-                        }
+                        List<String> fixedPaths = review.getMediaPaths().stream()
+                                .map(path -> path.replace("uploads/reviews/", "/images/reviews/"))
+                                .collect(Collectors.toList());
                         review.setMediaPaths(fixedPaths);
                     }
                 });
-                // ===== HẾT ĐOẠN THÊM =====
             }
         } catch (Exception e) {
             System.err.println("Error loading reviews: " + e.getMessage());
             reviews = new ArrayList<>();
         }
 
-        // Tính average rating
-        double averageRating = 0.0;
-        if (!reviews.isEmpty()) {
-            averageRating = reviews.stream()
-                    .mapToInt(ProductReview::getRating)
-                    .average()
-                    .orElse(0.0);
-        }
+        double averageRating = reviews.stream()
+                .mapToInt(ProductReview::getRating)
+                .average()
+                .orElse(0.0);
 
-        // ===== ĐẾM SỐ LƯỢNG REVIEW THEO TỪNG RATING (5-4-3-2-1 sao) =====
         Map<Integer, Long> ratingCounts = new HashMap<>();
         for (int i = 1; i <= 5; i++) {
             final int star = i;
@@ -77,7 +90,6 @@ public class DetailProductController {
             ratingCounts.put(star, count);
         }
 
-        // ====== Recently viewed ======
         List<Integer> recentlyViewedIds = (List<Integer>) session.getAttribute("recentlyViewed");
         if (recentlyViewedIds == null) {
             recentlyViewedIds = new ArrayList<>();
@@ -91,7 +103,6 @@ public class DetailProductController {
         }
         session.setAttribute("recentlyViewed", recentlyViewedIds);
 
-        // ====== Truyền dữ liệu vào view ======
         model.addAttribute("product", product);
         model.addAttribute("reviews", reviews);
         model.addAttribute("averageRating", averageRating);

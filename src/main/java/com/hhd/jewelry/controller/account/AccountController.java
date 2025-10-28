@@ -3,7 +3,6 @@ package com.hhd.jewelry.controller.account;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hhd.jewelry.dto.ProfileDto;
 import com.hhd.jewelry.entity.*;
-import com.hhd.jewelry.repository.OrderRepository;
 import com.hhd.jewelry.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;import com.fasterxml.jackson.core.type.TypeReference;
@@ -11,7 +10,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -34,23 +32,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
 public class AccountController {
 
+    private static final Logger log = LoggerFactory.getLogger(AccountController.class);
+
     private final UserService userService;
     private final WishlistService wishlistService;
     private final AddressService addressService;
     private final OrderService orderService;
-    private static final Logger log = LoggerFactory.getLogger(AccountController.class);
-
     private final OtpService otpService;
-    private final ReviewService reviewService;
-    private final OrderRepository orderRepository;
+    private final CartService cartService;
+
 
     @GetMapping("/account")
     public String getAccountPage(
@@ -59,11 +55,9 @@ public class AccountController {
             @RequestParam(defaultValue = "0") int wishlistPage,
             @RequestParam(defaultValue = "8") int wishlistSize) {
 
-        // SỬA: Kiểm tra Optional trước khi dùng orElseThrow()
         Optional<User> userOpt = userService.findByEmail(auth.getName());
 
         if (userOpt.isEmpty()) {
-            // Xử lý khi không tìm thấy user - có thể do email đã đổi
             SecurityContextHolder.clearContext();
             return "redirect:/login?error=session_expired";
         }
@@ -81,6 +75,15 @@ public class AccountController {
             model.addAttribute("form", form);
         }
 
+        int cartSize = 0;
+        Cart cart = cartService.getCartByUser(user);
+        if (cart != null && cart.getItems() != null) {
+            cartSize = cart.getItems().stream()
+                    .map(item -> item.getQuantity() != null ? item.getQuantity() : 0)
+                    .reduce(0, Integer::sum);
+        }
+        model.addAttribute("cartSize", cartSize);
+
         List<Address> addresses = addressService.getAddressByUserId(user.getId());
         model.addAttribute("addresses", addresses);
 
@@ -94,18 +97,14 @@ public class AccountController {
         return "client_1/homepage/account";
     }
 
-    // Thêm vào AccountController
     @PostMapping("/account/update-ajax")
     @ResponseBody
     public Map<String, Object> updateProfileAjax(
-            Authentication auth,
-            @Valid @ModelAttribute("form") ProfileDto form,
-            BindingResult br,
-            HttpServletRequest request) { // Thêm HttpServletRequest
+            Authentication auth, @Valid @ModelAttribute("form") ProfileDto form,
+            BindingResult br, HttpServletRequest request) {
 
         Map<String, Object> response = new HashMap<>();
 
-        // SỬA: Kiểm tra Optional
         Optional<User> userOpt = userService.findByEmail(auth.getName());
         if (userOpt.isEmpty()) {
             response.put("success", false);
@@ -117,7 +116,6 @@ public class AccountController {
 
         User currentUser = userOpt.get();
 
-        // Validation checks
         if (!form.getEmail().equals(currentUser.getEmail()) &&
                 userService.existsByEmailAndIdNot(form.getEmail(), currentUser.getId())) {
             br.rejectValue("email", "Duplicated", "Email đã được dùng bởi tài khoản khác");
@@ -156,7 +154,6 @@ public class AccountController {
             String oldEmail = currentUser.getEmail();
             boolean emailChanged = !form.getEmail().equals(oldEmail);
 
-            // Cập nhật thông tin
             currentUser.setEmail(form.getEmail());
 
             if (form.getPhone() != null && !form.getPhone().trim().isEmpty()) {
@@ -165,7 +162,6 @@ public class AccountController {
 
             userService.save(currentUser);
 
-            // Nếu email thay đổi, cập nhật authentication
             if (emailChanged) {
                 updateAuthentication(currentUser.getEmail(), auth, request);
                 response.put("emailChanged", true);
@@ -191,16 +187,15 @@ public class AccountController {
 
         return response;
     }
+
     @GetMapping("/account/orders/detail/{orderId}")
     @Transactional(readOnly = true)
     public ResponseEntity<Order> getOrderDetail(@PathVariable("orderId") Integer orderId) {
         Order order = orderService.getOrderByOrderId(orderId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                 "Không tìm thấy đơn hàng với ID: " + orderId));
-        int size = order.getItems().size();
         return ResponseEntity.ok(order);
     }
     private void updateAuthentication(String newEmail, Authentication oldAuth, HttpServletRequest request) {
-        // Tạo authentication mới với email mới
         UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(
                 newEmail,
                 oldAuth.getCredentials(),
@@ -208,20 +203,19 @@ public class AccountController {
         );
         SecurityContextHolder.getContext().setAuthentication(newAuth);
 
-        // Tạo session mới để tránh session fixation
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
         }
         request.getSession(true);
     }
-    // ✅ Gửi OTP tới email đăng ký
+
     @PostMapping("/account/request-otp")
     @ResponseBody
     public String requestOtp(@RequestParam("email") String email) {
         String v = (email == null) ? "" : email.trim().toLowerCase();
 
-        if (v.isEmpty() || !v.endsWith("@gmail.com")) {
+        if (!v.endsWith("@gmail.com")) {
             return "INVALID_EMAIL";
         }
         if (!userService.existsByEmail(v)) {
@@ -238,7 +232,6 @@ public class AccountController {
         }
     }
 
-    // ✅ Xử lý xác minh OTP và đổi mật khẩu
     @PostMapping("/account/verify-otp")
     @ResponseBody
     public String verifyOtpAndChangePassword(@RequestParam String email,
@@ -253,7 +246,6 @@ public class AccountController {
         return "SUCCESS";
     }
 
-    // 🔹 Controller
     @PostMapping("/reviews/submit")
     public ResponseEntity<String> submitReview(
             @RequestParam("orderId") Integer orderId,
@@ -261,26 +253,22 @@ public class AccountController {
             @RequestParam MultiValueMap<String, MultipartFile> allFiles) {
 
         try {
-            // ====== BƯỚC 1: Kiểm tra đơn hàng đã review chưa ======
-            Order order = orderRepository.findById(orderId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+            Order order = orderService.findById(orderId);
 
-            // Kiểm tra status
             if (!order.getStatus().name().equals("COMPLETED")) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body("Chỉ có thể đánh giá đơn hàng đã hoàn thành!");
             }
 
-            // Kiểm tra đã review chưa
             if (order.getIsReviewed() != null && order.getIsReviewed()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body("Đơn hàng này đã được đánh giá trước đó!");
             }
 
-            // ====== BƯỚC 2: Parse JSON và xử lý files ======
             ObjectMapper mapper = new ObjectMapper();
             List<ItemReview> reviews = mapper.readValue(reviewsJson,
-                    new TypeReference<List<ItemReview>>() {});
+                    new TypeReference<>() {
+                    });
 
             Map<Integer, List<MultipartFile>> filesMap = new HashMap<>();
             allFiles.forEach((key, files) -> {
@@ -295,12 +283,9 @@ public class AccountController {
                     .reviews(reviews)
                     .build();
 
-            // ====== BƯỚC 3: Lưu reviews ======
             orderService.saveAllReviews(request, filesMap);
-
-            // ====== BƯỚC 4: Đánh dấu đơn hàng đã review ======
             order.setIsReviewed(true);
-            orderRepository.save(order);
+            orderService.save(order);
 
             return ResponseEntity.ok("Cảm ơn bạn đã đánh giá!");
 
@@ -310,7 +295,7 @@ public class AccountController {
                     .body("Lỗi: " + e.getMessage());
         }
     }
-    // 🔹 Hiển thị trang đánh giá đơn hàng
+
     @GetMapping("/reviews/order/{id}")
     public String reviewOrderPage(@PathVariable Integer id, Model model) {
         Order order = orderService.findById(id);

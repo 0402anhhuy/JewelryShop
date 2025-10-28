@@ -3,9 +3,9 @@ package com.hhd.jewelry.controller.client;
 import com.hhd.jewelry.entity.Product;
 import com.hhd.jewelry.entity.User;
 import com.hhd.jewelry.entity.Wishlist;
-import com.hhd.jewelry.repository.ProductRepository;
-import com.hhd.jewelry.repository.UserRepository;
-import com.hhd.jewelry.repository.WishlistRepository;
+import com.hhd.jewelry.service.ProductService;
+import com.hhd.jewelry.service.UserService;
+import com.hhd.jewelry.service.WishlistService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -15,25 +15,24 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/recently-viewed")
 @RequiredArgsConstructor
 public class RecentlyViewedController {
+    private final ProductService productService;
+    private final UserService userService;
+    private final WishlistService wishlistService;
 
-    private final ProductRepository productRepository;
-    private final UserRepository userRepository;
-    private final WishlistRepository wishlistRepository;
-
-    // ===== HIỂN THỊ TRANG RECENTLY VIEWED =====
     @GetMapping
     public String viewRecentlyViewed(Model model, Authentication auth, HttpSession session) {
         if (auth == null) {
             return "redirect:/login";
         }
 
-        User user = userRepository.findByEmail(auth.getName()).orElse(null);
+        User user = userService.findByEmail(auth.getName()).orElse(null);
         if (user == null) {
             return "redirect:/login";
         }
@@ -44,22 +43,20 @@ public class RecentlyViewedController {
 
         if (recentlyViewedIds != null && !recentlyViewedIds.isEmpty()) {
             recentlyViewed = recentlyViewedIds.stream()
-                    .map(id -> productRepository.findById(Long.valueOf(id)).orElse(null))
-                    .filter(product -> product != null)
+                    .map(id -> productService.getProductById(Long.valueOf(id)))
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
         }
 
         model.addAttribute("recentlyViewed", recentlyViewed);
         model.addAttribute("recentlyViewedCount", recentlyViewed.size());
 
-        // Lấy số lượng wishlist
-        List<Wishlist> wishlists = wishlistRepository.findAllByUser(user);
+        List<Wishlist> wishlists = wishlistService.getAllByUser(user);
         model.addAttribute("wishlistCount", wishlists.size());
 
         return "client_1/product/recently-viewed";
     }
 
-    // ===== XÓA TOÀN BỘ LỊCH SỬ =====
     @PostMapping("/clear")
     @ResponseBody
     public String clearRecentlyViewed(HttpSession session) {

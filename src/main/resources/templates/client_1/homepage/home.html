@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Trang Chủ - Jewelry Store</title>
+    <title>Trang Chủ</title>
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
@@ -40,7 +40,7 @@
             <div class="arrivals-content">
                 <div class="arrivals-header">
                     <h2 class="section-title">
-                        COLLECTION - [[${selectedCollection}]]
+                        COLLECTION<th:block th:if="${selectedCollection}"> - [[${selectedCollection}]]</th:block>
                     </h2>
                     <div class="sort-filter">
                         <span class="filter-label">Sort by</span>
@@ -82,19 +82,34 @@
                         <a th:href="@{/}" class="btn btn-primary mt-3">View All Products</a>
                     </div>
                 </div>
+
                 <!-- Pagination -->
-                <div class="pagination">
-                    <button class="page-btn" onclick="window.location.href='#new-arrivals'">
+                <div class="pagination" th:if="${productPage.totalPages > 1}">
+                    <a class="page-btn"
+                       th:classappend="${productPage.first} ? 'disabled'"
+                       th:href="@{/(collectionName=${selectedCollection}, sort=${selectedSort}, page=${productPage.number - 1})}">
                         <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="page-btn active">1</button>
-                    <button class="page-btn">2</button>
-                    <button class="page-btn">3</button>
-                    <span class="page-dots">...</span>
-                    <button class="page-btn">8</button>
-                    <button class="page-btn" onclick="window.location.href='#new-arrivals'">
+                    </a>
+
+                    <th:block th:with="currentPage=${productPage.number},
+                                totalPages=${productPage.totalPages},
+                                startPage=${T(java.lang.Math).max(0, currentPage - 2)},
+                                endPage=${T(java.lang.Math).min(totalPages - 1, currentPage + 2)}">
+                        <th:block th:each="i : ${#numbers.sequence(startPage, endPage)}">
+                            <a class="page-btn"
+                               th:classappend="${i == currentPage} ? 'active'"
+                               th:text="${i + 1}"
+                               th:href="@{/(collectionName=${selectedCollection}, sort=${selectedSort}, page=${i})}">
+                                1
+                            </a>
+                        </th:block>
+                    </th:block>
+
+                    <a class="page-btn"
+                       th:classappend="${productPage.last} ? 'disabled'"
+                       th:href="@{/(collectionName=${selectedCollection}, sort=${selectedSort}, page=${productPage.number + 1})}">
                         <i class="fas fa-chevron-right"></i>
-                    </button>
+                    </a>
                 </div>
             </div>
             <!-- Banner động theo Collection -->
@@ -127,13 +142,12 @@
         <div class="carousel-container">
             <div class="carousel">
                 <div class="carousel-track" id="trending-carousel">
-                    <div class="carousel-item" th:each="product : ${products}" th:if="${productStat.index < 6}">
+                    <div class="carousel-item" th:each="product : ${allFilteredProducts}">
                         <div class="product-card">
                             <div class="product-image">
                                 <img th:src="@{${product.imageUrls[0]}}" th:alt="${product.name}">
                             </div>
-                            <p class="product-category" th:text="${product.category.name}">Nhẫn</p>
-                            <h3 class="product-title" th:text="${product.name}">Nhẫn Kim cương Vàng trắng 14K</h3>
+                            <h3 class="product-title" th:text="${product.displayName}">Nhẫn Kim cương Vàng trắng 14K</h3>
                             <p class="product-price" th:text="${#numbers.formatDecimal(product.price,0,'COMMA',0,'POINT')} + ' đ'">15.750.000 đ</p>
                             <a th:href="@{/products/detail/{serialNumber}(serialNumber=${product.serialNumber})}" style="text-decoration: none;">
                                 <button class="buy-now-btn">Mua ngay</button>
@@ -149,42 +163,48 @@
     </div>
 </section>
 
-<!-- Magazine Section -->
 <section class="magazine-section">
     <div class="container">
         <div class="magazine-grid">
-            <article class="magazine-feature" style="background-image: url('https://images.unsplash.com/photo-1518544882777-8f4b7b4f7b2a?auto=format&fit=crop&w=1200&q=60')">
+            <article class="magazine-feature"
+                     th:style="|background-image: url(@{/images/magazine/diamond_feature.jpg})|">
                 <div class="feature-content">
-                    <div class="kicker">Tips</div>
-                    <h3>Trend Alert: Statement Pearl Earrings for Everyone</h3>
-                    <p>Discover the latest trend in the fashion world: pearl earrings. Elevate your attire with the exquisite pieces that exude elegance and glamour.</p>
-                    <div class="magazine-meta">Jane Thompson &bull; May 10, 2023</div>
+                    <div class="kicker">Buying Guide</div>
+                    <h3>Top 5 Mistakes to Avoid When Buying Luxury Jewelry</h3>
+                    <p>Unlock the secrets of luxury jewelry. Learn how to spot quality, vet vendors, and avoid common pitfalls when investing in high-end pieces.</p>
+                    <a href="https://www.bluestone.com/article/how-not-to-buy-jewellery-top-5-mistakes-to-avoid-43.html" class="magazine-meta">Jewelry Expert &bull; Oct 28, 2025</a>
                 </div>
             </article>
 
             <div class="magazine-side">
-                <div class="magazine-small" style="background-image: url('https://images.unsplash.com/photo-1548095115-45697e2b7bdf?auto=format&fit=crop&w=800&q=60')"></div>
-                <div class="magazine-small" style="background-image: url('https://images.unsplash.com/photo-1520975916457-5b0b0b3b8b77?auto=format&fit=crop&w=800&q=60')"></div>
+                <div class="magazine-small"
+                     th:style="|background-image: url(@{/images/magazine/gold_necklace_model.jpg})|">
+                </div>
+                <div class="magazine-small"
+                     th:style="|background-image: url(@{/images/magazine/earrings_closeup.jpg})|">
+                </div>
             </div>
 
             <aside class="magazine-right">
-                <div class="magazine-article">
-                    <div class="thumb" style="background-image: url('https://images.unsplash.com/photo-1513682121747-1b6c7b1c9a9d?auto=format&fit=crop&w=600&q=60')"></div>
-                    <div>
-                        <div class="magazine-meta">Guide</div>
-                        <h4>How to Choose the Perfect Engagement Ring for Your Beloved One</h4>
-                        <p>Unlock the secrets to finding the perfect symbol of everlasting love.</p>
+                <a href="https://www.scanlonjewelers.com/post/the-ultimate-guide-to-choosing-the-perfect-engagement-ring" class="magazine-article">
+                    <div class="thumb"
+                         th:style="|background-image: url(@{/images/magazine/engagement_guide_thumb.jpg})|">
                     </div>
-                </div>
+                    <div>
+                        <h4>The Ultimate Guide to Choosing the Perfect Engagement Ring</h4>
+                        <p>Unlock the secrets to finding the perfect symbol of everlasting love, considering the 4Cs and setting styles.</p>
+                    </div>
+                </a>
 
-                <div class="magazine-article">
-                    <div class="thumb" style="background-image: url('https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=600&q=60')"></div>
-                    <div>
-                        <div class="magazine-meta">Tips</div>
-                        <h4>Caring for Your Jewelry: Maintenance and Cleaning Complete Guide</h4>
-                        <p>Discover the essential of maintenance and cleaning.</p>
+                <a href="https://anyradiamonds.com/jewelry-care-maintenance-guide/" class="magazine-article">
+                    <div class="thumb"
+                         th:style="|background-image: url(@{/images/magazine/care_kit_thumb.jpg})|">
                     </div>
-                </div>
+                    <div>
+                        <h4>Caring for Your Gold & Diamond Jewelry: A Maintenance Guide</h4>
+                        <p>Discover the essential tips for maintenance and cleaning to preserve your precious pieces' brilliance.</p>
+                    </div>
+                </a>
             </aside>
         </div>
     </div>
@@ -193,57 +213,57 @@
 <!-- FAQ Section -->
 <section class="extra-blog-faq container">
     <section class="faq-section">
-        <h2>Questions</h2>
+        <h2 class="section-title">Questions</h2>
         <div class="faq-container">
 
             <div class="faq-item">
                 <div class="faq-question">Sản phẩm của quý khách có chứng nhận kiểm định không?</div>
-                <div class="faq-answer">Có, tất cả các sản phẩm kim cương và đá quý của chúng tôi đều được **kiểm định và cấp chứng thư** bởi các tổ chức uy tín (như GIA, PNJ Lab, hoặc các tổ chức độc lập khác), đảm bảo chất lượng và nguồn gốc.</div>
+                <div class="faq-answer">Có, tất cả các sản phẩm kim cương và đá quý của chúng tôi đều được kiểm định và cấp chứng thư bởi các tổ chức uy tín (như GIA, PNJ Lab, hoặc các tổ chức độc lập khác), đảm bảo chất lượng và nguồn gốc.</div>
             </div>
 
             <div class="faq-item">
                 <div class="faq-question">Chính sách đổi trả và bảo hành sản phẩm như thế nào?</div>
-                <div class="faq-answer">Chúng tôi áp dụng chính sách **đổi trả trong vòng 7 ngày** nếu sản phẩm còn nguyên vẹn. Mọi sản phẩm đều được **bảo hành trọn đời** về vệ sinh, làm mới, và bảo hành các lỗi kỹ thuật trong 12 tháng đầu tiên.</div>
+                <div class="faq-answer">Chúng tôi áp dụng chính sách đổi trả trong vòng 7 ngày nếu sản phẩm còn nguyên vẹn. Mọi sản phẩm đều được bảo hành trọn đời về vệ sinh, làm mới, và bảo hành các lỗi kỹ thuật trong 12 tháng đầu tiên.</div>
             </div>
 
             <div class="faq-item">
                 <div class="faq-question">Làm sao để biết chính xác cỡ nhẫn/vòng tay của tôi khi mua online?</div>
-                <div class="faq-answer">Quý khách có thể tham khảo **Hướng dẫn đo size** chi tiết trên trang sản phẩm. Chúng tôi cung cấp công cụ đo size in được và hướng dẫn đo bằng thước/dây. Xin liên hệ Zalo/Hotline để được hỗ trợ đo chính xác nhất.</div>
+                <div class="faq-answer">Quý khách có thể tham khảo Hướng dẫn đo size chi tiết trên trang sản phẩm. Chúng tôi cung cấp công cụ đo size in được và hướng dẫn đo bằng thước/dây. Xin liên hệ Zalo/Hotline để được hỗ trợ đo chính xác nhất.</div>
             </div>
 
             <div class="faq-item">
                 <div class="faq-question">Tôi có thể yêu cầu thiết kế hoặc khắc tên riêng lên trang sức không?</div>
-                <div class="faq-answer">Chúng tôi **cung cấp dịch vụ thiết kế riêng (bespoke)** và **khắc laser miễn phí** theo yêu cầu (tên, ngày kỷ niệm) cho hầu hết các sản phẩm. Vui lòng ghi chú trong đơn hàng hoặc liên hệ Bộ phận Thiết kế.</div>
+                <div class="faq-answer">Chúng tôi cung cấp dịch vụ thiết kế riêng (bespoke) và khắc laser miễn phí theo yêu cầu (tên, ngày kỷ niệm) cho hầu hết các sản phẩm. Vui lòng ghi chú trong đơn hàng hoặc liên hệ Bộ phận Thiết kế.</div>
             </div>
 
             <div class="faq-item">
                 <div class="faq-question">Nguồn gốc kim loại quý và đá quý có đạo đức không?</div>
-                <div class="faq-answer">Chúng tôi cam kết sử dụng **kim loại và đá quý được khai thác có trách nhiệm** (Ethically Sourced) và tuân thủ các quy tắc quốc tế về nguồn gốc kim cương không xung đột (Kimberley Process).</div>
+                <div class="faq-answer">Chúng tôi cam kết sử dụng kim loại và đá quý được khai thác có trách nhiệm (Ethically Sourced) và tuân thủ các quy tắc quốc tế về nguồn gốc kim cương không xung đột (Kimberley Process).</div>
             </div>
 
             <div class="faq-item">
                 <div class="faq-question">Thời gian giao hàng và các phương thức thanh toán là gì?</div>
-                <div class="faq-answer">Chúng tôi chấp nhận thanh toán qua thẻ tín dụng/ATM, **chuyển khoản ngân hàng,** hoặc **COD** (Thanh toán khi nhận hàng). Thời gian giao hàng trong nước là 2-4 ngày làm việc.</div>
+                <div class="faq-answer">Chúng tôi chấp nhận thanh toán qua thẻ tín dụng/ATM, chuyển khoản ngân hàng, hoặc COD (Thanh toán khi nhận hàng). Thời gian giao hàng trong nước là 2-4 ngày làm việc.</div>
             </div>
 
             <div class="faq-item">
                 <div class="faq-question">Quý khách có hỗ trợ gói quà tặng cho các dịp đặc biệt không?</div>
-                <div class="faq-answer">Có. Tất cả các đơn hàng đều đi kèm hộp đựng sang trọng. Quý khách có thể chọn **Dịch vụ gói quà tặng cao cấp** và **Thêm lời nhắn cá nhân hóa** miễn phí tại trang Thanh toán.</div>
+                <div class="faq-answer">Có. Tất cả các đơn hàng đều đi kèm hộp đựng sang trọng. Quý khách có thể chọn Dịch vụ gói quà tặng cao cấp và Thêm lời nhắn cá nhân hóa miễn phí tại trang Thanh toán.</div>
             </div>
 
             <div class="faq-item">
                 <div class="faq-question">Thông tin cá nhân và thanh toán của tôi có được bảo mật không?</div>
-                <div class="faq-answer">Chúng tôi sử dụng **công nghệ mã hóa SSL** cấp độ cao nhất và các cổng thanh toán an toàn để bảo vệ tuyệt đối dữ liệu và giao dịch của quý khách.</div>
+                <div class="faq-answer">Chúng tôi sử dụng công nghệ mã hóa SSL cấp độ cao nhất và các cổng thanh toán an toàn để bảo vệ tuyệt đối dữ liệu và giao dịch của quý khách.</div>
             </div>
 
             <div class="faq-item">
                 <div class="faq-question">Tôi có thể xem trực tiếp sản phẩm tại cửa hàng không?</div>
-                <div class="faq-answer">Có. Quý khách vui lòng kiểm tra **Danh sách cửa hàng** trên trang Liên hệ để tìm địa chỉ gần nhất. Chúng tôi luôn sẵn lòng đón tiếp quý khách.</div>
+                <div class="faq-answer">Có. Quý khách vui lòng kiểm tra Danh sách cửa hàng trên trang Liên hệ để tìm địa chỉ gần nhất. Chúng tôi luôn sẵn lòng đón tiếp quý khách.</div>
             </div>
 
             <div class="faq-item">
                 <div class="faq-question">Hiện tại cửa hàng có chương trình khuyến mãi nào không?</div>
-                <div class="faq-answer">Để xem các **ưu đãi và mã giảm giá mới nhất**, vui lòng truy cập trang chủ hoặc trang Khuyến mãi. Hãy đăng ký nhận bản tin để không bỏ lỡ bất kỳ chương trình nào.</div>
+                <div class="faq-answer">Để xem các ưu đãi và mã giảm giá mới nhất, vui lòng truy cập trang chủ hoặc trang Khuyến mãi. Hãy đăng ký nhận bản tin để không bỏ lỡ bất kỳ chương trình nào.</div>
             </div>
         </div>
     </section>
@@ -252,8 +272,8 @@
 <script th:src="@{/js/style.js}"></script>
 <script>
     function applySortFilter(sortValue, collectionName) {
-        let url = '/?sort=' + sortValue;
-        if (collectionName && collectionName !== 'null') {
+        let url = '/?sort=' + sortValue + '&page=0';
+        if (collectionName && collectionName !== 'null' && collectionName !== '') {
             url += '&collectionName=' + encodeURIComponent(collectionName);
         }
         window.location.href = url;
@@ -332,35 +352,72 @@
         }
     }
 
-    // Trending carousel
-    const trendingTrack = document.getElementById('trending-carousel');
-    const trendingPrev = document.getElementById('trending-prev');
-    const trendingNext = document.getElementById('trending-next');
+    document.addEventListener('DOMContentLoaded', function() {
+        const track = document.getElementById('trending-carousel');
+        const prevBtn = document.getElementById('trending-prev');
+        const nextBtn = document.getElementById('trending-next');
+        const container = track ? track.closest('.carousel-container') : null;
 
-    if (trendingTrack) {
-        let trendingIndex = 0;
-        const trendingItems = trendingTrack.querySelectorAll('.carousel-item');
-        const trendingTotal = trendingItems.length;
+        if (!track || !container) return; // Thoát nếu không tìm thấy các phần tử
 
-        trendingNext?.addEventListener('click', () => {
-            if (trendingIndex < trendingTotal - 3) {
-                trendingIndex++;
-                updateTrendingCarousel();
+        let currentTrendingIndex = 0;
+        const items = Array.from(track.children);
+        const totalItems = items.length;
+        // ✅ Kích thước bước nhảy là 3 sản phẩm
+        const itemsPerView = 3;
+
+        // Hàm di chuyển Carousel
+        function moveTrendingCarousel() {
+            if (totalItems <= itemsPerView) {
+                // Nếu số lượng sản phẩm không đủ 3, không cần trượt
+                track.style.transform = 'translateX(0)';
+                return;
             }
-        });
 
-        trendingPrev?.addEventListener('click', () => {
-            if (trendingIndex > 0) {
-                trendingIndex--;
-                updateTrendingCarousel();
-            }
-        });
+            // Tính toán độ rộng của 1 item (bao gồm cả padding)
+            const itemWidth = container.offsetWidth / itemsPerView;
 
-        function updateTrendingCarousel() {
-            const offset = trendingIndex * (100 / 3);
-            trendingTrack.style.transform = `translateX(-${offset}%)`;
+            // Tính toán tổng độ dịch chuyển (ví dụ: 3 * itemWidth)
+            const translateValue = -currentTrendingIndex * itemWidth;
+            track.style.transform = `translateX(${translateValue}px)`;
+
+            updateButtons();
         }
-    }
+
+        // Cập nhật trạng thái nút Prev/Next
+        function updateButtons() {
+            prevBtn.disabled = (currentTrendingIndex === 0);
+
+            // Số lần trượt tối đa là (totalItems - itemsPerView).
+            // Index tối đa phải đảm bảo không trượt qua giới hạn cuối
+            const maxIndex = totalItems - itemsPerView;
+            nextBtn.disabled = (currentTrendingIndex >= maxIndex);
+        }
+
+        // Xử lý sự kiện Next
+        nextBtn.addEventListener('click', () => {
+            // Chỉ số tiếp theo là chỉ số hiện tại + itemsPerView (bước nhảy 3)
+            let nextIndex = currentTrendingIndex + itemsPerView;
+            const maxIndex = totalItems - itemsPerView;
+
+            // Đảm bảo không trượt quá giới hạn cuối
+            currentTrendingIndex = Math.min(nextIndex, maxIndex);
+            moveTrendingCarousel();
+        });
+
+        // Xử lý sự kiện Previous
+        prevBtn.addEventListener('click', () => {
+            // Chỉ số trước là chỉ số hiện tại - itemsPerView (bước nhảy 3)
+            currentTrendingIndex = Math.max(0, currentTrendingIndex - itemsPerView);
+            moveTrendingCarousel();
+        });
+
+        // Cập nhật lại kích thước khi cửa sổ thay đổi
+        window.addEventListener('resize', moveTrendingCarousel);
+
+        // Khởi tạo trạng thái ban đầu
+        moveTrendingCarousel();
+    });
 </script>
 <script>
     const heroSlider = {

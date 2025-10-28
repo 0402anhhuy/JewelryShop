@@ -941,6 +941,7 @@ body {
     font-weight: 600;
     color: #666;
     font-size: 15px;
+    text-decoration: none;
 }
 
 .page-btn:hover {
@@ -1423,6 +1424,7 @@ body {
 
 .magazine-section {
     padding: 60px 0;
+    text-decoration: none;
 }
 
 .magazine-grid {
@@ -1543,6 +1545,7 @@ body {
     font-size: 16px;
     margin-bottom: 6px;
     font-weight: 600;
+    text-decoration: none;
 }
 
 .magazine-article p {
@@ -1550,6 +1553,7 @@ body {
     color: #666;
     line-height: 1.4;
     margin: 0;
+    text-decoration: none;
 }
 
 .magazine-meta {
@@ -1574,6 +1578,15 @@ body {
 
     .magazine-right {
         order: 3;
+    }
+
+    .magazine-section a,
+    .magazine-section a:visited,
+    .magazine-section a:hover,
+    .magazine-section a:active,
+    .magazine-section a:focus {
+        text-decoration: none !important;
+        color: inherit;
     }
 }
 
@@ -1789,4 +1802,96 @@ body {
     .collection-item .collection-title {
         display: none;
     }
+}
+
+/* ========================================
+   CẬP NHẬT TRENDING SECTION (Đồng bộ giao diện New Arrival)
+   ======================================== */
+
+/* 1. Đảm bảo Carousel không có nền và shadow gây nhiễu */
+.trending .carousel-container {
+    background-color: transparent;
+    box-shadow: none;
+    padding: 0;
+}
+
+/* 2. Thiết lập kích thước và khoảng cách cho Carousel Item (3 cột) */
+.trending .carousel-item {
+    /* Đảm bảo mỗi item chiếm 1/3 không gian màn hình */
+    min-width: calc(100% / 3);
+    flex-shrink: 0; /* Quan trọng: Ngăn chặn item bị co lại */
+    box-sizing: border-box;
+    padding: 0 10px; /* Khoảng cách giữa các card */
+}
+
+/* 3. Đồng bộ hóa Card sản phẩm */
+.trending .product-card {
+    /* Thừa hưởng box-shadow, border-radius, background từ New Arrivals */
+    background: var(--light-color);
+    border-radius: 10px; /* Giả định radius là 10px */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    padding: 0;
+    overflow: hidden;
+    height: 100%;
+}
+
+.trending .product-card .product-image {
+    /* Nền màu be nhạt (giống ảnh bạn gửi) */
+    background: #f8f5e6; /* Sử dụng secondary color hoặc màu be cụ thể */
+    height: 250px; /* Kích thước ảnh vừa phải */
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px; /* Thêm padding để ảnh không chạm viền */
+}
+
+.trending .product-card .product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Dùng contain để ảnh không bị cắt, phù hợp với trang sức */
+}
+
+/* 4. Định dạng khu vực thông tin */
+.trending .product-card .product-category,
+.trending .product-card .product-title,
+.trending .product-card .product-price {
+    text-align: center;
+    padding: 0 10px;
+    margin-bottom: 5px;
+}
+
+.trending .product-card .product-title {
+    font-size: 16px;
+    min-height: 40px; /* Giúp card có chiều cao đồng nhất */
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.trending .product-card .product-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.trending .buy-now-btn {
+    width: 90%;
+    margin: 10px auto 15px;
+    padding: 12px 0;
+    background: var(--primary-color);
+    color: var(--dark-color);
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: block;
+}
+
+.trending .buy-now-btn:hover {
+    background: var(--dark-color);
+    color: var(--light-color);
+    transform: translateY(-1px);
 }

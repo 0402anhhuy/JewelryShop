@@ -8,6 +8,10 @@ import com.hhd.jewelry.repository.UserRepository;
 import com.hhd.jewelry.service.ProductService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -39,6 +43,11 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product getProductById(Long id) {
         return productRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public List<Product> getProductsById(List<Long> id) {
+        return productRepository.findAllById(id);
     }
 
     @Override
@@ -167,5 +176,15 @@ public class ProductServiceImpl implements ProductService {
             // Lưu lại thông tin sản phẩm đã cập nhật
             productRepository.save(product);
         }
+    }
+
+    @Override
+    public Page<Product> findProducts(Specification<Product> spec, Pageable pageable) {
+        return productRepository.findAll(spec, pageable);
+    }
+
+    @Override
+    public List<Product> findAllProducts(Specification<Product> spec, Sort sort) {
+        return productRepository.findAll(spec, sort);
     }
 }

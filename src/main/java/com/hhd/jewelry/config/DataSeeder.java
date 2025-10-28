@@ -63,7 +63,7 @@ public class DataSeeder implements CommandLineRunner {
 
             System.out.println("✅ Đã tạo tài khoản admin mặc định: admin@gmail.com / admin123");
         } else {
-            System.out.println("✅ Dữ liệu đã có, bỏ qua seeding admin.");
+            System.out.println("Dữ liệu đã có, bỏ qua seeding admin.");
         }
         // Insert
         seedCategories();

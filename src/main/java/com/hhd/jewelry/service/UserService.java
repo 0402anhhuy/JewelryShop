@@ -1,10 +1,12 @@
 package com.hhd.jewelry.service;
 
 import com.hhd.jewelry.entity.User;
+import org.springframework.data.domain.Page;
 
 import java.util.Optional;
 
 public interface UserService {
+    Page<User> getUsersPage(int page, int size);
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
     boolean existsByPhone(String phone);

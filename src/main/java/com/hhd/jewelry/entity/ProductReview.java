@@ -35,13 +35,13 @@ public class ProductReview {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    // 🔹 Số sao (1–5)
     @Column(nullable = false)
     private int rating;
 
     // 🔹 Nội dung bình luận
     @Column(length = 1000)
     private String comment;
+
     @OneToOne
     @JoinColumn(name = "order_item_id")
     private OrderItem orderItem;

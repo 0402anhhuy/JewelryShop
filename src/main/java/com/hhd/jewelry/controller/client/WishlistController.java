@@ -3,9 +3,8 @@ package com.hhd.jewelry.controller.client;
 import com.hhd.jewelry.entity.Product;
 import com.hhd.jewelry.entity.User;
 import com.hhd.jewelry.entity.Wishlist;
-import com.hhd.jewelry.repository.ProductRepository;
-import com.hhd.jewelry.repository.UserRepository;
-import com.hhd.jewelry.repository.WishlistRepository;
+import com.hhd.jewelry.service.ProductService;
+import com.hhd.jewelry.service.UserService;
 import com.hhd.jewelry.service.WishlistService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -13,9 +12,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity; // Import này cần thiết
-import java.util.Map; // Import này cần thiết
-import java.util.HashMap; // Import này cần thiết
+import org.springframework.http.ResponseEntity;
+import java.util.Map;
+import java.util.HashMap;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,9 +25,8 @@ import java.util.Optional;
 public class WishlistController {
 
     private final WishlistService wishlistService;
-    private final UserRepository userRepository;
-    private final ProductRepository productRepository;
-    private final WishlistRepository wishlistRepository;
+    private final ProductService productService;
+    private final UserService userService;
 
     // ===== HIỂN THỊ TRANG WISHLIST =====
     @GetMapping
@@ -37,7 +35,7 @@ public class WishlistController {
             return "redirect:/login";
         }
 
-        User user = userRepository.findByEmail(auth.getName()).orElse(null);
+        User user = userService.findByEmail(auth.getName()).orElse(null);
         if (user == null) {
             return "redirect:/login";
         }
@@ -66,36 +64,30 @@ public class WishlistController {
             return ResponseEntity.ok(response);
         }
 
-        User user = userRepository.findByEmail(authentication.getName()).orElse(null);
+        User user = userService.findByEmail(authentication.getName()).orElse(null);
         if (user == null) {
             response.put("status", "unauthorized");
             return ResponseEntity.ok(response);
         }
 
-        Product product = productRepository.findById(Long.valueOf(productId)).orElse(null);
+        Product product = productService.getProductById(Long.valueOf(productId));
         if (product == null) {
             response.put("status", "not_found");
             return ResponseEntity.ok(response);
         }
 
-        Optional<Wishlist> existing = wishlistRepository.findByUserAndProduct(user, product);
+        Optional<Wishlist> existing = wishlistService.getWishlistByUserAndProduct(user, product);
 
         if (existing.isPresent()) {
-            // Xóa
-            wishlistRepository.delete(existing.get());
+            wishlistService.delete(existing.get());
             response.put("status", "removed");
-            response.put("wishlistItemId", existing.get().getId()); // Thêm ID để client có thể xác nhận
+            response.put("wishlistItemId", existing.get().getId());
             return ResponseEntity.ok(response);
         }
 
-        // Thêm
-        Wishlist newWishlist = wishlistRepository.save(new Wishlist(null, user, product));
+        Wishlist newWishlist = wishlistService.save(new Wishlist(null, user, product));
         response.put("status", "added");
         response.put("wishlistItemId", newWishlist.getId());
-
-        // TODO: THÊM logic để lấy HTML fragment hoặc dữ liệu product chi tiết vào response.put("productHtml", ...)
-        // Ví dụ: response.put("productHtml", renderProductFragment(newWishlist.getProduct()));
-
         return ResponseEntity.ok(response);
     }
 
@@ -111,26 +103,23 @@ public class WishlistController {
             return ResponseEntity.status(401).body(response);
         }
 
-        User user = userRepository.findByEmail(auth.getName()).orElse(null);
+        User user = userService.findByEmail(auth.getName()).orElse(null);
         if (user == null) {
             response.put("success", false);
             response.put("message", "Người dùng không hợp lệ.");
             return ResponseEntity.status(401).body(response);
         }
 
-        // 1. Tìm Wishlist Item theo ID
-        Optional<Wishlist> existing = wishlistRepository.findById(wishlistItemId);
+        Optional<Wishlist> existing = wishlistService.getWishlistById(wishlistItemId);
 
         if (existing.isEmpty() || !existing.get().getUser().equals(user)) {
-            // 2. Nếu không tìm thấy hoặc không thuộc về người dùng hiện tại
             response.put("success", false);
             response.put("message", "Sản phẩm yêu thích không tồn tại hoặc bạn không có quyền xóa.");
             return ResponseEntity.status(404).body(response);
         }
 
-        // 3. Xóa
         try {
-            wishlistRepository.delete(existing.get());
+            wishlistService.delete(existing.get());
             response.put("success", true);
             response.put("message", "Đã xóa sản phẩm khỏi danh sách yêu thích.");
             response.put("productId", existing.get().getProduct().getId());

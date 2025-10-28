@@ -3,8 +3,7 @@ package com.hhd.jewelry.controller.client;
 import com.hhd.jewelry.entity.*;
 import com.hhd.jewelry.entity.Collection;
 import com.hhd.jewelry.repository.*;
-import com.hhd.jewelry.service.CartItemService;
-import com.hhd.jewelry.service.OrderService;
+import com.hhd.jewelry.service.*;
 import com.hhd.jewelry.service.specification.ProductSpecs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -26,14 +25,13 @@ import java.util.stream.Collectors;
 @Controller
 @RequiredArgsConstructor
 public class ProductController {
-
-    private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
-    private final CollectionRepository collectionRepository;
-    private final UserRepository userRepository;
-    private final WishlistRepository wishlistRepository;
+    private final ProductService productService;
+    private final CartService cartService;
+    private final CollectionService collectionService;
+    private final UserService userService;
+    private final CategoryService categoryService;
+    private final WishlistService wishlistService;
     private final OrderService orderService;
-    private final CartRepository cartRepository;
 
     @GetMapping("/products")
     public String products(
@@ -49,20 +47,16 @@ public class ProductController {
             Model model,
             Authentication auth)
     {
-        // ===== 1. XÂY DỰNG SPECIFICATION =====
         Specification<Product> spec = Specification.where(null);
 
-        // Tìm kiếm theo từ khóa
         if (q != null && !q.isBlank()) {
             spec = spec.and(ProductSpecs.keywordSafe(q));
         }
 
-        // Lọc theo danh mục
         if (categoryNames != null && !categoryNames.isEmpty()) {
             spec = spec.and(ProductSpecs.categoryNames(categoryNames));
         }
 
-        // Lọc theo chất liệu (material)
         if (materials != null && !materials.isEmpty()) {
             spec = spec.and((root, query, cb) -> {
                 List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
@@ -73,49 +67,40 @@ public class ProductController {
             });
         }
 
-        // Lọc theo bộ sưu tập
         if (collectionName != null && !collectionName.isBlank()) {
             spec = spec.and(ProductSpecs.collectionName(collectionName));
         }
 
-        // Lọc theo khoảng giá
         if (minPrice != null || maxPrice != null) {
             spec = spec.and(ProductSpecs.priceBetween(minPrice, maxPrice));
         }
 
-        // ===== 2. SẮP XẾP =====
         Sort sorting = parseSort(sort);
         Pageable pageable = PageRequest.of(page, size, sorting);
 
-        // ===== 3. TRUY VẤN DATABASE =====
-        Page<Product> productPage = productRepository.findAll(spec, pageable);
+        Page<Product> productPage = productService.findProducts(spec, pageable);
 
-        // ===== 4. LẤY DỮ LIỆU CHO FILTER =====
-        List<Category> allCategories = categoryRepository.findAll();
-        List<Collection> allCollections = collectionRepository.findAll();
+        List<Category> allCategories = categoryService.getAllCategories();
+        List<Collection> allCollections = collectionService.getAllCollections();
 
-        // Danh sách chất liệu (có thể hard-code hoặc lấy từ DB)
         List<String> allMaterials = Arrays.asList(
                 "Vàng 18K", "Vàng 14K", "Vàng 10K",
                 "Bạc 925", "Kim cương", "Ngọc trai"
         );
 
-        // ===== ✅ SỬA PHẦN NÀY - Lấy wishlist với kiểu dữ liệu đúng =====
         Set<Integer> wishlistedProductIds = new HashSet<>();
-        int cartSize = 0; // Khởi tạo cartSize
+        int cartSize = 0;
 
-        User user = null;
+        User user;
         if (auth != null && auth.isAuthenticated()) {
-            user = userRepository.findByEmail(auth.getName()).orElse(null);
+            user = userService.findByEmail(auth.getName()).orElse(null);
             if (user != null) {
-                // Lấy Wishlist
-                List<Wishlist> wishlists = wishlistRepository.findAllByUser(user);
+                List<Wishlist> wishlists = wishlistService.getAllByUser(user);
                 wishlistedProductIds = wishlists.stream()
                         .map(w -> w.getProduct().getId())
                         .collect(Collectors.toSet());
 
-                // ✅ Lấy Cart Size
-                Cart cart = cartRepository.findByUser(user);
+                Cart cart = cartService.getCartByUser(user);
                 if (cart != null && cart.getItems() != null) {
                     cartSize = cart.getItems().stream()
                             .map(item -> item.getQuantity() != null ? item.getQuantity() : 0)

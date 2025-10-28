@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -42,5 +43,30 @@ public class WishlistServiceImpl implements WishlistService {
     @Override
     public List<Wishlist> getAllByUser(User user) {
         return wishlistRepository.findAllByUser(user);
+    }
+
+    @Override
+    public Wishlist save(Wishlist wishlist) {
+        return wishlistRepository.save(wishlist);
+    }
+
+    @Override
+    public void delete(Wishlist wishlist) {
+        wishlistRepository.delete(wishlist);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+
+    }
+
+    @Override
+    public Optional<Wishlist> getWishlistByUserAndProduct(User user, Product product) {
+        return wishlistRepository.findByUserAndProduct(user, product);
+    }
+
+    @Override
+    public Optional<Wishlist> getWishlistById(Integer id) {
+        return wishlistRepository.findById(id);
     }
 }

@@ -2,9 +2,10 @@ package com.hhd.jewelry.controller.admin;
 
 import com.hhd.jewelry.entity.Collection;
 import com.hhd.jewelry.entity.Product;
-import com.hhd.jewelry.repository.CollectionRepository;
-import com.hhd.jewelry.repository.ProductRepository;
+import com.hhd.jewelry.service.CollectionService;
+import com.hhd.jewelry.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -23,9 +24,8 @@ import java.util.UUID;
 @RequestMapping("/admin/collections")
 @RequiredArgsConstructor
 public class AdminCollectionController {
-
-    private final CollectionRepository collectionRepo;
-    private final ProductRepository productRepo;
+    private final CollectionService collectionService;
+    private final ProductService productService;
 
     @GetMapping
     public String listCollections(
@@ -35,9 +35,8 @@ public class AdminCollectionController {
             Model model
     ) {
         var pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
-        var collectionPage = collectionRepo.findAll(pageable);
+        Page<Collection> collectionPage = collectionService.getCollectionsPage(page, size);
 
-        // ✅ Lọc theo keyword (nếu có)
         if (keyword != null && !keyword.isBlank()) {
             var filtered = collectionPage.getContent().stream()
                     .filter(c -> c.getName() != null && c.getName().toLowerCase().contains(keyword.toLowerCase()))
@@ -54,31 +53,28 @@ public class AdminCollectionController {
     }
 
 
-    // ✅ Form thêm mới
     @GetMapping("/form")
     public String addForm(Model model) {
         model.addAttribute("collection", new Collection());
         model.addAttribute("isEdit", false);
-        model.addAttribute("products", productRepo.findAll());
+        model.addAttribute("products", productService.getAllProducts());
         return "admin/collections/form";
     }
 
-    // ✅ Form chỉnh sửa
+
     @GetMapping("/form/{id}")
     public String editForm(@PathVariable Integer id, Model model) {
-        Collection collection = collectionRepo.findById(Long.valueOf(id))
+        Collection collection = collectionService.getCollectionById(Long.valueOf(id))
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bộ sưu tập"));
 
-        // ⚡ ép Hibernate load danh sách sản phẩm để tránh LazyInitializationException
         collection.getProducts().size();
 
         model.addAttribute("collection", collection);
         model.addAttribute("isEdit", true);
-        model.addAttribute("products", productRepo.findAll());
+        model.addAttribute("products", productService.getAllProducts());
         return "admin/collections/form";
     }
 
-    // ✅ Lưu
     @PostMapping("/save")
     public String save(@ModelAttribute Collection form,
                        @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
@@ -88,7 +84,7 @@ public class AdminCollectionController {
         boolean isEdit = form.getId() != null;
 
         if (isEdit) {
-            collection = collectionRepo.findById(Long.valueOf(form.getId()))
+            collection = collectionService.getCollectionById(Long.valueOf(form.getId()))
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy bộ sưu tập"));
         } else {
             collection = new Collection();
@@ -96,18 +92,16 @@ public class AdminCollectionController {
 
         collection.setName(form.getName());
 
-        // ✅ Cập nhật danh sách sản phẩm
         if (productIds != null && !productIds.isEmpty()) {
-            List<Product> selectedProducts = productRepo.findAllById(productIds);
+            List<Product> selectedProducts = productService.getProductsById(productIds);
             for (Product p : selectedProducts) {
-                p.setCollection(collection); // ⚡ gán ngược để Hibernate hiểu quan hệ
+                p.setCollection(collection);
             }
             collection.setProducts(selectedProducts);
         } else {
             collection.getProducts().clear();
         }
 
-        // ✅ Upload ảnh (nếu có)
         if (imageFile != null && !imageFile.isEmpty()) {
             String fileName = "collection_" + UUID.randomUUID() + getFileExtension(imageFile.getOriginalFilename());
             String[] uploadDirs = {
@@ -125,7 +119,7 @@ public class AdminCollectionController {
             collection.setImageUrl("/images/collections/" + fileName);
         }
 
-        collectionRepo.save(collection);
+        collectionService.save(collection);
         return "redirect:/admin/collections";
     }
 
@@ -134,10 +128,9 @@ public class AdminCollectionController {
         return index > 0 ? fileName.substring(index) : "";
     }
 
-    // ✅ Xóa
     @GetMapping("/delete/{id}")
     public String delete(@PathVariable Integer id) {
-        collectionRepo.deleteById(Long.valueOf(id));
+        collectionService.deleteById(Long.valueOf(id));
         return "redirect:/admin/collections";
     }
 }

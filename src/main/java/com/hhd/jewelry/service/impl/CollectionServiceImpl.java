@@ -3,6 +3,9 @@ package com.hhd.jewelry.service.impl;
 import com.hhd.jewelry.entity.Collection;
 import com.hhd.jewelry.repository.CollectionRepository;
 import com.hhd.jewelry.service.CollectionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,8 +25,19 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
+    public Page<Collection> getCollectionsPage(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return collectionRepository.findAll(pageable);
+    }
+
+    @Override
     public Collection getCollectionByName(String collectionName) {
         return collectionRepository.findByName(collectionName).orElse(null);
+    }
+
+    @Override
+    public Optional<Collection> getCollectionById(Long id) {
+        return collectionRepository.findById(id);
     }
 
     @Override
@@ -42,5 +56,10 @@ public class CollectionServiceImpl implements CollectionService {
     @Override
     public void delete(Collection collection) {
 
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        collectionRepository.deleteById(id);
     }
 }

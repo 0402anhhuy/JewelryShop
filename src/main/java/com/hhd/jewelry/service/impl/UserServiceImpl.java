@@ -4,6 +4,7 @@ import com.hhd.jewelry.entity.User;
 import com.hhd.jewelry.repository.UserRepository;
 import com.hhd.jewelry.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,11 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public Page<User> getUsersPage(int page, int size) {
+        return null;
+    }
 
     @Override
     public Optional<User> findByEmail(String email) {

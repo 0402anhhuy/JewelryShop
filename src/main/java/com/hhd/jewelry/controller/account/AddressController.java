@@ -126,7 +126,6 @@ public class AddressController {
 
             Address address = addressService.getAddressById(id);
 
-            // Kiểm tra quyền sở hữu
             if (!address.getUser().getId().equals(user.getId())) {
                 response.put("success", false);
                 response.put("toastType", "error");
@@ -135,10 +134,8 @@ public class AddressController {
                 return response;
             }
 
-            // Lưu trạng thái mặc định cũ
             boolean wasDefault = address.getIsDefault();
 
-            // Cập nhật thông tin
             address.setReceiverName(dto.getReceiverName());
             address.setPhone(dto.getPhone());
             address.setCity(dto.getCity());
@@ -147,11 +144,9 @@ public class AddressController {
             address.setAddressLine(dto.getAddressLine());
             address.setAddressType(dto.getAddressType());
 
-            // Xử lý đặt làm mặc định
             boolean newDefaultStatus = dto.getIsDefault() != null ? dto.getIsDefault() : false;
 
             if (newDefaultStatus && !wasDefault) {
-                // Bỏ mặc định các địa chỉ khác
                 List<Address> userAddresses = addressService.getAddressesByUser(user);
                 for (Address addr : userAddresses) {
                     if (addr.getIsDefault() && !addr.getId().equals(address.getId())) {
@@ -204,7 +199,6 @@ public class AddressController {
 
             Address address = addressService.getAddressById(id);
 
-            // Kiểm tra quyền sở hữu
             if (!address.getUser().getId().equals(user.getId())) {
                 response.put("success", false);
                 response.put("message", "Không có quyền truy cập");
@@ -252,7 +246,6 @@ public class AddressController {
                 return response;
             }
 
-            // Bỏ đặt mặc định tất cả các địa chỉ của user
             List<Address> userAddresses = addressService.getAddressesByUser(user);
             for (Address addr : userAddresses) {
                 if (addr.getIsDefault()) {
@@ -261,7 +254,6 @@ public class AddressController {
                 }
             }
 
-            // Đặt địa chỉ này làm mặc định
             address.setIsDefault(true);
             addressService.save(address);
 
@@ -270,7 +262,6 @@ public class AddressController {
             response.put("toastTitle", "Thành công");
             response.put("toastMessage", "Đã đặt địa chỉ làm mặc định!");
 
-            // FIX: Thêm data trả về với ID
             response.put("data", Map.of("id", address.getId()));
 
             return response;
@@ -306,10 +297,8 @@ public class AddressController {
                 return response;
             }
 
-            // FIX: Kiểm tra nếu đây là địa chỉ mặc định
             boolean wasDefault = address.getIsDefault();
 
-            // Xóa địa chỉ
             addressService.delete(address);
 
             response.put("success", true);
@@ -317,7 +306,6 @@ public class AddressController {
             response.put("toastTitle", "Thành công");
             response.put("toastMessage", "Đã xóa địa chỉ thành công!");
 
-            // FIX: Nếu xóa địa chỉ mặc định, tự động đặt địa chỉ đầu tiên làm mặc định
             if (wasDefault) {
                 List<Address> remainingAddresses = addressService.getAddressesByUser(user);
                 if (!remainingAddresses.isEmpty()) {
@@ -325,7 +313,6 @@ public class AddressController {
                     firstAddress.setIsDefault(true);
                     addressService.save(firstAddress);
 
-                    // Trả về ID của địa chỉ mặc định mới
                     response.put("data", Map.of("newDefaultId", firstAddress.getId()));
                 }
             }

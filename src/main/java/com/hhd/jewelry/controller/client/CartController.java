@@ -18,8 +18,6 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,18 +25,18 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CartController {
 
+    private static final double VAT_RATE = 0.1;
+
     private final ProductService productService;
     private final UserService userService;
-    private final CartRepository cartRepository;
     private final AddressService addressService;
     private final OrderService orderService;
     private final CartItemService cartItemService;
     private final CartService cartService;
     private final VNPayService vnPayService;
     private final MomoService momoService;
-    private static final double VAT_RATE = 0.1;
 
-    // ===== Hiển thị giỏ hàng =====
+
     @GetMapping("/cart")
     public String getCartPage(Model model, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -50,11 +48,11 @@ public class CartController {
             return "redirect:/login?error=user_not_found";
         }
 
-        Cart cart = cartRepository.findByUser(user);
+        Cart cart = cartService.getCartByUser(user);
         if (cart == null) {
             cart = new Cart();
             cart.setUser(user);
-            cart = cartRepository.save(cart);
+            cartService.save(cart);
         }
 
         List<CartItem> cartItems = cart.getItems() != null ? cart.getItems() : new ArrayList<>();
@@ -98,7 +96,7 @@ public class CartController {
         productService.AddProductToCart(auth.getName(), p.getSerialNumber());
 
         var user = userService.findByEmail(auth.getName()).orElse(null);
-        var cart = (user == null) ? null : cartRepository.findByUser(user);
+        var cart = (user == null) ? null : cartService.getCartByUser(user);
 
         int count = 0;
         if (cart != null && cart.getItems() != null) {
@@ -127,7 +125,7 @@ public class CartController {
             User user = userService.findByEmail(auth.getName()).orElse(null);
             if (user == null) return Map.of("ok", false, "reason", "no_user");
 
-            Cart cart = cartRepository.findByUser(user);
+            Cart cart = cartService.getCartByUser(user);
             if (cart == null || cart.getItems() == null) {
                 return Map.of("ok", false, "reason", "no_cart");
             }
@@ -142,12 +140,12 @@ public class CartController {
             }
 
             updated.setQuantity(qty);
-            cartRepository.save(cart);
+            cartService.save(cart);
             for (CartItem item : cart.getItems()) {
                 boolean isSelected = selectedIds != null && selectedIds.contains(item.getId());
-                item.setSelected(isSelected);  // <- đảm bảo entity CartItem có field `selected`
+                item.setSelected(isSelected);
             }
-            cartRepository.save(cart); // Save lại toàn bộ cart sau khi update selected
+            cartService.save(cart);
 
             int priceOfUpdatedItem = (updated.getProduct() != null && updated.getProduct().getPrice() != null)
                     ? updated.getProduct().getPrice() : 0;
@@ -212,7 +210,7 @@ public class CartController {
             User user = userService.findByEmail(auth.getName()).orElse(null);
             if (user == null) return Map.of("ok", false, "reason", "no_user");
 
-            Cart cart = cartRepository.findByUser(user);
+            Cart cart = cartService.getCartByUser(user);
             if (cart == null) return Map.of("ok", true, "subtotal", 0, "total", 0, "discount", 0);
 
             int subtotal = 0;
@@ -255,34 +253,26 @@ public class CartController {
         }
         User user = userService.findByEmail(authentication.getName()).orElse(null); // Hoặc cách bạn lấy user
         try {
-            // 2. Gọi Service để xử lý logic nghiệp vụ
             boolean success = cartService.addItemsFromOrderToCartAndSelect(orderId, user);
 
             if (success) {
-                // 3. Trả về thành công
-                // Bạn có thể trả thêm số lượng giỏ hàng mới nếu muốn cập nhật badge
-                // int updatedCartCount = cartService.getCartItemCount(user);
                 return ResponseEntity.ok(Map.of(
                         "success", true,
                         "message", "Đã thêm sản phẩm vào giỏ hàng thành công!"
-                        // "cartCount", updatedCartCount // Tùy chọn
                 ));
-            } else {
-                // Trường hợp service trả về false (ít xảy ra nếu dùng Exception)
+            }
+            else {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body(Map.of("success", false, "message", "Đã xảy ra lỗi không xác định."));
             }
 
         } catch (EntityNotFoundException e) {
-            // 4. Bắt lỗi: Đơn hàng không tồn tại
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("success", false, "message", e.getMessage()));
         } catch (IllegalStateException e) {
-            // 5. Bắt lỗi: Hết hàng / Sản phẩm không tồn tại
             return ResponseEntity.status(HttpStatus.BAD_REQUEST) // Hoặc CONFLICT (409) tùy ngữ cảnh
                     .body(Map.of("success", false, "message", e.getMessage()));
         } catch (Exception e) {
-            // 6. Bắt lỗi chung khác
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("success", false, "message", "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau."));
         }
@@ -306,18 +296,19 @@ public class CartController {
         checkoutData.put("discount", discount);
         checkoutData.put("total", total);
 
-        // ✅ Lưu vào session tạm
         session.setAttribute("checkoutData", checkoutData);
 
         return ResponseEntity.ok(Map.of("ok", true));
     }
-    // ===== Trang checkout (Mua từ giỏ hàng) =====
-    // *** ĐÃ SỬA LỖI: Chỉ lấy các sản phẩm được chọn và tính tổng ban đầu ***
+
     @GetMapping("/checkout/cart/{id}")
     public String getCartCheckOut(Model model, @PathVariable("id") Integer id, Authentication auth, HttpSession session) {
+        // Cần đảm bảo các dependencies sau đã được tiêm: userService, cartRepository, cartItemService, addressService
+
         @SuppressWarnings("unchecked")
         Map<String, Object> checkoutData = (Map<String, Object>) session.getAttribute("checkoutData");
-        if(checkoutData != null){
+
+        if (checkoutData != null){
             String couponCode = (String) checkoutData.getOrDefault("couponCode", "");
             String shippingName = (String) checkoutData.getOrDefault("shippingName", "");
             long subtotal = (long) checkoutData.getOrDefault("subtotal", 0L);
@@ -325,6 +316,7 @@ public class CartController {
             long shipping = (long) checkoutData.getOrDefault("shippingFee", 0L);
             long tax = calculateTax(subtotal);
             long total = subtotal - discount + shipping + tax;
+
             model.addAttribute("shippingName", shippingName);
             model.addAttribute("couponCode", couponCode);
             model.addAttribute("subtotal", subtotal);
@@ -333,25 +325,39 @@ public class CartController {
             model.addAttribute("tax", tax);
             model.addAttribute("total", total);
         }
+
         User user = userService.findByEmail(auth.getName()).orElse(null);
-        List<CartItem> allItems = cartItemService.findAllByCart_CartId(id);
-        List<Address> allAddress = addressService.getAddressesByUser(user);
-        // Chỉ lấy các sản phẩm ĐƯỢC CHỌN để thanh toán
-        List<CartItem> selectedItems = allItems.stream()
-                .filter(CartItem::isSelected)
-                .collect(Collectors.toList());
+        int cartSize = 0; // Khởi tạo cartSize
 
-        model.addAttribute("isBuyNow", false);
-        model.addAttribute("carts", selectedItems);
-        model.addAttribute("user", user);
-        model.addAttribute("cartId", id);
-        model.addAttribute("allAddress", allAddress);
+        if (user != null) {
+            Cart cart = cartService.getCartByUser(user);
+            if (cart != null && cart.getItems() != null) {
+                cartSize = cart.getItems().stream()
+                        .map(item -> item.getQuantity() != null ? item.getQuantity() : 0)
+                        .reduce(0, Integer::sum);
+            }
 
+            List<CartItem> allItems = cartItemService.findAllByCart_CartId(id);
+            List<Address> allAddress = addressService.getAddressesByUser(user);
+
+            List<CartItem> selectedItems = allItems.stream()
+                    .filter(CartItem::isSelected)
+                    .collect(Collectors.toList());
+
+            model.addAttribute("isBuyNow", false);
+            model.addAttribute("carts", selectedItems);
+            model.addAttribute("user", user);
+            model.addAttribute("cartId", id);
+            model.addAttribute("allAddress", allAddress);
+        }
+        else {
+            return "redirect:/login";
+        }
+
+        model.addAttribute("cartSize", cartSize);
         return "client_1/product/checkout";
     }
 
-    // ===== Trang checkout (Mua ngay) =====
-    // *** ĐÃ HOÀN THIỆN: Tính toán tổng tiền ban đầu cho "Mua ngay" ***
     @GetMapping("/checkout/{serialNumber}")
     public String getCheckout(Model model, @PathVariable("serialNumber") String serialNumber, Authentication auth) {
         User user = userService.findByEmail(auth.getName()).orElse(null);
@@ -363,16 +369,13 @@ public class CartController {
 
         Product product = productService.getProductBySerialNumber(serialNumber);
         if (product == null) {
-            // Xử lý nếu không tìm thấy sản phẩm
             return "redirect:/";
         }
 
-        // Tạo một CartItem "ảo" để hiển thị
         CartItem item = new CartItem();
         item.setProduct(product);
         item.setQuantity(1);
 
-        // Tính toán giá tiền
         long price = product.getPrice() != null ? product.getPrice() : 0;
         int originalDiscount = product.getDiscount() != null ? product.getDiscount() : 0;
         int discountPercent = Math.min(originalDiscount, 100);
@@ -380,16 +383,13 @@ public class CartController {
 
         item.setPrice((int) finalPrice);
 
-        long subtotal = finalPrice; // Vì số lượng là 1
-        long discount = 0; // Ban đầu không giảm giá
-        long shipping = 0; // Phí ship mặc định
+        long subtotal = finalPrice;
+        long discount = 0;
+        long shipping = 0;
         long tax = calculateTax(subtotal);
         long total = subtotal + shipping + tax;
-        String shippingName = ""; // ✅ Tên ship mặc định
-        if (shipping == 0) {
-            // Có thể là freeship do subtotal >= FREESHIP_MIN
-            shippingName = "Giao hàng tiêu chuẩn";
-        }
+        String shippingName;
+        shippingName = "Giao hàng tiêu chuẩn";
         List<Address> allAddress = addressService.getAddressesByUser(user);
         model.addAttribute("isBuyNow", true);
         model.addAttribute("carts", List.of(item));
@@ -514,16 +514,11 @@ public class CartController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
 
-            // Gọi service để thêm vào giỏ hàng.
-            // Giả sử logic productService.AddProductToCart có thể dùng Product hoặc SerialNumber,
-            // ở đây tôi sẽ gọi logic của bạn theo SerialNumber (vì logic cũ của bạn dùng serialnumber)
-            // Nếu Service có phương thức thêm bằng ID, bạn nên dùng nó.
             String serialNumber = product.getSerialNumber();
             productService.AddProductToCart(auth.getName(), serialNumber);
 
-            // Lấy số lượng giỏ hàng hiện tại để cập nhật badge
             User user = userService.findByEmail(auth.getName()).orElse(null);
-            Cart cart = (user == null) ? null : cartRepository.findByUser(user);
+            Cart cart = (user == null) ? null : cartService.getCartByUser(user);
             int count = 0;
             if (cart != null && cart.getItems() != null) {
                 count = cart.getItems().stream()

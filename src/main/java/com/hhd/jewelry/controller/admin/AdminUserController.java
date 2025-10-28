@@ -7,6 +7,8 @@ import com.hhd.jewelry.repository.CartRepository;
 import com.hhd.jewelry.repository.ManagerRepository;
 import com.hhd.jewelry.repository.UserRepository;
 import com.hhd.jewelry.service.AuditLogService;
+import com.hhd.jewelry.service.CartService;
+import com.hhd.jewelry.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -24,9 +26,12 @@ import java.util.Arrays;
 public class AdminUserController {
 
     private final UserRepository userRepo;
-    private final PasswordEncoder encoder;
     private final ManagerRepository managerRepository;
     private final CartRepository cartRepository;
+
+    private final PasswordEncoder encoder;
+    private final CartService cartService;
+    private final UserService userService;
     private final AuditLogService auditLogService;
 
     // ✅ Danh sách người dùng (phân trang + tìm kiếm + lọc role)

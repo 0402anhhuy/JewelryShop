@@ -37,7 +37,6 @@ public class AuditLogController {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "time"));
         Page<AuditLog> auditPage;
 
-        // ✅ Nếu người dùng chọn ngày bắt đầu & kết thúc → lọc theo khoảng thời gian
         if (startDate != null && endDate != null) {
             auditPage = auditService.findByDateRange(
                     startDate.atStartOfDay(),
@@ -45,11 +44,9 @@ public class AuditLogController {
                     pageable
             );
         } else {
-            // ✅ Không lọc theo ngày → lấy toàn bộ log (phân trang)
             auditPage = auditService.getAllLogs(pageable);
         }
 
-        // ✅ Truyền dữ liệu sang view
         model.addAttribute("audits", auditPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", auditPage.getTotalPages());

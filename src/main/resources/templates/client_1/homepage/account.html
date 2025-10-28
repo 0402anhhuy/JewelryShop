@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta th:name="_csrf" th:content="${_csrf.token}"/>
     <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
-    <title>Tài Khoản Của Tôi - LuxuryGems</title>
+    <title>Tài Khoản Của Tôi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/footer.css}">
     <style>
         * {
@@ -180,7 +179,7 @@
             margin-bottom: 25px;
         }
 
-        .user-avatar {
+        .user-avatar-sidebar {
             width: 100px;
             height: 100px;
             border-radius: 50%;
@@ -197,7 +196,7 @@
             overflow: hidden;
         }
 
-        .user-avatar img {
+        .user-avatar-sidebar img {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -1733,7 +1732,401 @@
                 width: 100%;
                 justify-content: center;
             }
+        }
+        /* HEADER SECTION */
+        header {
+            padding: 15px 0;
+            background-color: var(--light-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
 
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+
+        .top-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: var(--secondary-color);
+            border-radius: 30px;
+            padding: 8px 20px;
+            width: 300px;
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            padding: 8px;
+            width: 100%;
+            outline: none;
+            font-size: 15px;
+        }
+
+        .search-bar i {
+            color: #777;
+        }
+
+        .header-logo {
+            position: absolute;
+            left: 56%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .header-logo-img {
+            width: 50px;
+            height: 50px;
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 20px;
+            margin-left: auto;
+        }
+
+        .header-icons a {
+            color: var(--text-color);
+            font-size: 18px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .header-icons a:hover {
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #e74c3c;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            z-index: 1;
+        }
+
+        /* Tooltip cho title */
+        .header-icons a[title] {
+            position: relative;
+        }
+
+        .header-icons a[title]:hover,
+        .header-icons a[title]:focus {
+            text-decoration: none;
+        }
+
+        .header-icons a {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* Tooltip custom */
+        .header-icons a[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+            animation: fadeInTooltip 0.15s ease-in-out;
+        }
+
+        .header-icons a[title]:hover::before {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-bottom-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            animation: fadeInTooltip 0.15s ease-in-out;
+        }
+
+        @keyframes fadeInTooltip {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .nav-brand {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--dark-color);
+            letter-spacing: 1px;
+            text-decoration: none;
+        }
+
+        .nav-brand span {
+            color: var(--primary-color);
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin-left: 25px;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 16px;
+            transition: all 0.3s;
+            padding: 8px 12px;
+            border-radius: 20px;
+        }
+
+        .nav-menu a:hover {
+            color: var(--primary-color);
+            background-color: var(--secondary-color);
+        }
+
+        /* User Account Dropdown Styles */
+        .user-account {
+            position: relative;
+            display: inline-block;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            min-width: 250px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            z-index: 1000;
+        }
+
+        .user-account:hover .user-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .dropdown-user-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .dropdown-user-name i {
+            width: 16px;
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .dropdown-body {
+            padding: 10px 0;
+        }
+
+        .dropdown-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .dropdown-menu-item:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .dropdown-menu-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .dropdown-footer {
+            padding: 10px 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0;
+            font-size: 14px;
+            transition: color 0.2s ease;
+        }
+
+        .logout-btn i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .logout-btn {
+            width: 100%;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+        }
+
+        /* Main Header */
+        .main-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Responsive Header */
+        @media (max-width: 992px) {
+            .top-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .search-bar {
+                width: 100%;
+                max-width: 400px;
+            }
+
+            .header-logo {
+                position: relative;
+                left: auto;
+                top: auto;
+                transform: none;
+                order: -1;
+                margin: 10px 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-menu {
+                margin-top: 20px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .nav-menu li {
+                margin: 5px 10px;
+            }
+
+            .header-logo-img {
+                max-height: 40px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-brand {
+                font-size: 28px;
+            }
+
+            .user-dropdown {
+                min-width: 200px;
+                right: -50%;
+            }
+
+            .header-logo-img {
+                max-height: 35px;
+            }
+
+            .header-icons {
+                gap: 15px;
+            }
+
+            .header-icons a {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
@@ -1743,15 +2136,53 @@
     <div class="header-content">
         <a th:href="@{/}" class="brand">Jewelry</a>
         <div class="header-icons">
-            <a th:href="@{/products}" class="nav-link">
-                <i class="fas fa-box-open"></i>
-                <span class="nav-text">Products</span>
-            </a>
-            <a th:href="@{/cart}" class="nav-link">
-                <i class="fas fa-shopping-bag"></i>
-                <span class="nav-text">Cart</span>
-                <span class="badge" th:if="${cartItemCount > 0}" th:text="${cartItemCount}">3</span>
-            </a>
+            <div th:if="${#authorization.expression('isAuthenticated()')}" style="display: contents;">
+                <a th:href="@{/products}" aria-label="Products" title="Sản phẩm">
+                    <i class="fas fa-box-open"></i>
+                </a>
+                <a th:href="@{/cart}" title="Giỏ hàng"><i class="fas fa-shopping-bag">
+                    <span class="cart-badge" th:text="${cartSize ?: 0}">0</span>
+                </i></a>
+                <div class="user-account" th:if="${currentUser != null}">
+                    <div class="user-avatar" th:text="${currentUser.fullName.substring(0,1).toUpperCase()}">N</div>
+                    <div class="user-dropdown">
+                        <div class="dropdown-header">
+                            <div class="dropdown-user-name">
+                                <i class="fas fa-user-circle"></i>
+                                <span th:text="${currentUser.fullName}">Nguyễn Văn A</span>
+                            </div>
+                        </div>
+                        <div class="dropdown-body">
+                            <a th:href="@{/account}" class="dropdown-menu-item">
+                                <i class="far fa-solid fa-user"></i>
+                                <span>Thông tin tài khoản</span>
+                            </a>
+                            <a th:href="@{/account#orders}" class="dropdown-menu-item">
+                                <i class="fas fa-solid fa-box"></i>
+                                <span>Đơn hàng của tôi</span>
+                            </a>
+                            <a th:href="@{/account#wishlist}" class="dropdown-menu-item">
+                                <i class="far fa-solid fa-heart"></i>
+                                <span>Danh sách yêu thích</span>
+                            </a>
+                        </div>
+                        <div class="dropdown-footer">
+                            <form th:action="@{/logout}" method="post" style="margin: 0;">
+                                <button type="submit" class="logout-btn">
+                                    <i class="fas fa-right-from-bracket"></i>
+                                    <span>Đăng xuất</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${!#authorization.expression('isAuthenticated()')}" style="display: contents;">
+                <a th:href="@{/products}" aria-label="Products" title="Sản phẩm"><i class="fas fa-box-open"></i></a>
+                <a th:href="@{/cart}" aria-label="Cart" title="Giỏ hàng"><i class="fas fa-shopping-bag"></i></a>
+                <a th:href="@{/account}" aria-label="Profile" title="Tài khoản"><i class="far fa-solid fa-user"></i></a>
+                <a th:href="@{/login}" aria-label="Login" title="Đăng nhập"><i class="fas fa-right-to-bracket"></i></a>
+            </div>
         </div>
     </div>
 </header>
@@ -1766,7 +2197,7 @@
 <div class="account-container">
     <aside class="account-sidebar">
         <div class="user-profile">
-            <div class="user-avatar">
+            <div class="user-avatar-sidebar">
                 <span th:text="${user?.fullName != null ? #strings.substring(user.fullName, 0, 2) : 'US'}">NV</span>
                 <div class="avatar-edit">
                     <i class="fas fa-camera"></i> Đổi ảnh
@@ -1808,14 +2239,6 @@
                     <span>Sản phẩm yêu thích</span>
                 </a>
             </li>
-            <li class="menu-item">
-                <form th:action="@{/logout}" method="post" style="margin:0;">
-                    <button type="submit" class="menu-link logout-link" onclick="return confirm('Bạn có chắc muốn đăng xuất?')">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Đăng xuất</span>
-                    </button>
-                </form>
-            </li>
         </ul>
     </aside>
 
@@ -1843,27 +2266,20 @@
 
                 <!-- Grid 2x2: Số điện thoại, Ngày sinh, Giới tính, Thành viên từ -->
                 <div class="form-grid-2x2">
-                    <!-- Hàng 1 cột 1: Số điện thoại -->
                     <div class="form-group">
                         <label class="form-label">Số điện thoại</label>
                         <input type="tel" th:field="*{phone}" class="form-input" placeholder="Nhập số điện thoại" readonly id="phoneInput">
                     </div>
-
-                    <!-- Hàng 1 cột 2: Ngày sinh -->
                     <div class="form-group">
                         <label class="form-label">Ngày sinh</label>
                         <input type="date" th:field="*{dateOfBirth}" class="form-input" readonly id="dobInput">
                     </div>
-
-                    <!-- Hàng 2 cột 1: Giới tính -->
                     <div class="form-group">
                         <label class="form-label">Giới tính</label>
                         <input type="hidden" name="gender" th:value="${user.gender}" />
                         <input class="form-input" readonly id="genderSelect"
                                th:value="*{gender} == 'MALE' ? 'Nam' : (*{gender} == 'FEMALE' ? 'Nữ' : *{gender})">
                     </div>
-
-                    <!-- Hàng 2 cột 2: Thành viên từ -->
                     <div class="form-group">
                         <label class="form-label">Thành viên từ</label>
                         <input type="text" class="form-input" th:value="${user?.createdAt != null ? #temporals.format(user.createdAt, 'dd/MM/yyyy') : 'N/A'}" readonly>

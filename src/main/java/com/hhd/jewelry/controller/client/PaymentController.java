@@ -3,11 +3,10 @@ package com.hhd.jewelry.controller.client;
 import com.hhd.jewelry.config.MomoConfig;
 import com.hhd.jewelry.entity.Order;
 import com.hhd.jewelry.entity.User;
-import com.hhd.jewelry.repository.OrderRepository;
-import com.hhd.jewelry.repository.UserRepository;
 import com.hhd.jewelry.service.CartItemService;
 import com.hhd.jewelry.service.OrderService;
 import com.hhd.jewelry.service.ProductService;
+import com.hhd.jewelry.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -18,14 +17,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 @AllArgsConstructor
 public class PaymentController {
-    private final UserRepository userRepository;
-    private OrderService orderService;
-    private MomoConfig momoConfig;
-    private ProductService  productService;
-    private CartItemService cartItemService;
+    private final UserService userService;
+    private final OrderService orderService;
+    private final MomoConfig momoConfig;
+    private final ProductService  productService;
+    private final CartItemService cartItemService;
+
+
     @GetMapping("/vnpay_return")
     public String vnpayReturn(HttpServletRequest request, Model model, Authentication auth) {
-        User user = userRepository.findByEmail(auth.getName()).orElse(null);
+        User user = userService.findByEmail(auth.getName()).orElse(null);
         String status = request.getParameter("vnp_ResponseCode");
         String orderIdStr = request.getParameter("vnp_TxnRef");
         if (orderIdStr != null && !orderIdStr.isEmpty()) {
@@ -67,7 +68,6 @@ public class PaymentController {
             model.addAttribute("message", "Giao dịch không hợp lệ.");
         }
 
-        // Trả về một view để hiển thị thông báo
         return "client_1/product/payment_result";
     }
 
@@ -76,8 +76,7 @@ public class PaymentController {
             HttpServletRequest request,
             Model model, Authentication auth
     ) {
-        User user = userRepository.findByEmail(auth.getName()).orElse(null);
-        // Lấy các tham số cần thiết từ request theo đúng tên MoMo trả về
+        User user = userService.findByEmail(auth.getName()).orElse(null);
         String partnerCode = request.getParameter("partnerCode");
         String orderId = request.getParameter("orderId");
         String requestId = request.getParameter("requestId");
