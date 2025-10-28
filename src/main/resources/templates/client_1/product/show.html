@@ -732,6 +732,22 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
         }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--red-color);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
@@ -749,9 +765,9 @@
                 <a th:href="@{/products}" aria-label="Products">
                     <i class="fas fa-box-open"></i>
                 </a>
-                <a th:href="@{/cart}" aria-label="Cart">
-                    <i class="fas fa-shopping-bag"></i>
-                </a>
+                <a th:href="@{/cart}" title="Giỏ hàng"><i class="fas fa-shopping-bag">
+                    <span class="cart-badge" th:text="${cartSize}">3</span>
+                </i></a>
                 <div class="user-account" th:if="${currentUser != null}">
                     <div class="user-avatar" th:text="${currentUser.fullName.substring(0,1).toUpperCase()}">N</div>
                     <div class="user-dropdown">

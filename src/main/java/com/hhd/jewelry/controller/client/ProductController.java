@@ -3,6 +3,7 @@ package com.hhd.jewelry.controller.client;
 import com.hhd.jewelry.entity.*;
 import com.hhd.jewelry.entity.Collection;
 import com.hhd.jewelry.repository.*;
+import com.hhd.jewelry.service.CartItemService;
 import com.hhd.jewelry.service.OrderService;
 import com.hhd.jewelry.service.specification.ProductSpecs;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,8 @@ public class ProductController {
     private final UserRepository userRepository;
     private final WishlistRepository wishlistRepository;
     private final OrderService orderService;
+    private final CartRepository cartRepository;
+
     @GetMapping("/products")
     public String products(
             @RequestParam(value = "q", required = false) String q,
@@ -99,20 +102,33 @@ public class ProductController {
 
         // ===== ✅ SỬA PHẦN NÀY - Lấy wishlist với kiểu dữ liệu đúng =====
         Set<Integer> wishlistedProductIds = new HashSet<>();
-        if (auth != null) {
-            User user = userRepository.findByEmail(auth.getName()).orElse(null);
+        int cartSize = 0; // Khởi tạo cartSize
+
+        User user = null;
+        if (auth != null && auth.isAuthenticated()) {
+            user = userRepository.findByEmail(auth.getName()).orElse(null);
             if (user != null) {
+                // Lấy Wishlist
                 List<Wishlist> wishlists = wishlistRepository.findAllByUser(user);
                 wishlistedProductIds = wishlists.stream()
                         .map(w -> w.getProduct().getId())
                         .collect(Collectors.toSet());
+
+                // ✅ Lấy Cart Size
+                Cart cart = cartRepository.findByUser(user);
+                if (cart != null && cart.getItems() != null) {
+                    cartSize = cart.getItems().stream()
+                            .map(item -> item.getQuantity() != null ? item.getQuantity() : 0)
+                            .reduce(0, Integer::sum);
+                }
             }
         }
 
         // ===== 5. GỬI DỮ LIỆU ĐẾN VIEW =====
         model.addAttribute("products", productPage.getContent());
         model.addAttribute("pageData", productPage);
-        model.addAttribute("wishlistedProductIds", wishlistedProductIds); // ✅ THÊM DÒNG NÀY
+        model.addAttribute("wishlistedProductIds", wishlistedProductIds);
+        model.addAttribute("cartSize", cartSize);
 
         // Dữ liệu cho filter sidebar
         model.addAttribute("allCategories", allCategories);
@@ -147,7 +163,6 @@ public class ProductController {
             orderService.deleteById(orderId);
             return ResponseEntity.noContent().build();
         } catch (IllegalStateException e) {
-            // Trả về 400 Bad Request nếu logic không cho phép xóa (VD: sai trạng thái)
             return ResponseEntity.badRequest().build();
         }
     }

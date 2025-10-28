@@ -315,6 +315,6 @@ public class AccountController {
     public String reviewOrderPage(@PathVariable Integer id, Model model) {
         Order order = orderService.findById(id);
         model.addAttribute("order", order);
-        return "client_1/homepage/review-order"; // trỏ đến file review-order.html
+        return "client_1/homepage/review-order";
     }
 }

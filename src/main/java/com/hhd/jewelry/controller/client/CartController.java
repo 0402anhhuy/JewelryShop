@@ -341,8 +341,8 @@ public class CartController {
                 .filter(CartItem::isSelected)
                 .collect(Collectors.toList());
 
-        model.addAttribute("isBuyNow", false); //
-        model.addAttribute("carts", selectedItems); // Chỉ gửi các sản phẩm được chọn
+        model.addAttribute("isBuyNow", false);
+        model.addAttribute("carts", selectedItems);
         model.addAttribute("user", user);
         model.addAttribute("cartId", id);
         model.addAttribute("allAddress", allAddress);
