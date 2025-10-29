@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="chat-sidebar">
+
+    <div id="admin-chat-overlay" class="admin-chat-overlay hidden"></div>
+
+    <div id="admin-chat-sidebar" class="admin-chat-sidebar hidden">
+
+        <div class="sidebar-header">
+            <h5 class="mb-0">Hỗ trợ khách hàng</h5>
+            <span id="admin-chat-close" class="admin-chat-close">&times;</span>
+        </div>
+
+        <div class="chat-container">
+            <div id="user-list">
+                <div id="user-items-container">
+                </div>
+            </div>
+
+            <div class="chat-area">
+                <div id="chat-header">Vui lòng chọn một khách hàng</div>
+                <div id="chat-messages">
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Nhập tin nhắn..." disabled/>
+                    <button id="sendBtn" disabled>Gửi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .hidden { display: none; }
+
+        .admin-chat-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.3);
+            z-index: 1040;
+        }
+
+        .admin-chat-sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 700px; /* Có thể điều chỉnh */
+            max-width: 90vw;
+            height: 100%;
+            background: white;
+            z-index: 1050;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+
+            /* Hiệu ứng trượt vào */
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .admin-chat-sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+            background: #f8f9fa;
+        }
+
+        .admin-chat-close {
+            font-size: 2rem;
+            font-weight: 300;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        /* Tái sử dụng CSS từ admin-chat-sidebar.html */
+        .chat-container {
+            display: flex;
+            flex-grow: 1; /* Cho phép co giãn đầy sidebar */
+            height: 1px; /* Hack để flex-grow hoạt động */
+            overflow: hidden; /* Tránh cuộn kép */
+        }
+
+        #user-list {
+            width: 220px;
+            background-color: #ffffff;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .user-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+        .user-item:hover { background-color: #f5f5f5; }
+        .user-item.active { background-color: #007bff; color: white; }
+        .new-message-indicator { background-color: #dc3545; color: white; border-radius: 20px; padding: 2px 6px; font-size: 11px; font-weight: bold; }
+
+        .chat-area { flex: 1; display: flex; flex-direction: column; background-color: #fafafa; }
+        #chat-header { padding: 15px; background-color: #ffffff; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 14px; }
+        #chat-messages { flex: 1; padding: 20px; overflow-y: auto; font-size: 14px; }
+
+        .msg { margin-bottom: 10px; max-width: 80%; }
+        .msg.user { text-align: left; margin-right: auto; }
+        .msg.user strong { color: #007bff; }
+        .msg.user .content { background: #e9ecef; color: #333; padding: 8px 12px; border-radius: 10px; }
+        .msg.admin { text-align: left; margin-left: auto; }
+        .msg.admin strong { color: #28a745; }
+        .msg.admin .content { background: #d4edda; color: #155724; padding: 8px 12px; border-radius: 10px; }
+
+        .chat-input { display: flex; border-top: 1px solid #e0e0e0; background: #ffffff; }
+        .chat-input input { flex: 1; border: none; padding: 15px; outline: none; font-size: 14px; }
+        .chat-input button { background: #007bff; color: white; border: none; padding: 15px 20px; cursor: pointer; font-size: 14px; }
+        .chat-input button:disabled { background: #c0c0c0; }
+
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+    <script>
+        // Đặt script trong một hàm để tránh xung đột
+        (function() {
+            let stompClient = null;
+            let allMessages = {}; // Đây sẽ là nơi lưu lịch sử tải về
+            let currentSessionId = null; // Session ID (hoặc username) của user đang chat
+
+            // Lấy các element (BẮT BUỘC PHẢI CÓ)
+            const chatInput = document.getElementById('chatInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const userItemsContainer = document.getElementById('user-items-container');
+            const chatMessages = document.getElementById('chat-messages');
+            const chatHeader = document.getElementById('chat-header');
+
+            const sidebar = document.getElementById('admin-chat-sidebar');
+            const overlay = document.getElementById('admin-chat-overlay');
+            const closeBtn = document.getElementById('admin-chat-close');
+
+            const toggleBtn = document.getElementById('admin-chat-toggle');
+            const badge = document.getElementById('admin-chat-badge');
+
+            // === 1. HÀM MỚI: Tải lịch sử chat từ DB ===
+            async function fetchHistory() {
+                try {
+                    // Gọi đến API Controller mới
+                    const response = await fetch('/admin/api/chat/history');
+                    if (!response.ok) {
+                        // Nếu lỗi (ví dụ 403 Forbidden do Spring Security), báo lỗi
+                        throw new Error(`Không thể tải lịch sử chat. Status: ${response.status}`);
+                    }
+
+                    allMessages = await response.json();
+
+                    // Sau khi tải xong, cập nhật danh sách User
+                    Object.keys(allMessages).forEach(sessionId => {
+                        updateUserList(sessionId);
+                    });
+
+                } catch (error) {
+                    console.error("Lỗi tải lịch sử:", error);
+                    // Hiển thị lỗi cho Admin
+                    chatHeader.textContent = "Lỗi tải lịch sử chat!";
+                    allMessages = {};
+                }
+            }
+
+            // === 2. Kết nối WebSocket ===
+            function connectChat() {
+                const socket = new SockJS('/ws-chat');
+                stompClient = Stomp.over(socket);
+
+                stompClient.connect({}, function () {
+                    console.log("Admin đã kết nối WebSocket (Sidebar).");
+                    stompClient.subscribe('/topic/admin/inbox', function (msg) {
+                        const message = JSON.parse(msg.body);
+                        handleNewMessage(message);
+                    });
+                });
+            }
+
+            // === 3. Xử lý tin nhắn MỚI ===
+            function handleNewMessage(message) {
+                const sessionId = message.sessionId; // sessionId này là userIdentifier
+
+                if (!allMessages[sessionId]) {
+                    // Nếu là user mới (chưa có trong lịch sử)
+                    allMessages[sessionId] = [];
+                    updateUserList(sessionId);
+                }
+
+                allMessages[sessionId].push(message);
+
+                if (sessionId === currentSessionId) {
+                    appendMessage(message.sender, message.content);
+                } else {
+                    // Báo "Mới" cho user item
+                    const userItem = document.querySelector(`.user-item[data-session-id="${sessionId}"]`);
+                    if (userItem) {
+                        let indicator = userItem.querySelector('.new-message-indicator');
+                        if (!indicator) {
+                            indicator = document.createElement('span');
+                            indicator.classList.add('new-message-indicator');
+                            indicator.textContent = 'Mới';
+                            userItem.appendChild(indicator);
+                        }
+                    }
+                    // Bật huy hiệu đỏ trên header
+                    updateHeaderBadge(true);
+                }
+            }
+
+            // === 4. HÀM BỊ THIẾU: Cập nhật danh sách User (cột trái) ===
+            function updateUserList(sessionId) {
+                // Kiểm tra xem item đã tồn tại chưa
+                if (document.querySelector(`.user-item[data-session-id="${sessionId}"]`)) {
+                    return; // Đã tồn tại, không cần thêm
+                }
+
+                const shortId = sessionId.includes('@') ? sessionId.split('@')[0] : sessionId.substring(0, 8);
+                const userItem = document.createElement('div');
+                userItem.classList.add('user-item');
+                userItem.dataset.sessionId = sessionId;
+                userItem.innerHTML = `<span>Khách: ${shortId}...</span>`;
+                userItem.onclick = () => selectUser(sessionId);
+                userItemsContainer.appendChild(userItem);
+            }
+
+            // === 5. HÀM BỊ THIẾU: Chọn User để chat ===
+            function selectUser(sessionId) {
+                if (currentSessionId === sessionId) return;
+
+                currentSessionId = sessionId;
+
+                const oldActive = document.querySelector('.user-item.active');
+                if (oldActive) oldActive.classList.remove('active');
+
+                const newActive = document.querySelector(`.user-item[data-session-id="${sessionId}"]`);
+                if (newActive) {
+                    newActive.classList.add('active');
+                    const indicator = newActive.querySelector('.new-message-indicator');
+                    if (indicator) indicator.remove(); // Xóa "Mới" khi bấm vào
+                }
+
+                chatHeader.textContent = `Đang chat với: ${sessionId.substring(0, 12)}...`;
+                chatInput.disabled = false;
+                sendBtn.disabled = false;
+
+                chatMessages.innerHTML = ''; // Xóa chat cũ
+                const history = allMessages[sessionId] || [];
+                history.forEach(msg => {
+                    appendMessage(msg.sender, msg.content);
+                });
+
+                checkAndUpdateHeaderBadge(); // Kiểm tra lại huy hiệu header
+            }
+
+            // === 6. HÀM BỊ THIẾU: Gửi tin nhắn trả lời (do Admin gửi) ===
+            function sendReply() {
+                const text = chatInput.value;
+
+                if (stompClient && text.trim() !== '' && currentSessionId) {
+                    const replyMessage = {
+                        sender: "Tư vấn viên", // Sender được set ở client
+                        content: text,
+                        sessionId: currentSessionId // RẤT QUAN TRỌNG
+                    };
+
+                    // Gửi đến Controller
+                    stompClient.send("/app/chat.replyToUser", {}, JSON.stringify(replyMessage));
+
+                    // Hiển thị ngay
+                    appendMessage(replyMessage.sender, replyMessage.content);
+
+                    // Lưu vào lịch sử JS (Backend đã lưu vào DB)
+                    allMessages[currentSessionId].push(replyMessage);
+
+                    chatInput.value = '';
+                }
+            }
+
+            // === 7. HÀM BỊ THIẾU: Hiển thị tin nhắn lên màn hình ===
+            function appendMessage(sender, content) {
+                const msgDiv = document.createElement('div');
+                const senderType = (sender === 'Khách hàng') ? 'user' : 'admin';
+
+                msgDiv.classList.add('msg', senderType);
+                msgDiv.innerHTML = `<strong>${sender}:</strong><div class="content">${content}</div>`;
+
+                chatMessages.appendChild(msgDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight; // Tự cuộn
+            }
+
+            // === 8. CÁC HÀM BỊ THIẾU: Điều khiển UI ===
+            function openSidebar() {
+                sidebar.classList.add('open');
+                sidebar.classList.remove('hidden');
+                overlay.classList.remove('hidden');
+                checkAndUpdateHeaderBadge();
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove('open');
+                overlay.classList.add('hidden');
+            }
+
+            function updateHeaderBadge(show) {
+                if (badge) { // Kiểm tra null
+                    hasNewMessage = show;
+                    if (show) {
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                }
+            }
+
+            function checkAndUpdateHeaderBadge() {
+                const anyNew = document.querySelector('.user-item .new-message-indicator');
+                updateHeaderBadge(!!anyNew);
+            }
+
+            // === Khởi chạy ===
+            document.addEventListener("DOMContentLoaded", function () {
+                // Phải kiểm tra TẤT CẢ element trước khi chạy
+                if (toggleBtn && badge && sidebar && overlay && closeBtn && chatInput && sendBtn && userItemsContainer && chatMessages && chatHeader) {
+
+                    // 1. TẢI LỊCH SỬ TRƯỚC
+                    fetchHistory().then(() => {
+                        // 2. SAU KHI TẢI XONG, MỚI KẾT NỐI WEBSOCKET
+                        connectChat();
+                    });
+
+                    sendBtn.onclick = sendReply;
+                    chatInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter' && !sendBtn.disabled) sendReply();
+                    });
+
+                    toggleBtn.onclick = openSidebar;
+                    closeBtn.onclick = closeSidebar;
+                    overlay.onclick = closeSidebar;
+
+                } else {
+                    console.error("Thiếu một hoặc nhiều element quan trọng của chat sidebar!");
+                }
+            });
+
+        })(); // Kết thúc hàm bọc
+    </script>
+</div>
+
+</body>
+</html>
