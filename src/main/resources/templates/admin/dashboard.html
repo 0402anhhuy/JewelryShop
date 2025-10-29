@@ -10,7 +10,6 @@
 <body>
 <div class="layout d-flex">
     <div th:replace="~{admin/layout/sidebar :: sidebar}"></div>
-
     <div class="main-content">
         <header th:replace="~{admin/layout/header :: header}"></header>
 
@@ -150,7 +149,7 @@
         </main>
     </div>
 </div>
-
+<div th:replace="~{admin/layout/admin-chat-sidebar :: chat-sidebar}"></div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script th:inline="javascript">
     const monthlyRevenue = /*[[${monthlyRevenue}]]*/ {};
