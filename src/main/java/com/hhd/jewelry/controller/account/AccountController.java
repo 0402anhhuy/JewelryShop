@@ -46,6 +46,7 @@ public class AccountController {
     private final OrderService orderService;
     private final OtpService otpService;
     private final CartService cartService;
+    private final ReviewService reviewService;
 
 
     @GetMapping("/account")
@@ -266,9 +267,7 @@ public class AccountController {
             }
 
             ObjectMapper mapper = new ObjectMapper();
-            List<ItemReview> reviews = mapper.readValue(reviewsJson,
-                    new TypeReference<>() {
-                    });
+            List<ItemReview> reviews = mapper.readValue(reviewsJson, new TypeReference<>() {});
 
             Map<Integer, List<MultipartFile>> filesMap = new HashMap<>();
             allFiles.forEach((key, files) -> {
@@ -283,7 +282,9 @@ public class AccountController {
                     .reviews(reviews)
                     .build();
 
-            orderService.saveAllReviews(request, filesMap);
+            // ⭐ Gọi reviewService thay vì orderService
+            reviewService.saveAll(request, filesMap); // ⭐⭐⭐
+
             order.setIsReviewed(true);
             orderService.save(order);
 
