@@ -869,7 +869,7 @@
                     <i class="fas fa-box-open"></i>
                 </a>
                 <a th:href="@{/cart}" title="Giỏ hàng"><i class="fas fa-shopping-bag">
-                    <span class="cart-badge" th:text="${carts.size()}">3</span>
+                    <span class="cart-badge" th:text="${#aggregates.sum(carts.![quantity ?: 0])}">3</span>
                 </i></a>
                 <div class="user-account" th:if="${currentUser != null}">
                     <div class="user-avatar" th:text="${currentUser.fullName.substring(0,1).toUpperCase()}">N</div>
@@ -1357,16 +1357,32 @@
         }
         qtyInput.value = newQty;
         updateCartOnServer(itemId, newQty);
+        updateCartCount();
     }
     function updateCartCount() {
+        // 1. Đếm số loại sản phẩm (số dòng) - Giữ nguyên logic cũ cho ".cart-count"
         const cartItemsCount = document.querySelectorAll('.cart-item').length;
-        document.querySelector('.cart-badge').textContent = cartItemsCount;
+
+        // 2. [MỚI] Tính tổng số lượng thực tế
+        const allQtyInputs = document.querySelectorAll('.qty-input');
+        let totalQuantity = 0;
+        allQtyInputs.forEach(input => {
+            // Cộng dồn giá trị từ mỗi ô input số lượng
+            totalQuantity += parseInt(input.value, 10) || 0;
+        });
+
+        // 3. Cập nhật cart-badge với TỔNG SỐ LƯỢNG
+        const cartBadge = document.querySelector('.cart-badge');
+        if (cartBadge) {
+            cartBadge.textContent = totalQuantity;
+        }
+
+        // 4. Cập nhật dòng text "Bạn có X sản phẩm" (nếu có) với SỐ LOẠI SẢN PHẨM
         const countText = document.querySelector('.cart-count strong');
         if (countText) {
             countText.textContent = cartItemsCount + ' sản phẩm';
         }
     }
-
     function checkEmptyCart() {
         const cartItemsCount = document.querySelectorAll('.cart-item').length;
         if (cartItemsCount === 0) {

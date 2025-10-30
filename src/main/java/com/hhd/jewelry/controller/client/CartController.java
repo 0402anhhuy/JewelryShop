@@ -451,6 +451,9 @@ public class CartController {
                     productService.updateStockForOrder(order);
                 }
             }
+            else{
+                productService.updateStockForOrder(order);
+            }
             return "redirect:/"; // Chuyển hướng về trang chủ (hoặc trang cảm ơn)
         }
     }
