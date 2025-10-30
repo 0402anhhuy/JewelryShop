@@ -78,10 +78,6 @@ public class Product {
     @ToString.Exclude
     private List<OrderItem> orderItems = new ArrayList<>();
 
-    // 🔹 Sản phẩm đã xem
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude
-    private List<ViewedProduct> viewedProducts = new ArrayList<>();
 
     // 🔹 Danh sách đánh giá (bắt buộc thêm dòng này)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
