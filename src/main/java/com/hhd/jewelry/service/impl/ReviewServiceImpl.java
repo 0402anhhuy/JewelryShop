@@ -34,10 +34,11 @@ public class ReviewServiceImpl implements ReviewService {
 
     // ⭐ 1. Tiêm đường dẫn từ application-dev.properties
     @Value("${file.upload-dir}")
-    private String UPLOAD_DIR_ROOT; // Sẽ là "C:/my-app-uploads/"
+    private String uploadDir; // Sẽ là "C:/my-app-uploads/"
 
     // ⭐ 2. Định nghĩa thư mục con cho ảnh reviews
-    private static final String REVIEW_SUBFOLDER = "images/reviews/";
+    private static final String REVIEW_SUBFOLDER_WEB = "images/reviews";
+    private static final Path REVIEW_SUBFOLDER_PHYSICAL = Paths.get("images", "reviews");
 
     @Override
     public void saveAll(ReviewRequest request, Map<Integer, List<MultipartFile>> filesMap) {
@@ -83,52 +84,56 @@ public class ReviewServiceImpl implements ReviewService {
     private List<String> uploadFiles(List<MultipartFile> files) {
         List<String> paths = new ArrayList<>();
 
-        // ⭐ 3. Tạo đường dẫn vật lý đầy đủ
-        // Ví dụ: "C:/my-app-uploads/images/reviews/"
-        Path physicalUploadDir = Paths.get(UPLOAD_DIR_ROOT + REVIEW_SUBFOLDER);
-
         try {
+            // ⭐ 4. (SỬA) Lấy đường dẫn gốc TUYỆT ĐỐI (từ "./uploads/" -> "/var/app/uploads")
+            Path rootAbsoluteUploadPath = Paths.get(this.uploadDir).toAbsolutePath();
+
+            // ⭐ 5. (SỬA) Tạo đường dẫn vật lý đầy đủ cho thư mục review
+            //    (ví dụ: "/var/app/uploads" + "images/reviews" -> "/var/app/uploads/images/reviews")
+            Path physicalUploadDir = rootAbsoluteUploadPath.resolve(REVIEW_SUBFOLDER_PHYSICAL);
+
             // Tạo thư mục nếu chưa tồn tại
             if (!Files.exists(physicalUploadDir)) {
                 Files.createDirectories(physicalUploadDir);
-                System.out.println("✅ Tạo thư mục: " + physicalUploadDir);
+                log.info("✅ (Service-upload) Đã tạo thư mục: {}", physicalUploadDir);
             }
+
+            for (MultipartFile file : files) {
+                String originalFilename = file.getOriginalFilename();
+                log.info("--- (Service-upload) Đang xử lý file: {}", originalFilename);
+                try {
+                    String extension = "";
+
+                    if (originalFilename != null && originalFilename.contains(".")) {
+                        extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                    }
+                    String newFilename = UUID.randomUUID().toString() + extension;
+
+                    // ⭐ 6. (SỬA) Đường dẫn VẬT LÝ để lưu file
+                    //    (ví dụ: /var/app/uploads/images/reviews/ten-file-uuid.jpg)
+                    Path physicalFilePath = physicalUploadDir.resolve(newFilename);
+                    log.info("--- (Service-upload) Đường dẫn lưu file vật lý: {}", physicalFilePath);
+                    Files.write(physicalFilePath, file.getBytes());
+
+                    // ⭐ 7. (SỬA) Đường dẫn WEB để lưu vào DB (khớp với WebConfig)
+                    //    (ví dụ: /uploads/images/reviews/ten-file-uuid.jpg)
+                    String webPath = "/uploads/" + REVIEW_SUBFOLDER_WEB + "/" + newFilename;
+                    paths.add(webPath);
+
+                    log.info("✅ (Service-upload) Đã upload thành công file {} thành {}", originalFilename, webPath);
+                } catch (IOException e) {
+                    log.error("❌ (Service-upload) LỖI: Không thể ghi file {}. Nguyên nhân:", originalFilename, e);
+                    e.printStackTrace();
+                }
+            }
+
         } catch (IOException e) {
-            log.error("❌ (Service-upload) LỖI NGHIÊM TRỌNG: Không thể tạo thư mục {}", physicalUploadDir, e);
+            log.error("❌ (Service-upload) LỖI NGHIÊM TRỌNG: Không thể tạo thư mục gốc. Nguyên nhân:", e);
             e.printStackTrace();
             return paths; // Trả về list rỗng
         }
 
-        for (MultipartFile file : files) {
-            String originalFilename = file.getOriginalFilename();
-            log.info("--- (Service-upload) Đang xử lý file: {}", originalFilename); // ⭐ LOG TỪNG FILE
-            try {
-                String extension = "";
-
-                if (originalFilename != null && originalFilename.contains(".")) {
-                    extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-                }
-                // Dùng UUID để tên file không bao giờ trùng lặp
-                String newFilename = UUID.randomUUID().toString() + extension;
-
-                // ⭐ 4. Đường dẫn VẬT LÝ để lưu file
-                // Ví dụ: C:/my-app-uploads/images/reviews/ten-file-uuid.jpg
-                Path physicalFilePath = physicalUploadDir.resolve(newFilename);
-                log.info("--- (Service-upload) Đường dẫn lưu file vật lý: {}", physicalFilePath); // ⭐ LOG ĐƯỜNG DẪN LƯU
-                Files.write(physicalFilePath, file.getBytes());
-
-                // ⭐ 5. Đường dẫn WEB để lưu vào DB (khớp với WebConfig)
-                // Ví dụ: /uploads/images/reviews/ten-file-uuid.jpg
-                String webPath = "/uploads/" + REVIEW_SUBFOLDER + newFilename;
-                paths.add(webPath);
-
-                log.info("✅ (Service-upload) Đã upload thành công file {} thành {}", originalFilename, webPath); // ⭐ LOG THÀNH CÔNG
-            } catch (IOException e) {
-                log.error("❌ (Service-upload) LỖI NGHIÊM TRỌNG: Không thể ghi file {}. Nguyên nhân:", originalFilename, e);
-                e.printStackTrace();
-            }
-        }
-        log.info("--- (Service-upload) Hoàn tất xử lý {} file(s). Upload thành công {} file(s).", files.size(), paths.size()); // ⭐ LOG KẾT QUẢ UPLOAD
+        log.info("--- (Service-upload) Hoàn tất xử lý {} file(s). Upload thành công {} file(s).", files.size(), paths.size());
         return paths;
     }
 }
