@@ -186,7 +186,7 @@ public class ManagerOrderController {
             orderRepo.save(existing);
         }
 
-        return "redirect:/admin/orders";
+        return "redirect:/manager/orders";
     }
 
     // ✅ Xóa đơn hàng (chưa thanh toán)

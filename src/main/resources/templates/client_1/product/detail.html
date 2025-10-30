@@ -1422,12 +1422,14 @@
                          onerror="console.error('❌ Failed to load image:', this.src); this.style.border='3px solid red'; this.alt='Load failed';">
                 </div>
 
-        <!-- Empty state -->
-        <div th:if="${reviews == null or reviews.size() == 0}"
-             style="text-align: center; padding: 40px 20px; color: #999;">
-            <i class="far fa-star" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
-            <p style="font-size: 16px;">Chưa có đánh giá nào cho sản phẩm này.</p>
-            <p style="font-size: 14px;">Hãy là người đầu tiên đánh giá!</p>
+                <!-- Empty state -->
+                <div th:if="${reviews == null or reviews.size() == 0}"
+                     style="text-align: center; padding: 40px 20px; color: #999;">
+                    <i class="far fa-star" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
+                    <p style="font-size: 16px;">Chưa có đánh giá nào cho sản phẩm này.</p>
+                    <p style="font-size: 14px;">Hãy là người đầu tiên đánh giá!</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
