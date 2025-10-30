@@ -1410,17 +1410,17 @@
                 </div>
 
                 <!-- Images -->
-                <!-- Images -->
                 <div th:if="${review.mediaPaths != null and review.mediaPaths.size() > 0}"
                      style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;">
+
+
+
                     <img th:each="media : ${review.mediaPaths}"
                          th:src="@{${media}}"
-                         alt="Review"
+                         th:alt="'Review image: ' + ${media}"
                          style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;"
-                         onerror="this.style.display='none'">
+                         onerror="console.error('❌ Failed to load image:', this.src); this.style.border='3px solid red'; this.alt='Load failed';">
                 </div>
-            </div>
-        </div>
 
         <!-- Empty state -->
         <div th:if="${reviews == null or reviews.size() == 0}"

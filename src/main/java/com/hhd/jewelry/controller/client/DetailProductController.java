@@ -58,21 +58,45 @@ public class DetailProductController {
         List<ProductReview> reviews = new ArrayList<>();
         try {
             if (product.getReviews() != null) {
-                product.getReviews().size();
                 reviews = new ArrayList<>(product.getReviews());
-
-                // Fix đường dẫn ảnh reviews (Giữ nguyên)
-                reviews.forEach(review -> {
-                    if (review.getMediaPaths() != null && !review.getMediaPaths().isEmpty()) {
-                        List<String> fixedPaths = review.getMediaPaths().stream()
-                                .map(path -> path.replace("uploads/reviews/", "/images/reviews/"))
-                                .collect(Collectors.toList());
-                        review.setMediaPaths(fixedPaths);
-                    }
-                });
+//                product.getReviews().size();
+//                reviews = new ArrayList<>(product.getReviews());
+//
+//                // Fix đường dẫn ảnh reviews với debug log
+//                reviews.forEach(review -> {
+//                    if (review.getMediaPaths() != null && !review.getMediaPaths().isEmpty()) {
+//
+//
+//                        List<String> fixedPaths = review.getMediaPaths().stream()
+//                                .map(path -> {
+//                                    // Xử lý nhiều trường hợp
+//                                    String fixedPath;
+//                                    if (path.startsWith("/images/")) {
+//                                        fixedPath = path; // Đã đúng format
+//                                    } else if (path.startsWith("uploads/reviews/")) {
+//                                        fixedPath = "/images/reviews/" + path.substring("uploads/reviews/".length());
+//                                    } else if (path.startsWith("/uploads/reviews/")) {
+//                                        fixedPath = "/images/reviews/" + path.substring("/uploads/reviews/".length());
+//                                    } else if (path.startsWith("reviews/")) {
+//                                        fixedPath = "/images/" + path;
+//                                    } else {
+//                                        // Trường hợp chỉ có tên file
+//                                        fixedPath = "/images/reviews/" + path;
+//                                    }
+//                                    System.out.println("  " + path + " -> " + fixedPath);
+//                                    return fixedPath;
+//                                })
+//                                .collect(Collectors.toList());
+//
+//                        review.setMediaPaths(fixedPaths);
+//                        System.out.println("Fixed paths: " + fixedPaths);
+//                        System.out.println("==================\n");
+//                    }
+//                });
             }
         } catch (Exception e) {
             System.err.println("Error loading reviews: " + e.getMessage());
+            e.printStackTrace();
             reviews = new ArrayList<>();
         }
 

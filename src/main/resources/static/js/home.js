@@ -45,7 +45,7 @@ document.addEventListener('click', async function (e) {
             btn.innerHTML = '<i class="fas fa-check"></i> Đã thêm!';
             btn.style.background = '#28a745';
             // cập nhật badge giỏ hàng nếu có
-            const badge = document.querySelector('.cart-count, #cart-count');
+            const badge = document.querySelector('.cart-count, #cart-count, .cart-badge');
             if (badge && typeof data.count === 'number') badge.textContent = data.count;
 
             setTimeout(() => { btn.innerHTML = originalHTML; btn.style.background = '' }, 1500);

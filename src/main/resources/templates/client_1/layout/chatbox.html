@@ -31,32 +31,72 @@
 
     <script>
         let stompClient = null;
+        const chatMessages = document.getElementById('chat-messages');
 
-        // === Kết nối WebSocket ===
+        // === 1. Hiển thị tin nhắn ===
+        // (Giữ nguyên hàm này)
+        function appendMessage(sender, content) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('msg', sender === 'Khách hàng' ? 'user' : 'admin');
+
+            const strong = document.createElement('strong');
+            strong.textContent = sender + ":";
+            const textContent = document.createTextNode(" " + content);
+
+            msgDiv.appendChild(strong);
+            msgDiv.appendChild(textContent);
+
+            chatMessages.appendChild(msgDiv);
+
+            // Sửa dòng cuộn:
+            // Thay vì msgDiv.scrollIntoView(), chúng ta cuộn cả container
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // === 2. SỬA HÀM NÀY (Thêm 1 dòng) ===
+        async function fetchUserHistory() {
+            try {
+                const response = await fetch('/api/chat/my-history');
+                if (!response.ok) {
+                    throw new Error('Không thể tải lịch sử.');
+                }
+                const history = await response.json();
+
+                if (history && history.length > 0) {
+                    history.forEach(msg => {
+                        appendMessage(msg.sender, msg.content);
+                    });
+
+                    // THÊM DÒNG NÀY:
+                    // Đảm bảo cuộn xuống dưới cùng sau khi tải xong lịch sử
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            } catch (error) {
+                console.error("Lỗi tải lịch sử chat user:", error);
+            }
+        }
+
+        // === 3. Kết nối WebSocket ===
+        // (Giữ nguyên hàm này)
         function connectChat() {
             const socket = new SockJS('/ws-chat');
             stompClient = Stomp.over(socket);
             stompClient.connect({}, function () {
-                stompClient.subscribe('/topic/messages', function (msg) {
+
+                stompClient.subscribe('/user/queue/replies', function (msg) {
                     const m = JSON.parse(msg.body);
-                    appendMessage(m.sender, m.content);
+                    if (m.sender !== 'Khách hàng') {
+                        appendMessage(m.sender, m.content);
+                    }
                 });
             });
         }
 
-        // === Hiển thị tin nhắn ===
-        function appendMessage(sender, content) {
-            const msgDiv = document.createElement('div');
-            msgDiv.classList.add('msg', sender === 'Khách hàng' ? 'user' : 'admin');
-            msgDiv.innerHTML = `<strong>${sender}:</strong> ${content}`;
-            document.getElementById('chat-messages').appendChild(msgDiv);
-            msgDiv.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // === Gửi tin nhắn ===
+        // === 4. Gửi tin nhắn ===
+        // (Giữ nguyên hàm này)
         function sendMessage(text) {
             if (stompClient && text.trim() !== '') {
-                stompClient.send("/app/sendMessage", {}, JSON.stringify({
+                stompClient.send("/app/chat.sendMessage", {}, JSON.stringify({
                     sender: "Khách hàng",
                     content: text
                 }));
@@ -64,24 +104,42 @@
             }
         }
 
+        // === 5. Khởi chạy (ĐÃ CẬP NHẬT) ===
         document.addEventListener("DOMContentLoaded", function () {
-            connectChat();
 
-            // Gửi khi bấm nút
+            // 1. Tải lịch sử TRƯỚC
+            fetchUserHistory().then(() => {
+                // 2. Sau khi tải xong lịch sử, MỚI kết nối WebSocket
+                connectChat();
+            });
+
+            // --- Gán sự kiện (giữ nguyên) ---
             document.getElementById('sendBtn').onclick = () => {
                 const input = document.getElementById('chatInput');
                 sendMessage(input.value);
                 input.value = '';
             };
 
-            // Gửi nhanh khi chọn câu hỏi
+            // Bấm Enter để gửi
+            document.getElementById('chatInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage(e.target.value);
+                    e.target.value = '';
+                }
+            });
+
             document.querySelectorAll('.chat-faq').forEach(btn => {
                 btn.onclick = () => {
-                    sendMessage(btn.innerText);
+                    let questionText = btn.innerText;
+                    if (questionText === "Sản phẩm khuyến mãi") questionText = "Các bạn có khuyến mãi gì?";
+                    if (questionText === "Chính sách đổi trả") questionText = "Chính sách đổi trả thế nào?";
+                    if (questionText === "Phí giao hàng") questionText = "Phí giao hàng bao nhiêu?";
+                    if (questionText === "Hướng dẫn chọn size") questionText = "Hướng dẫn tôi chọn size";
+                    if (questionText === "Chat Zalo") questionText = "Tôi muốn chat qua Zalo";
+                    sendMessage(questionText);
                 };
             });
 
-            // Ẩn / hiện boxchat
             const box = document.getElementById('chat-box');
             document.getElementById('chat-toggle').onclick = () => {
                 box.classList.remove('hidden');
@@ -119,6 +177,7 @@
             display: flex;
             flex-direction: column;
             z-index: 1000;
+            height: 450px;
         }
 
         .hidden { display: none; }

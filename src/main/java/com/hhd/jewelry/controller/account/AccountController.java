@@ -46,6 +46,7 @@ public class AccountController {
     private final OrderService orderService;
     private final OtpService otpService;
     private final CartService cartService;
+    private final ReviewService reviewService;
 
 
     @GetMapping("/account")
@@ -252,6 +253,10 @@ public class AccountController {
             @RequestParam("reviews") String reviewsJson,
             @RequestParam MultiValueMap<String, MultipartFile> allFiles) {
 
+        log.info("--- (Controller) Đã nhận request /reviews/submit cho Order ID: {}", orderId);
+        log.info("--- (Controller) Các keys có trong 'allFiles' ({} keys):", allFiles.size());
+        allFiles.keySet().forEach(key -> log.info("--- (Controller) Key nhận được: {}", key));
+        // ⭐====== KẾT THÚC THÊM LOG ======⭐
         try {
             Order order = orderService.findById(orderId);
 
@@ -266,9 +271,7 @@ public class AccountController {
             }
 
             ObjectMapper mapper = new ObjectMapper();
-            List<ItemReview> reviews = mapper.readValue(reviewsJson,
-                    new TypeReference<>() {
-                    });
+            List<ItemReview> reviews = mapper.readValue(reviewsJson, new TypeReference<>() {});
 
             Map<Integer, List<MultipartFile>> filesMap = new HashMap<>();
             allFiles.forEach((key, files) -> {
@@ -282,8 +285,9 @@ public class AccountController {
                     .orderId(orderId)
                     .reviews(reviews)
                     .build();
+            log.info("--- (Controller) Gọi reviewService.saveAll với {} sản phẩm có file trong map.", filesMap.size());
+            reviewService.saveAll(request, filesMap); // ⭐⭐⭐
 
-            orderService.saveAllReviews(request, filesMap);
             order.setIsReviewed(true);
             orderService.save(order);
 

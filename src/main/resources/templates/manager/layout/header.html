@@ -3,16 +3,46 @@
 <body>
 <header th:fragment="header" class="topbar d-flex justify-content-between align-items-center px-4 py-3 shadow-sm">
     <div class="d-flex align-items-center gap-3">
-        <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-box-seam"></i> Quản lý hệ thống</h5>
+        <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-box-seam"></i> Quản trị hệ thống</h5>
     </div>
 
     <div class="d-flex align-items-center gap-3">
         <a th:href="@{/manager/dashboard}" class="text-decoration-none fw-semibold text-secondary">Tổng quan</a>
+
+        <div id="admin-chat-toggle" class="admin-chat-toggle-btn" style="cursor: pointer; position: relative;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-chat-dots-fill" viewBox="0 0 16 16">
+                <path d="M16 8c0 3.866-3.582 7-8 7a9.06 9.06 0 0 1-2.347-.306c-.584.296-1.925.864-4.181 1.234-.2.032-.352-.176-.273-.362.354-.836.674-1.95.77-2.966C.744 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7zM5 8a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0zm4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0z"/>
+            </svg>
+            <span id="admin-chat-badge" class="admin-chat-badge hidden"></span>
+        </div>
         <form th:action="@{/logout}" method="post" class="m-0">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <button type="submit" class="btn btn-outline-danger btn-sm">Đăng xuất</button>
         </form>
     </div>
+
+    <style>
+        .admin-chat-toggle-btn .bi-chat-dots-fill {
+            color: #555;
+            transition: color 0.2s;
+        }
+        .admin-chat-toggle-btn:hover .bi-chat-dots-fill {
+            color: #007bff;
+        }
+        .admin-chat-badge {
+            position: absolute;
+            top: -5px;
+            right: -8px;
+            width: 10px;
+            height: 10px;
+            background-color: red;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .admin-chat-badge.hidden {
+            display: none;
+        }
+    </style>
 </header>
 </body>
 </html>
