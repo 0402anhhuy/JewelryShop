@@ -39,7 +39,6 @@
             const msgDiv = document.createElement('div');
             msgDiv.classList.add('msg', sender === 'Khách hàng' ? 'user' : 'admin');
 
-            // Dọn dẹp nội dung (tránh lỗi HTML)
             const strong = document.createElement('strong');
             strong.textContent = sender + ":";
             const textContent = document.createTextNode(" " + content);
@@ -48,10 +47,13 @@
             msgDiv.appendChild(textContent);
 
             chatMessages.appendChild(msgDiv);
-            msgDiv.scrollIntoView({ behavior: 'smooth' });
+
+            // Sửa dòng cuộn:
+            // Thay vì msgDiv.scrollIntoView(), chúng ta cuộn cả container
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // === 2. Tải lịch sử chat (HÀM MỚI) ===
+        // === 2. SỬA HÀM NÀY (Thêm 1 dòng) ===
         async function fetchUserHistory() {
             try {
                 const response = await fetch('/api/chat/my-history');
@@ -60,16 +62,17 @@
                 }
                 const history = await response.json();
 
-                // Chỉ tải nếu có lịch sử
                 if (history && history.length > 0) {
                     history.forEach(msg => {
-                        // msg.sender và msg.content (phải khớp với Entity)
                         appendMessage(msg.sender, msg.content);
                     });
+
+                    // THÊM DÒNG NÀY:
+                    // Đảm bảo cuộn xuống dưới cùng sau khi tải xong lịch sử
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
                 }
             } catch (error) {
                 console.error("Lỗi tải lịch sử chat user:", error);
-                // Không cần làm gì, chat mới vẫn hoạt động
             }
         }
 
@@ -174,6 +177,7 @@
             display: flex;
             flex-direction: column;
             z-index: 1000;
+            height: 450px;
         }
 
         .hidden { display: none; }
