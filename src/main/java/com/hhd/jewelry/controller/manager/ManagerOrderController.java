@@ -185,7 +185,6 @@ public class ManagerOrderController {
         if (needsSave) {
             orderRepo.save(existing);
         }
-
         return "redirect:/manager/orders";
     }
 
