@@ -287,8 +287,6 @@ public class AccountController {
                     .build();
             log.info("--- (Controller) Gọi reviewService.saveAll với {} sản phẩm có file trong map.", filesMap.size());
             reviewService.saveAll(request, filesMap); // ⭐⭐⭐
-            // ⭐ Gọi reviewService thay vì orderService
-            reviewService.saveAll(request, filesMap); // ⭐⭐⭐
 
             order.setIsReviewed(true);
             orderService.save(order);
