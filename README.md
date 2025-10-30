@@ -66,7 +66,7 @@ Uteshop-servlet/
 5. Đăng nhập tài khoản **Admin** mặc định:
     - Username: **admin@gmail.com**
     - Password: **admin123**
-
+6. Website deloy của nhóm: [http://jewelryshop.ap-southeast-2.elasticbeanstalk.com/]
 ---
 
 ## 3️⃣ Phân chia công việc
