@@ -67,8 +67,8 @@ public class DataSeeder implements CommandLineRunner {
         }
         // Insert
         seedCategories();
-        seedProducts();
         seedCollections();
+        seedProducts();
     }
 
     void seedCategories() {
