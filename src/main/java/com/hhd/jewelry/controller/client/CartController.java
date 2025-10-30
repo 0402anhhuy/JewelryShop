@@ -444,15 +444,10 @@ public class CartController {
             String momoUrl = momoService.createMomoPayment(order.getId(), totalAmount, orderInfo, request);
             return "redirect:" + momoUrl;
         } else {
+            productService.updateStockForOrder(order);
             // Xóa các sản phẩm đã chọn khỏi giỏ hàng nếu thanh toán từ giỏ
             if (form.getCartId() != null) {
-                if(cartItemService.deleteSelectedByUser(user) == 1){
-                    // Cập nhật kho hàng
-                    productService.updateStockForOrder(order);
-                }
-            }
-            else{
-                productService.updateStockForOrder(order);
+                int deleted = cartItemService.deleteSelectedByUser(user);
             }
             return "redirect:/"; // Chuyển hướng về trang chủ (hoặc trang cảm ơn)
         }
