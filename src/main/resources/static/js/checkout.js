@@ -1,7 +1,5 @@
 // TRONG FILE: checkout.js
 
-import { initAddressPicker } from './addressPicker.js';
-
 // === TOÀN BỘ LOGIC TÍNH TOÁN ĐƯỢC DI CHUYỂN VÀO ĐÂY ===
 
 // Khởi tạo các biến toàn cục (sẽ được gán giá trị khi DOM load)
@@ -178,21 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
     BASE_SUBTOTAL = parseInt(dataset.baseSubtotal || '0', 10);
     IS_NOT_NEW_MEMBER = dataset.isNotNewMember === 'true';
 
-
-    // --- BƯỚC 2: GẮN LOGIC ADDRESS PICKER ---
-    initAddressPicker({
-        provinceEl: document.getElementById('addressProvince'),
-        wardEl:     document.getElementById('addressWard'),
-        streetEl:   document.getElementById('addressStreet'),
-        addressEl:  document.getElementById('address'),
-        groupDistrict: null,
-        groupWard:     null,
-        provinceNameHidden: document.getElementById('provinceHidden'),
-        districtNameHidden: document.getElementById('districtHidden'),
-        wardNameHidden:     document.getElementById('wardHidden'),
-    });
-
-    // --- BƯỚC 3: GẮN LOGIC CỦA TRANG CHECKOUT ---
+    // --- BƯỚC 2: GẮN LOGIC CỦA TRANG CHECKOUT ---
 
     // Logic chọn payment
     document.querySelectorAll('.payment-option').forEach(option => {
